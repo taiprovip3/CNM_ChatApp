@@ -1,11 +1,11 @@
 import { View, Text, Pressable, TextInput, Button } from 'react-native';
 import React from 'react';
 
-const LoginTab = ( propsFuction ) => {
-
+//Lớp js này export ra 1 component bên trong là cái frame màu trắng
+export default function LoginTab( propsFuction ) {
   return (
     <View style={{backgroundColor: 'white'}}>
-        <View style={{flexDirection: 'row',backgroundColor: 'pink',padding: 10}}>
+        <View style={{flexDirection: 'row',padding: 10}}>
             <Text
                 style={{borderColor:'black',borderBottomWidth:1,borderRightWidth:1, width: '50%', textAlign: 'center', fontWeight: 'bold'}}>
                 ĐĂNG NHẬP
@@ -27,5 +27,3 @@ const LoginTab = ( propsFuction ) => {
     </View>
   )
 };
-
-export default LoginTab;

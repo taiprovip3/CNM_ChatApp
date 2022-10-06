@@ -1,0 +1,25 @@
+.container{
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    font-size: xx-large;
+}
+.divFooter{
+    position: relative;
+    bottom: 0;
+    text-align: center;
+}
+.headerDiv{
+    text-align: center;
+}
+.centerDiv{
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    /* transform: translate(-50%, -50%) */
+}
+.textLogo{
+    font-size: x-large;
+    color: #1f73f2;
+    font-weight: 900;
+}
