@@ -12,7 +12,7 @@ const Stack = createNativeStackNavigator(); //Tạo ra 1 thùng chứa: Stack
 
 function MyStack() {  //Hàm chạy -> nạp các Screen vào Stack
   return (
-    <Stack.Navigator initialRouteName="AuthScreen">
+    <Stack.Navigator>
       <Stack.Screen name="AuthScreen"
       component={AuthScreen}
       options={{ title: 'Xác thực', headerStyle:{backgroundColor: '#f4511e'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }} />

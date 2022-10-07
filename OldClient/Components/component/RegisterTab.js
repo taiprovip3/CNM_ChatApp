@@ -6,7 +6,7 @@ import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import Toast from 'react-native-toast-message';
 
 //Lớp js này export ra 1 component bên trong là cái frame màu trắng
-export default function RegisterTab( propsFuction ) {
+export default function RegisterTab() {
 
     const [currentUser, setCurrentUser] = useState(null);
     const [inputEmail, setInputEmail] = useState('');
@@ -38,7 +38,6 @@ export default function RegisterTab( propsFuction ) {
                     text2: 'You will be redirect now... 👋'
                   });
                 setTimeout(() => {
-                    // propsFuction.navi.navigate('HomepageScreen');
                 }, 2000);
             })
             .catch( (error) => {
@@ -58,16 +57,12 @@ export default function RegisterTab( propsFuction ) {
                 }
             });
     };
-
-    //Hàm xử lý 'Đăng ký tài khoản bằng Facebook'
     const handleFacebookRegister= () => {
-
     };
-
   return (
     <View style={{backgroundColor: 'white'}}>
         <View style={{flexDirection: 'row',padding: 10}}>
-            <Pressable style={{width: '50%'}} onPressIn={propsFuction.brand}>
+            <Pressable style={{width: '50%'}}>
                 <Text style={{borderColor:'grey',borderBottomWidth:1, textAlign: 'center'}}>
                     ĐĂNG NHẬP
                 </Text>
@@ -76,13 +71,13 @@ export default function RegisterTab( propsFuction ) {
                 ĐĂNG KÝ
             </Text>
         </View>
-        <View style={{padding: '30px', textAlign: 'center'}}>
-            <TextInput placeholder='Họ và tên' style={{borderColor:'black',borderBottomWidth:1,outlineStyle:'none'}}/>
-            <TextInput placeholder='Địa chỉ email' style={{borderColor:'black',borderBottomWidth:1,outlineStyle:'none'}} onChangeText={(e) => setInputEmail(e)} value={inputEmail}/>
-            <TextInput placeholder='Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,outlineStyle:'none'}} onChangeText={(e) => setInputPassword(e)} value={inputPassword}/>
-            <TextInput placeholder='Xác nhận Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,outlineStyle:'none'}}/>
+        <View style={{padding: 30, textAlign: 'center'}}>
+            <TextInput placeholder='Họ và tên' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}}/>
+            <TextInput placeholder='Địa chỉ email' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}} onChangeText={(e) => setInputEmail(e)} value={inputEmail}/>
+            <TextInput placeholder='Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}} onChangeText={(e) => setInputPassword(e)} value={inputPassword}/>
+            <TextInput placeholder='Xác nhận Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}}/>
             <Text>&emsp;</Text>
-            <Button style={{marginTop: '20px'}} title="Đăng ký tài khoản" onPress={handleRegister} />
+            <Button style={{marginTop: 20}} title="Đăng ký tài khoản"/>
             <Text style={{margin: 5}}>Hoặc</Text>
             <Icon.Button
                 name="facebook"
