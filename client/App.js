@@ -14,14 +14,14 @@ function MyStack() {  //Hàm chạy -> nạp các Screen vào Stack
   return (
     <Stack.Navigator>
       <Stack.Screen name="AuthScreen"
-      component={AuthScreen}
-      options={{ title: 'Xác thực', headerStyle:{backgroundColor: '#f4511e'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }} />
-      <Stack.Screen
-        name="HomepageScreen"
-        component={HomepageScreen}
-        options={{ title: 'Trang chủ', headerStyle:{backgroundColor: '#f4511e'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
+        component={AuthScreen}
+        options={{ title: 'Xác thực', headerStyle:{backgroundColor: '#f4511e'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }} />
+        <Stack.Screen
+          name="HomepageScreen"
+          component={HomepageScreen}
+          options={{ title: 'Trang chủ', headerStyle:{backgroundColor: '#f4511e'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
         />
-    </Stack.Navigator>
+      </Stack.Navigator>
   );
 }
 

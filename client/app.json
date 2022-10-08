@@ -20,6 +20,18 @@
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
+      "package": "com.transportili.driver",
+      "versionCode": 6,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ],
+      "config": {
+          "googleMaps": {
+            "apiKey": "AIzaSyCLAxADbeGNUrxCo365Q8rhSmPhe6La0Lg"
+          }
+        },
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"

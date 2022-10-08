@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import app from '../../firebase';
-import {getAuth, onAuthStateChanged} from 'firebase/auth';
+import {getAuth, onAuthStateChanged, connectAuthEmulator} from 'firebase/auth';
 
 export const AuthContext = React.createContext();
 export default function AuthProvider({ children }) {

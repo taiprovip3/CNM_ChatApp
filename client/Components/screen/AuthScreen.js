@@ -126,11 +126,11 @@ export default function AuthScreen({ navigation }){
     return(
     <>
     <Toast position='bottom' bottomOffset={20} />
-    <View>
+    <View style={{flex: 1, justifyContent: 'center', alignContent: 'center'}}>
         {/* View Header */}
-        <View>
-            <Text>Zalo Fake</Text>
-            <Text>Đăng nhập tài khoản UChat</Text>
+        <View style={{alignItems: 'center'}}>
+            <Text style={{fontSize: 40, color: 'blue', fontWeight: 'bold'}}>Ultimate Chat</Text>
+            <Text>Vui lòng đăng nhập tài khoản UChat</Text>
             <Text>để kết nối ứng dụng UChat</Text>
             <Text>&emsp;</Text>
         </View>
@@ -151,13 +151,13 @@ export default function AuthScreen({ navigation }){
                     </Text>
                 </Pressable>
             </View>
-            <View style={{padding: 30, textAlign: 'center'}}>
-                <TextInput placeholder='Địa chỉ email' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}} onChangeText={(e) => setLogEmail(e)} value={logEmail}/>
-                <TextInput placeholder='Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}} onChangeText={(e) => setLogPassword(e)} value={logPassword} />
+            <View style={{padding: 30}}>
+                <TextInput placeholder='Địa chỉ email' style={{borderColor:'black',borderBottomWidth:1,}} onChangeText={(e) => setLogEmail(e)} value={logEmail}/>
+                <TextInput placeholder='Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,}} onChangeText={(e) => setLogPassword(e)} value={logPassword} />
                 <Text>&emsp;</Text>
                 <Button style={{marginTop: 20}} title="Đăng nhập với mật khẩu" onPress={handleLoginAccountByUsernameAndPassword}/>
                 <Text>&emsp;</Text>
-                <Text>Quên mật khẩu?</Text>
+                <Text style={{textAlign: 'center', color: 'blue', textDecorationLine: 'underline'}}>Quên mật khẩu?</Text>
             </View>
         </View>
         {/* Register component */}
@@ -173,13 +173,13 @@ export default function AuthScreen({ navigation }){
                 </Text>
             </View>
             <View style={{padding: 30, textAlign: 'center'}}>
-                <TextInput placeholder='Họ và tên' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}}/>
-                <TextInput placeholder='Địa chỉ email' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}} onChangeText={(e) => setRegEmail(e)} value={regEmail} />
-                <TextInput placeholder='Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}} onChangeText={(e) => setRegPassword(e)} value={regPassword} />
-                <TextInput placeholder='Xác nhận Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,outline:'none'}}/>
+                <TextInput placeholder='Họ và tên' style={{borderColor:'black',borderBottomWidth:1,}} />
+                <TextInput placeholder='Địa chỉ email' style={{borderColor:'black',borderBottomWidth:1,}} onChangeText={(e) => setRegEmail(e)} value={regEmail} />
+                <TextInput placeholder='Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,}} onChangeText={(e) => setRegPassword(e)} value={regPassword} />
+                <TextInput placeholder='Xác nhận Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,}}/>
                 <Text>&emsp;</Text>
                 <Button style={{marginTop: 20}} title="Đăng ký tài khoản" onPress={handleRegisterAccountByUsernameAndPassword}/>
-                <Text style={{margin: 5}}>Hoặc</Text>
+                <Text style={{margin: 5, textAlign: 'center'}}>Hoặc</Text>
                 <IconFontAwesome.Button
                     name="facebook"
                     backgroundColor="#3b5998"
@@ -196,7 +196,7 @@ export default function AuthScreen({ navigation }){
 
 
 
-        <View>
+        <View style={{alignItems: 'center'}}>
             <Text>&emsp;</Text>
             <Text>Tiếng Việt</Text>
             <Text>Copyright <IconFontAwesome5 name='copyright' color="black" solid/> 2022 Nhóm 9 UltimtateChat Application</Text>
