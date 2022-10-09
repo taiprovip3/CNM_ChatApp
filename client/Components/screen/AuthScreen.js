@@ -5,9 +5,10 @@ import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import Toast from 'react-native-toast-message';
 import { AuthContext } from '../provider/AuthProvider';
+import { auth } from '../../firebase';
 
 export default function AuthScreen({ navigation }){
-    const { currentUser, auth } = useContext(AuthContext);
+    const { currentUser } = useContext(AuthContext);
     useEffect(() => {
         if(currentUser){
             Toast.show({
@@ -17,7 +18,7 @@ export default function AuthScreen({ navigation }){
             });
             setTimeout(() => {
                 navigation.navigate('HomepageScreen');
-            }, 2000);
+            }, 500);
         }
     }, [currentUser]);
     

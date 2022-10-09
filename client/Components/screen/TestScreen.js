@@ -1,0 +1,34 @@
+import { View, Text } from 'react-native'
+import React, { useContext, useEffect } from 'react'
+import { AuthContext } from '../provider/AuthProvider';
+import { collection, addDoc } from "firebase/firestore";
+import { database } from '../../firebase';
+
+
+
+export default function TestScreen() {
+
+  const { currentUser } = useContext(AuthContext);
+  useEffect(() => {
+    if(!currentUser){
+      setTimeout(() => {
+          navigation.navigate('AuthScreen');
+      }, 0);
+    }
+  }, [currentUser]);
+
+  const handleSomething = () => {
+    addDoc(collection(database, 'User'), {
+      id: "2",
+      fullName: "Phan Tấn Tài",
+      photoURL: "http://google.com.vn"
+    });
+    alert("Insert doc success");
+  }
+
+  return (
+    <View>
+      <Text onPress={handleSomething}>TestScreen</Text>
+    </View>
+  )
+};
