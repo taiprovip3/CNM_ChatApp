@@ -1,7 +1,7 @@
 import { View, Text, Button, TextInput, Image, SafeAreaView, FlatList, Pressable, StyleSheet } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../provider/AuthProvider';
-import { auth } from '../../firebase';
+import { auth, database } from '../../firebase';
 import { signOut } from 'firebase/auth';
 import IconEvillcon from 'react-native-vector-icons/EvilIcons';
 import IconAntDesign from 'react-native-vector-icons/AntDesign';
@@ -9,22 +9,38 @@ import IconFeather from 'react-native-vector-icons/Feather';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import Toast from 'react-native-toast-message';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
+import { collection, getDocs, orderBy, query, onSnapshot } from 'firebase/firestore';
+import { async } from '@firebase/util';
 
 export default function HomepageScreen({ navigation }) {
 
   const [isShowActionPopupMenu, setIsShowActionPopupMenu] = useState(false);
+  const [listRoom, setListRoom] = useState([]);
 
-  const DATALIST = [{id: 1, urlImage:'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg', objectName: 'Test room chat', latestMessage: 'Socket.io', objectType: 'media'}];
+  const getRoomsFromFirestore = async () => {
+    const DATALIST_ROOM = [];
+    const querySnapshot = await getDocs(collection(database, "Rooms"));
+    querySnapshot.forEach((doc) => {
+      DATALIST_ROOM.push(doc.data());
+    });
+    setListRoom([...DATALIST_ROOM]);
+  }
 
-  const OneBoxItem = ({ id, urlImage, objectName, latestMessage }) => (
-    <Pressable onPress={() => moveToScreenChat(id, objectName)}>
+  useEffect(() => {
+    getRoomsFromFirestore();
+  }, []);
+    
+
+
+  const OneBoxItem = ({ id, urlImage, name, description }) => (
+    <Pressable onPress={() => moveToScreenChat(id, name)}>
       <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>
         <View>
           <Image source={{uri:urlImage}} style={{width:50,height:50,borderRadius:50/2}} />
         </View>
         <View style={{flex:1, marginHorizontal:8, marginVertical:5}}>
-          <Text style={{fontWeight:'bold'}}>{objectName}</Text>
-          <Text>{latestMessage}</Text>
+          <Text style={{fontWeight:'bold'}}>{name}</Text>
+          <Text>{description}</Text>
         </View>
       </View>
       <View
@@ -38,10 +54,10 @@ export default function HomepageScreen({ navigation }) {
   );
 
   const functionCallOneItem = ({ item }) => (
-    <OneBoxItem id={item.id} urlImage={item.urlImage} objectName={item.objectName} latestMessage={item.latestMessage} />
+    <OneBoxItem id={item.id} urlImage={item.urlImage} name={item.name} description={item.description} />
   );
 
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, socket } = useContext(AuthContext);
 
   useEffect(() => {
     if(!currentUser){
@@ -61,9 +77,10 @@ export default function HomepageScreen({ navigation }) {
       });
   };
 
-  function moveToScreenChat(id, objectName){
+  function moveToScreenChat(id, name){
+    socket.emit("join_room", name);
     setTimeout(() => {
-      navigation.navigate('ChatScreen', {id: id, objectName: objectName});
+      navigation.navigate('ChatScreen', {id: id, name: name});
     }, 0);
   }
 
@@ -90,7 +107,7 @@ export default function HomepageScreen({ navigation }) {
 
 
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', overflow:'hidden'}}>
     <Toast position='bottom' bottomOffset={20} />
 
 
@@ -115,10 +132,10 @@ export default function HomepageScreen({ navigation }) {
         </View>
       </View>
       {/* Box2 */}
-      <View style={{flex:20, width:'100%', overflow: 'visible'}}>
+      <View style={{flex:20, width:'100%', overflow: 'scroll'}}>
         <SafeAreaView>
           <FlatList
-            data={DATALIST}
+            data={listRoom}
             renderItem={functionCallOneItem}
             keyExtractor={item => item.id}
           />
@@ -135,10 +152,6 @@ export default function HomepageScreen({ navigation }) {
 
 
 
-
-    <View style={css.chatSimple}>
-        <IconIonicons.Button name='chatbubble-ellipses-sharp' size={48} color='#e8873c' onPress={moveToScreenChat} />
-    </View>
     </View>
   )
 };
@@ -164,9 +177,4 @@ const css = StyleSheet.create({
   hideActionPopupMenu: {
     display: 'none',
   },
-  chatSimple: {
-    position: 'absolute',
-    bottom: 60,
-    right: 10
-  }
 });
