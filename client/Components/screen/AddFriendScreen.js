@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { Text, StyleSheet, View, Button, Image, TextInput, TouchableOpacity } from 'react-native'
-import { Colors } from 'react-native/Libraries/NewAppScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 
@@ -17,7 +16,7 @@ export default class HomeScreen extends Component {
                     <Text style={styles.txtThemBan}>
                         Thêm bạn bằng số điện thoại
                     </Text>
-                    <Image source={require('../../assets/logo.jpg')}
+                    <Image source={{uri:'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg'}}
                         style={styles.imgXanh}
                     />
 

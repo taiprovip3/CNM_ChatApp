@@ -7,6 +7,7 @@ import HomepageScreen from './Components/screen/HomepageScreen';
 import TestScreen from './Components/screen/TestScreen';
 import ChatScreen from './Components/screen/ChatScreen';
 import CreateRoomScreen from './Components/screen/CreateRoomScreen';
+import AddFriendScreen from './Components/screen/AddFriendScreen';
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -39,6 +40,11 @@ function MyStack() {
       <Stack.Screen
         name="CreateRoomScreen"
         component={CreateRoomScreen}
+        options={{ title: 'CreateRoomScreen', headerStyle:{backgroundColor: '#f4511e'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
+      />
+      <Stack.Screen
+        name="AddFriendScreen"
+        component={AddFriendScreen}
         options={{ title: 'CreateRoomScreen', headerStyle:{backgroundColor: '#f4511e'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
       />
     </Stack.Navigator>
