@@ -85,14 +85,11 @@ export default function HomepageScreen({ navigation }) {
   }
 
   const changeToCreateGroupScreen = () => {
-    alert('asd')
+    navigation.navigate('CreateRoomScreen');
   }
 
   const changeToAddFriendScreen = () => {
-    Toast.show({
-      type: 'success',
-      text1: 'ChangeTo AddFriendScreen',
-    });
+    navigation.navigate('AddFriendScreen');
   }
 
 

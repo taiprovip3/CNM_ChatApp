@@ -18,7 +18,7 @@ export default function AuthScreen({ navigation }){
             });
             setTimeout(() => {
                 navigation.navigate('HomepageScreen');
-            }, 500);
+            }, 2000);
         }
     }, [currentUser]);
     
