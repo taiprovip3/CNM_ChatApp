@@ -1,185 +1,160 @@
-import React, { Component } from 'react'
-import { Text, StyleSheet, View, Button, Image, TouchableOpacity, TextInput } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
-import { AntDesign } from '@expo/vector-icons';
+import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { Box, Center, Checkbox, HStack, Icon, Image, Input, NativeBaseProvider, ScrollView, Pressable, FlatList } from 'native-base';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default class ProductScreen extends Component {
-    render() {
-        const { navigation } = this.props
-        return (
-            <View style={styles.sc2}>
-                <View style={styles.taoNhom}>
-                    <AntDesign name="camerao" size={50} color="black" />
+export default function CreateRoomScreen() {
+  //0. Khởi tạo biến
+  const [isShowDanhBa, setIsShowDanhBa] = useState(true);
+  const DATA = [{_id:'1', fullName: 'Rowan Africa', photoURL:'https://wallpaperaccess.com/full/317501.jpg'}, {_id:'2', fullName: 'Rowan Africa 2', photoURL:'https://wallpaperaccess.com/full/317501.jpg'}, {_id:'3', fullName: 'Rowan Africa 3', photoURL:'https://wallpaperaccess.com/full/317501.jpg'}, {_id:'4', fullName: 'Rowan Africa 4', photoURL:'https://wallpaperaccess.com/full/317501.jpg'}, {_id:'5', fullName: 'Rowan Africa 5', photoURL:'https://wallpaperaccess.com/full/317501.jpg'}];
 
-                    <TextInput
-                        /* truyen gia tri cua task vao cho nut + */
-
-                        placeholder='Đặt tên nhóm'
-                        style={styles.inputAddGroup} />
-                </View>
-
-
-                <View style={styles.timTen}>
-                    <AntDesign name="search1" size={50} color="black" />
-
-                    <TextInput
-                        /* truyen gia tri cua task vao cho nut + */
-
-                        placeholder='Tìm tên hoặc số điện thoại'
-                        style={styles.inputTimTen} />
-                </View>
-
-                <View style={styles.doubleDanhBa}>
-                    <TouchableOpacity
-                    >
-                        <View style={styles.GanDay}>
-                            <Text style={styles.txtGanDay}>Gần Đây</Text>
-                        </View>
-
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                    >
-                        <View style={styles.DanhBa}>
-                            <Text style={styles.txtDanhBa}>Danh Bạ</Text>
-                        </View>
-
-                    </TouchableOpacity>
-                </View>
+  //1. Tạo hàm cần thiết
+//   const renderItem = ({ item }) => (
+//     <Box p='3'>
+//         <HStack style={{alignItems:'center'}} space='2'>
+//             <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+//             <Image source={{ uri: item.photoURL }} alt="photoURL" size="xs" borderRadius={100} />
+//             <Text>{item.fullName}</Text>
+//         </HStack>
+//     </Box>
+//   );
 
 
 
-                <View style={styles.sc2Bottom}>
-
-                    <Text style={styles.txtChonMau}>
-                        Chưa có danh sách bạn bè!
-                    </Text>
-
-
-                    <Button
-                        title='Go back'
-                        onPress={() => { navigation.goBack() }}
-                        style={styles.btngoback}
-
-                    >
-
-                    </Button>
-
-                    
-                </View>
-
-            </View>
-
-        )
-    }
+  //1. Render html
+  return (
+    <NativeBaseProvider>
+      <Text>CreateRoomScreen</Text>
+      {/* div 1 */}
+      <Box>
+        <HStack borderWidth="0.4" borderColor="grey" borderRadius="2xl">
+            <Box borderRadius="lg">
+                <MaterialCommunityIcons name="camera-control" size={44} color="black" />
+            </Box>
+            <Box style={{flex:1}}>
+                <Input 
+                    variant='unstyled'
+                    placeholder='Đặt tên nhóm mới'
+                    size='lg'
+                />
+            </Box>
+        </HStack>
+      </Box>
+      {/* div 2 */}
+      <Box>
+        <Input
+            InputLeftElement={
+                <Icon as={<Ionicons name="search-circle-outline" color="black" />} size='lg' color='black' />
+            }
+            placeholder='Tìm tên hoặc số điện thoại'
+        />
+      </Box>
+      {/* div 3 */}
+      <Box borderWidth="0.4" borderColor="grey" borderRadius="2xl" p='5'>
+        <HStack>
+            <Pressable style={ isShowDanhBa ? css.fadeEffect : css.boldEffect } onPress={() => setIsShowDanhBa(!isShowDanhBa)}>
+                <Center _text={{ color: isShowDanhBa ? "coolGray.500" : "coolGray.800" }}>
+                BẠN BÈ
+                </Center>
+            </Pressable>
+            <Pressable style={ isShowDanhBa ? css.boldEffect : css.fadeEffect } onPress={() => setIsShowDanhBa(!isShowDanhBa)}>
+                <Center _text={{ color: isShowDanhBa ? "coolGray.800" : "coolGray.500" }}>
+                DANH BẠ
+                </Center>
+            </Pressable>
+        </HStack>
+      </Box>
+      {/* div 4 - Flatlist borderWidth='0.5' borderColor='grey' borderRadius='lg' */}
+      <ScrollView style={{flex:1}}>
+        {/* <FlatList
+            data={DATA}
+            renderItem={renderItem}
+            keyExtractor={(item) => item._id}
+        /> */}
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+        <Box p='3'>
+            <HStack style={{alignItems:'center'}} space='2'>
+                <Checkbox value="info" colorScheme="info" rounded='2xl' accessibilityLabel="This is a dummy checkbox" />
+                <Image source={{ uri: "https://wallpaperaccess.com/full/317501.jpg" }} alt="photoURL" size="xs" borderRadius={100} />
+                <Text>Robin Hood</Text>
+            </HStack>
+        </Box>
+      </ScrollView>
+    </NativeBaseProvider>
+  );
 }
 
-const styles = StyleSheet.create({
-    sc2: {
-        flex: 1,
+const css = StyleSheet.create({
+    fadeEffect: {
+        borderBottomWidth: 1,
+        borderBottomColor: 'lightgrey',
+        width: '50%'
     },
-
-    taoNhom: {
-        paddingHorizontal: 30,
-        width: '100%',
-        flexDirection: 'row',
-        marginBottom: 13,
-        justifyContent: 'space-between',
-        alignItems: 'center',
-
-
-    },
-
-
-
-    inputAddGroup: {
-        height: 44,
-        width: '80%',
-        backgroundColor: '#fff',
-        borderRadius: 15,
-        borderWidth: 1,
-        borderColor: '#d8bfd8',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        marginTop: 15,
-        marginRight: 20,
-
-    },
-
-    timTen: {
-        paddingHorizontal: 30,
-        width: '100%',
-        flexDirection: 'row',
-        marginBottom: 13,
-        justifyContent: 'space-between',
-        alignItems: 'center',
-
-
-    },
-
-
-
-    inputTimTen: {
-        height: 44,
-        width: '80%',
-        backgroundColor: '#fff',
-        borderRadius: 15,
-        borderWidth: 1,
-        borderColor: '#d8bfd8',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        marginTop: 15,
-        marginRight: 20,
-
-    },
-
-    doubleDanhBa: {
-        paddingHorizontal: 30,
-        width: '100%',
-        flexDirection: 'row',
-        marginBottom: 13,
-        justifyContent: 'space-between',
-        alignItems: 'center',
-
-
-    },
-
-    GanDay: {
-        width: '250%',
-        height: 45,
-        backgroundColor: '#7fffd4',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 30,
-        marginTop: 15,
-        marginLeft: 5,
-
-    },
-
-    DanhBa: {
-        width: '100%',
-        height: 45,
-        backgroundColor: '#7fffd4',
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 30,
-        marginTop: 15,
-        marginRight: 180,
-
-    },
-
-
-
-    sc2Bottom: {
-        flex: 1,
-    },
-
-    txtChonMau: {
-        fontSize: 20,
-        fontWeight: '500',
-        marginTop: 70,
-    },
-    btngoback:{
-        marginTop: 70,
+    boldEffect: {
+        borderBottomWidth: 1,
+        borderBottomColor: 'black',
+        width: '50%'
     }
-})
+});

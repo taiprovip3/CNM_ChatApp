@@ -10,13 +10,26 @@ import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import Toast from 'react-native-toast-message';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 import { collection, getDocs, orderBy, query, onSnapshot } from 'firebase/firestore';
-import { async } from '@firebase/util';
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
+import { HamburgerIcon, Menu, NativeBaseProvider } from 'native-base';
 
 export default function HomepageScreen({ navigation }) {
 
+  //0. Khởi tạo tất cả biến
   const [isShowActionPopupMenu, setIsShowActionPopupMenu] = useState(false);
   const [listRoom, setListRoom] = useState([]);
+  const { currentUser, socket } = useContext(AuthContext);
 
+  //1. Nếu bug chưa login sẽ đẩy về login
+  useEffect(() => {
+    if(!currentUser){
+      setTimeout(() => {
+          navigation.navigate('AuthScreen');
+      }, 0);
+    }
+  }, [currentUser]);
+
+  //2. Load danh sách 'Rooms'
   const getRoomsFromFirestore = async () => {
     const DATALIST_ROOM = [];
     const querySnapshot = await getDocs(collection(database, "Rooms"));
@@ -25,13 +38,11 @@ export default function HomepageScreen({ navigation }) {
     });
     setListRoom([...DATALIST_ROOM]);
   }
-
   useEffect(() => {
     getRoomsFromFirestore();
   }, []);
-    
-
-
+  
+  //3. Tạo hàm cần thiết trong khi sử dụng
   const OneBoxItem = ({ id, urlImage, name, description }) => (
     <Pressable onPress={() => moveToScreenChat(id, name)}>
       <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>
@@ -52,21 +63,9 @@ export default function HomepageScreen({ navigation }) {
       />
     </Pressable>
   );
-
   const functionCallOneItem = ({ item }) => (
     <OneBoxItem id={item.id} urlImage={item.urlImage} name={item.name} description={item.description} />
   );
-
-  const { currentUser, socket } = useContext(AuthContext);
-
-  useEffect(() => {
-    if(!currentUser){
-      setTimeout(() => {
-          navigation.navigate('AuthScreen');
-      }, 0);
-    }
-  }, [currentUser]);
-
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
@@ -76,20 +75,21 @@ export default function HomepageScreen({ navigation }) {
         console.log('Error logout: ', err);
       });
   };
-
   function moveToScreenChat(id, name){
     socket.emit("join_room", name);
     setTimeout(() => {
       navigation.navigate('ChatScreen', {id: id, name: name});
     }, 0);
   }
-
   const changeToCreateGroupScreen = () => {
-    navigation.navigate('CreateRoomScreen');
+    setTimeout(() => {
+      navigation.navigate('CreateRoomScreen');
+    }, 100);
   }
-
   const changeToAddFriendScreen = () => {
-    navigation.navigate('AddFriendScreen');
+    setTimeout(() => {
+      navigation.navigate('AddFriendScreen');
+    }, 100);
   }
 
 
@@ -102,54 +102,80 @@ export default function HomepageScreen({ navigation }) {
 
 
 
-
+  //4. Render html
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', overflow:'hidden'}}>
-    <Toast position='bottom' bottomOffset={20} />
+    <NativeBaseProvider>
+      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', overflow:'hidden'}}>
+      <Toast position='bottom' bottomOffset={20} />
 
 
 
-      {/* Box1 */}
-      <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:10, width:'100%', flex:1, zIndex:1}}>
-        <IconEvillcon name='search' size={24} color='white' style={{marginHorizontal:8, marginVertical:5}}/>
-        <TextInput placeholder='Tìm kiếm' style={{flex:1}} placeholderTextColor='white' />
-        <IconAntDesign name='qrcode' size={24} color='white' style={{marginHorizontal:8, marginVertical:5}} />
-        <View>
-          <IconAntDesign name='plus' size={24} color='white' style={{marginHorizontal:8, marginVertical:5}} onPress={() => setIsShowActionPopupMenu(!isShowActionPopupMenu)} />
-          <View style={isShowActionPopupMenu ? css.showActionPopupMenu : css.hideActionPopupMenu}>
-            <View style={{flexDirection: 'row'}}>
+        {/* Box1 */}
+        <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:10, width:'100%', flex:1, zIndex:1}}>
+          <IconEvillcon name='search' size={24} color='white' style={{paddingTop:4}} />
+          <TextInput placeholder='Tìm kiếm' style={{flex:1,marginHorizontal:8}} placeholderTextColor='white' />
+          <IconAntDesign name='qrcode' size={24} color='white' style={{marginHorizontal:8}} />
+          <Menu shadow={2} trigger={triggerProps => {
+        return <Pressable accessibilityLabel="More options menu" {...triggerProps}>
+                <AntDesign name="plus" size={24} color="white" />
+              </Pressable>;
+          }}>
+            <Menu.Item onPress={changeToCreateGroupScreen}>
               <IconAntDesign name='addusergroup' size={24} />
-              <Text onPress={changeToCreateGroupScreen}>Tạo nhóm</Text>
+              <Text>Tạo nhóm</Text>
+            </Menu.Item>
+            <Menu.Item onPress={changeToAddFriendScreen}>
+              <IconAntDesign name='adduser' size={24} />
+              <Text>Thêm bạn</Text>
+            </Menu.Item>
+          </Menu>
+          {/* <View>
+            <IconAntDesign name='plus' size={24} color='white' style={{marginHorizontal:8}} onPress={() => setIsShowActionPopupMenu(!isShowActionPopupMenu)} />
+            <View style={isShowActionPopupMenu ? css.showActionPopupMenu : css.hideActionPopupMenu}>
+              <View style={{flexDirection: 'row'}}>
+                <IconAntDesign name='addusergroup' size={24} />
+                <Text onPress={changeToCreateGroupScreen}>Tạo nhóm</Text>
+              </View>
+              <View style={{flexDirection: 'row'}}>
+                <IconAntDesign name='adduser' size={24} onPress={changeToAddFriendScreen} />
+                <Text onPress={changeToAddFriendScreen}>Thêm bạn</Text>
+              </View>
             </View>
-            <View style={{flexDirection: 'row'}}>
-              <IconAntDesign name='adduser' size={24} onPress={changeToAddFriendScreen} />
-              <Text onPress={changeToAddFriendScreen}>Thêm bạn</Text>
-            </View>
+          </View> */}
+        </View>
+        {/* Box2 */}
+        <View style={{flex:20, width:'100%', overflow: 'scroll'}}>
+          <SafeAreaView>
+            <FlatList
+              data={listRoom}
+              renderItem={functionCallOneItem}
+              keyExtractor={item => item.id}
+            />
+          </SafeAreaView>
+        </View>
+        {/* Box3 */}
+        <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:15, width:'100%', flex:1}}>
+          <View style={{flex:1, alignItems:'center'}}>
+            <IconAntDesign name='message1' size={27} color='black' style={{backgroundColor:'white', borderRadius:100/2}} />
+          </View>
+          <View style={{flex:1, alignItems:'center'}}>
+            <IconAntDesign name='contacts' size={27} color='white' onPress={() => alert('Change to Contacts')} />
+          </View>
+          <View style={{flex:1, alignItems:'center'}}>
+            <IconAntDesign name='appstore-o' size={27} color='white' />
+          </View>
+          <View style={{flex:1, alignItems:'center'}}>
+            <IconFeather name='clock' size={27} color='white' />
+          </View>
+          <View style={{flex:1, alignItems:'center'}}>
+            <IconFontAwesome name='user-circle' size={27} color='white' onPress={handleSignOut} />
           </View>
         </View>
-      </View>
-      {/* Box2 */}
-      <View style={{flex:20, width:'100%', overflow: 'scroll'}}>
-        <SafeAreaView>
-          <FlatList
-            data={listRoom}
-            renderItem={functionCallOneItem}
-            keyExtractor={item => item.id}
-          />
-        </SafeAreaView>
-      </View>
-      {/* Box3 */}
-      <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:10, width:'100%', flex:1}}>
-        <IconAntDesign name='message1' size={24} color='white' style={{flex:1, textAlign:'center'}} />
-        <IconAntDesign name='contacts' size={24} color='white' style={{flex:1, textAlign:'center'}} />
-        <IconAntDesign name='appstore-o' size={24} color='white' style={{flex:1, textAlign:'center'}} />
-        <IconFeather name='clock' size={24} color='white' style={{flex:1, textAlign:'center'}} />
-        <IconFontAwesome name='user-circle' size={24} color='white' style={{flex:1, textAlign:'center'}} onPress={handleSignOut} />
-      </View>
 
 
 
-    </View>
+      </View>
+    </NativeBaseProvider>
   )
 };
 

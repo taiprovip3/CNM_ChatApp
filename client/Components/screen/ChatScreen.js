@@ -69,11 +69,11 @@ export default function ChatScreen({ route, navigation }) {
     
 
   return (
-    <View style={{flex:1, alignItems:'center', overflow:'hidden'}}>
+    <View style={{flex:1, alignItems:'center'}}>
       <View>
         <Text>Room: {name}</Text>
       </View>
-      <View style={{flex:1,backgroundColor:'lightgrey', width:'100%', overflow:'scroll'}}>
+      <View style={{flex:1,backgroundColor:'lightgrey', width:'100%'}}>
         {messageList.map((msgObject) => {
             return <View key={email === msgObject.email ? Math.random() : Math.random()}>
                       <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>

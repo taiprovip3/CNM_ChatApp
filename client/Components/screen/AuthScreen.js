@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View, TextInput, Button, Pressable, SafeAreaView } from 'react-native';
+import { NativeBaseProvider, Input, Icon, Box } from 'native-base';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -6,9 +7,19 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'fire
 import Toast from 'react-native-toast-message';
 import { AuthContext } from '../provider/AuthProvider';
 import { auth } from '../../firebase';
+import { FontAwesome5, Ionicons, MaterialCommunityIcons, MaterialIcons, Zocial } from '@expo/vector-icons';
 
 export default function AuthScreen({ navigation }){
+    //0. Khởi tạo biến
+    const [isShowPassword, setIsShowPassword] = useState(false);
+    const [regEmail, setRegEmail] = useState('');
+    const [regPassword, setRegPassword] = useState('');
+    const [logEmail, setLogEmail] = useState('');
+    const [logPassword, setLogPassword] = useState('');
+    const [isShowRegisterComponent, setIsShowRegisterComponent] = useState(false);
     const { currentUser } = useContext(AuthContext);
+
+    //1. Sử lý ngoại lệ
     useEffect(() => {
         if(currentUser){
             Toast.show({
@@ -22,23 +33,7 @@ export default function AuthScreen({ navigation }){
         }
     }, [currentUser]);
     
-    const [regEmail, setRegEmail] = useState('');
-    const [regPassword, setRegPassword] = useState('');
-    const [logEmail, setLogEmail] = useState('');
-    const [logPassword, setLogPassword] = useState('');
-    const [isShowRegisterComponent, setIsShowRegisterComponent] = useState(false);
-    const setValueLogEmail = useCallback((e) => {
-        setLogEmail(e.target.value);
-    }, []);
-    const setValueLogPassword = useCallback((e) => {
-        setLogPassword(e.target.value);
-    }, []);
-    const setValueRegEmail = useCallback((e) => {
-        setRegEmail(e.target.value);
-    }, []);
-    const setValueRegPassword = useCallback((e) => {
-        setRegPassword(e.target.value);
-    }, []);
+    //2. Tạo hàm cần thiết sử dụng
     const handleRegisterAccountByUsernameAndPassword = () => {
         if(regEmail == ''){
             Toast.show({
@@ -124,87 +119,143 @@ export default function AuthScreen({ navigation }){
 
 
 
+    //3. Render html
     return(
-    <>
-    <Toast position='bottom' bottomOffset={20} />
-    <View style={{flex: 1, justifyContent: 'center', alignContent: 'center'}}>
-        {/* View Header */}
-        <View style={{alignItems: 'center'}}>
-            <Text style={{fontSize: 40, color: 'blue', fontWeight: 'bold'}}>Ultimate Chat</Text>
-            <Text>Vui lòng đăng nhập tài khoản UChat</Text>
-            <Text>để kết nối ứng dụng UChat</Text>
-            <Text>&emsp;</Text>
-        </View>
-        
-
-
-
-        {/* Login component */}
-        <View style={ isShowRegisterComponent ? css.logHide : css.logShow }>
-            <View style={{flexDirection: 'row',padding: 10}}>
-                <Text
-                    style={{borderColor:'black',borderBottomWidth:1,borderRightWidth:1, width: '50%', textAlign: 'center', fontWeight: 'bold'}}>
-                    ĐĂNG NHẬP
-                </Text>
-                <Pressable style={{width: '50%'}} onPress={() => setIsShowRegisterComponent(!isShowRegisterComponent)}>
-                    <Text style={{borderColor:'grey',borderBottomWidth:1, textAlign: 'center'}}>
-                        ĐĂNG KÝ
-                    </Text>
-                </Pressable>
-            </View>
-            <View style={{padding: 30}}>
-                <TextInput placeholder='Địa chỉ email' style={{borderColor:'black',borderBottomWidth:1,}} onChangeText={(e) => setLogEmail(e)} value={logEmail}/>
-                <TextInput placeholder='Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,}} onChangeText={(e) => setLogPassword(e)} value={logPassword} />
+    <NativeBaseProvider>
+        <Toast position='bottom' bottomOffset={20} />
+        <View style={{flex: 1, justifyContent: 'center', alignContent: 'center'}}>
+            {/* View Header */}
+            <View style={{alignItems: 'center'}}>
+                <Text style={{fontSize: 40, color: 'blue', fontWeight: 'bold'}}>Ultimate Chat</Text>
+                <Text>Vui lòng đăng nhập tài khoản UChat</Text>
+                <Text>để kết nối ứng dụng UChat</Text>
                 <Text>&emsp;</Text>
-                <Button style={{marginTop: 20}} title="Đăng nhập với mật khẩu" onPress={handleLoginAccountByUsernameAndPassword}/>
-                <Text>&emsp;</Text>
-                <Text style={{textAlign: 'center', color: 'blue', textDecorationLine: 'underline'}}>Quên mật khẩu?</Text>
             </View>
-        </View>
-        {/* Register component */}
-        <View style={ isShowRegisterComponent ? css.regShow : css.regHide }>
-            <View style={{flexDirection: 'row',padding: 10}}>
-                <Pressable style={{width: '50%'}} onPress={() => setIsShowRegisterComponent(!isShowRegisterComponent)}>
-                    <Text style={{borderColor:'grey',borderBottomWidth:1, textAlign: 'center'}}>
+            
+
+
+
+            {/* Login component */}
+            <View style={ isShowRegisterComponent ? css.logHide : css.logShow }>
+                <View style={{flexDirection: 'row',padding: 10}}>
+                    <Text
+                        style={{borderColor:'black',borderBottomWidth:1,borderRightWidth:1, width: '50%', textAlign: 'center', fontWeight: 'bold'}}>
                         ĐĂNG NHẬP
                     </Text>
-                </Pressable>
-                <Text style={{borderColor:'black',borderBottomWidth:1,borderLeftWidth:1, width: '50%', textAlign: 'center', fontWeight: 'bold'}}>
-                    ĐĂNG KÝ
-                </Text>
+                    <Pressable style={{width: '50%'}} onPress={() => setIsShowRegisterComponent(!isShowRegisterComponent)}>
+                        <Text style={{borderColor:'grey',borderBottomWidth:1, textAlign: 'center'}}>
+                            ĐĂNG KÝ
+                        </Text>
+                    </Pressable>
+                </View>
+                <View style={{padding: 30}}>
+                    <Input
+                        w={{ base: "100%", md: "25%" }} mb='1'
+                        InputLeftElement={
+                            <Icon as={<MaterialIcons name="person" />} size={5} ml="2" color="muted.400" />
+                        }
+                        placeholder="Địa chỉ Email"
+                        onChangeText={(e) => setLogEmail(e)}
+                        value={logEmail}
+                    />
+                    <Input
+                        w={{ base: "100%", md: "25%" }} mt='1'
+                        type={isShowPassword ? "text" : "password"}
+                        InputRightElement={
+                            <Pressable onPress={() => setIsShowPassword(!isShowPassword)}>
+                                <Icon as={<MaterialIcons name={isShowPassword ? "visibility" : "visibility-off"} />} size={5} mr="2" color="muted.400" />
+                            </Pressable>
+                        }
+                        placeholder="Mật khẩu"
+                        onChangeText={(e) => setLogPassword(e)}
+                        value={logPassword}
+                    />
+                    <Text>&emsp;</Text>
+                    <Button style={{marginTop: 20}} title="Đăng nhập với mật khẩu" onPress={handleLoginAccountByUsernameAndPassword}/>
+                    <Text>&emsp;</Text>
+                    <Text style={{textAlign: 'center', color: 'blue', textDecorationLine: 'underline'}}>Quên mật khẩu?</Text>
+                </View>
             </View>
-            <View style={{padding: 30, textAlign: 'center'}}>
-                <TextInput placeholder='Họ và tên' style={{borderColor:'black',borderBottomWidth:1,}} />
-                <TextInput placeholder='Địa chỉ email' style={{borderColor:'black',borderBottomWidth:1,}} onChangeText={(e) => setRegEmail(e)} value={regEmail} />
-                <TextInput placeholder='Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,}} onChangeText={(e) => setRegPassword(e)} value={regPassword} />
-                <TextInput placeholder='Xác nhận Mật khẩu' style={{borderColor:'black',borderBottomWidth:1,}}/>
+            {/* Register component */}
+            <View style={ isShowRegisterComponent ? css.regShow : css.regHide }>
+                <View style={{flexDirection: 'row',padding: 7}}>
+                    <Pressable style={{width: '50%'}} onPress={() => setIsShowRegisterComponent(!isShowRegisterComponent)}>
+                        <Text style={{borderColor:'grey',borderBottomWidth:1, textAlign: 'center'}}>
+                            ĐĂNG NHẬP
+                        </Text>
+                    </Pressable>
+                    <Text style={{borderColor:'black',borderBottomWidth:1,borderLeftWidth:1, width: '50%', textAlign: 'center', fontWeight: 'bold'}}>
+                        ĐĂNG KÝ
+                    </Text>
+                </View>
+                <Box mx='5'>
+                    <Input
+                        w={{ base: '100%', md: '25%' }}
+                        InputLeftElement={
+                            <Icon as={<FontAwesome5 name="user-alt" size={24} />} color="blue.900" />
+                        }
+                        size='md'
+                        variant='underlined'
+                        placeholder=' Họ và tên'
+                    />
+                    <Input
+                        w={{ base: '100%', md: '25%' }}
+                        InputLeftElement={
+                            <Icon as={<Zocial name="email" size={24} />} color="blue.900" />
+                        }
+                        size='md'
+                        variant='underlined'
+                        placeholder=' Địa chỉa email'
+                        onChangeText={(e) => setRegEmail(e)} value={regEmail}
+                    />
+                    <Input
+                        w={{ base: '100%', md: '25%' }}
+                        InputLeftElement={
+                            <Icon as={<Ionicons name="keypad-sharp" size={24} />} color="blue.900" />
+                        }
+                        type='password'
+                        size='md'
+                        variant='underlined'
+                        placeholder=' Mật khẩu'
+                        onChangeText={(e) => setRegPassword(e)} value={regPassword}
+                    />
+                    <Input
+                        w={{ base: '100%', md: '25%' }}
+                        InputLeftElement={
+                            <Icon as={<MaterialCommunityIcons name="folder-key" size={24} />} color="blue.900" />
+                        }
+                        type='password'
+                        size='md'
+                        variant='underlined'
+                        placeholder=' Xác nhận Mật khẩu'
+                    />
+                    <Text>&emsp;</Text>
+                    <Button style={{marginTop: 20}} title="Đăng ký tài khoản" onPress={handleRegisterAccountByUsernameAndPassword}/>
+                    <Text style={{margin: 5, textAlign: 'center'}}>Hoặc</Text>
+                    <IconFontAwesome.Button
+                        name="facebook"
+                        backgroundColor="#3b5998"
+                    >
+                        Đăng ký với tài khoản Facebook
+                    </IconFontAwesome.Button>
+                </Box>
+            </View>
+
+
+
+
+
+
+
+
+            <View style={{alignItems: 'center'}}>
                 <Text>&emsp;</Text>
-                <Button style={{marginTop: 20}} title="Đăng ký tài khoản" onPress={handleRegisterAccountByUsernameAndPassword}/>
-                <Text style={{margin: 5, textAlign: 'center'}}>Hoặc</Text>
-                <IconFontAwesome.Button
-                    name="facebook"
-                    backgroundColor="#3b5998"
-                >
-                    Đăng ký với tài khoản Facebook
-                </IconFontAwesome.Button>
+                <Text>Tiếng Việt</Text>
+                <Text>Copyright <IconFontAwesome5 name='copyright' color="black" solid/> 2022 Nhóm 9 UltimtateChat Application</Text>
+                <Text>Terms of Use | Privacy Policy</Text>
             </View>
         </View>
-
-
-
-
-
-
-
-
-        <View style={{alignItems: 'center'}}>
-            <Text>&emsp;</Text>
-            <Text>Tiếng Việt</Text>
-            <Text>Copyright <IconFontAwesome5 name='copyright' color="black" solid/> 2022 Nhóm 9 UltimtateChat Application</Text>
-            <Text>Terms of Use | Privacy Policy</Text>
-        </View>
-    </View>
-    </>
+    </NativeBaseProvider>
     )
 };
 
