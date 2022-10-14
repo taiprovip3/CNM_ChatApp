@@ -1,8 +1,9 @@
-import { View, Text } from 'react-native';
+import { Text } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { auth } from '../../firebase';
+import { auth, database } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { io } from 'socket.io-client';
+import { doc, getDoc } from 'firebase/firestore';
 
 
 export const AuthContext = React.createContext();
@@ -13,9 +14,21 @@ export default function AuthProvider({ children }) {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-    setSocket(io.connect("http://localhost:4000"));
+    // setSocket(io.connect("http://localhost:4000"));
     onAuthStateChanged(auth, (user) => {
-        setCurrentUser(user);
+        if(user != null){ //Nếu đăng nhập
+          const { uid } = user;
+          const UsersDocRef = doc(database, "Users", uid);
+          getDoc(UsersDocRef)
+          .then(docSnap => {
+            setCurrentUser(docSnap.data());
+          })
+          .catch(error => {
+            console.log('(x) In AuthProvider error: ', error);
+          });
+        } else{ //Nếu đăng xuất
+          setCurrentUser(user);
+        }
         setLoading(false);
     });
     }, []);

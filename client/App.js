@@ -28,11 +28,6 @@ function MyStack() {
         options={{ title: 'Trang chủ', headerStyle:{backgroundColor: '#1f67db'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
       />
       <Stack.Screen
-        name="TestScreen"
-        component={TestScreen}
-        options={{ title: 'TestScreen', headerStyle:{backgroundColor: '#1f67db'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
-      />
-      <Stack.Screen
         name="ChatScreen"
         component={ChatScreen}
         options={{ title: 'ChatScreen', headerStyle:{backgroundColor: '#1f67db'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
@@ -46,6 +41,11 @@ function MyStack() {
         name="CreateRoomScreen"
         component={CreateRoomScreen}
         options={{ title: 'Tạo nhóm', headerStyle:{backgroundColor: '#1f67db'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
+      />
+      <Stack.Screen
+        name="TestScreen"
+        component={TestScreen}
+        options={{ title: 'TestScreen', headerStyle:{backgroundColor: '#1f67db'}, headerTintColor: '#fff', headerTitleStyle: {fontWeight: 'bold'} }}
       />
     </Stack.Navigator>
   );

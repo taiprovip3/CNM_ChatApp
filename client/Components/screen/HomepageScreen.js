@@ -66,6 +66,9 @@ export default function HomepageScreen({ navigation }) {
   const functionCallOneItem = ({ item }) => (
     <OneBoxItem id={item.id} urlImage={item.urlImage} name={item.name} description={item.description} />
   );
+  const insertSampleData = () => {
+    navigation.navigate('InsertData');
+  }
   const handleSignOut = () => {
     signOut(auth)
       .then(() => {
@@ -165,7 +168,7 @@ export default function HomepageScreen({ navigation }) {
             <IconAntDesign name='appstore-o' size={27} color='white' />
           </View>
           <View style={{flex:1, alignItems:'center'}}>
-            <IconFeather name='clock' size={27} color='white' />
+            <IconFeather name='clock' size={27} color='white' onPress={insertSampleData} />
           </View>
           <View style={{flex:1, alignItems:'center'}}>
             <IconFontAwesome name='user-circle' size={27} color='white' onPress={handleSignOut} />

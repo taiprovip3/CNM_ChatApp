@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native'
 import React, { useContext, useEffect } from 'react'
 import { AuthContext } from '../provider/AuthProvider';
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, getDoc } from "firebase/firestore";
 import { database } from '../../firebase';
 
 
@@ -21,7 +21,7 @@ export default function TestScreen() {
     addDoc(collection(database, 'User'), {
       id: "2",
       fullName: "Phan Tấn Tài",
-      photoURL: "http://google.com.vn"
+      photoURL: "myCloudy.jpg"
     });
     alert("Insert doc success");
   }

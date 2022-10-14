@@ -8,6 +8,8 @@ import Toast from 'react-native-toast-message';
 import { AuthContext } from '../provider/AuthProvider';
 import { auth } from '../../firebase';
 import { FontAwesome5, Ionicons, MaterialCommunityIcons, MaterialIcons, Zocial } from '@expo/vector-icons';
+import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
+import { database } from '../../firebase';
 
 export default function AuthScreen({ navigation }){
     //0. Khởi tạo biến
@@ -18,6 +20,8 @@ export default function AuthScreen({ navigation }){
     const [logPassword, setLogPassword] = useState('');
     const [isShowRegisterComponent, setIsShowRegisterComponent] = useState(false);
     const { currentUser } = useContext(AuthContext);
+    const [fullName, setFullName] = useState('');
+    const [rePassword, setRePassword] = useState('');
 
     //1. Sử lý ngoại lệ
     useEffect(() => {
@@ -29,7 +33,7 @@ export default function AuthScreen({ navigation }){
             });
             setTimeout(() => {
                 navigation.navigate('HomepageScreen');
-            }, 2000);
+            }, 500);
         }
     }, [currentUser]);
     
@@ -49,6 +53,20 @@ export default function AuthScreen({ navigation }){
             });
             return;
         }
+        if(rePassword !== regPassword){
+            Toast.show({
+                type: 'error',
+                text1: 'Nhập lại mật khẩu chưa trùng khớp',
+            });
+            return;
+        }
+        if(fullName.length <= 0){
+            Toast.show({
+                type: 'error',
+                text1: 'Vui lòng nhập họ và tên',
+            });
+            return;
+        }
         createUserWithEmailAndPassword(auth, regEmail, regPassword)
             .then( (userCredential) => {
                 const user = userCredential.user;
@@ -61,6 +79,18 @@ export default function AuthScreen({ navigation }){
                 setTimeout(() => {
                     navigation.navigate('HomepageScreen');
                 }, 2000);
+                const { email, uid } = user;
+                setDoc(doc(database, 'Users', uid), {
+                    id: uid,
+                    email: email,
+                    fullName: fullName,
+                    age: 0,
+                    joinDate: Timestamp.now(),
+                    address: 'undifined',
+                    roles: ['MEMBER'],
+                    sex: false,
+                    photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg'
+                });
             })
             .catch( (error) => {
                 const errorCode = error.code;
@@ -81,7 +111,7 @@ export default function AuthScreen({ navigation }){
                     });
                 }
             });
-    }
+    } //end hàm register
     const handleLoginAccountByUsernameAndPassword = () => {
         signInWithEmailAndPassword(auth, logEmail, logPassword)
             .then((userCredential) => {
@@ -197,6 +227,7 @@ export default function AuthScreen({ navigation }){
                         size='md'
                         variant='underlined'
                         placeholder=' Họ và tên'
+                        onChangeText={(e) => setFullName(e)} value={fullName}
                     />
                     <Input
                         w={{ base: '100%', md: '25%' }}
@@ -228,6 +259,7 @@ export default function AuthScreen({ navigation }){
                         size='md'
                         variant='underlined'
                         placeholder=' Xác nhận Mật khẩu'
+                        onChangeText={(e) => setRePassword(e)} value={rePassword}
                     />
                     <Text>&emsp;</Text>
                     <Button style={{marginTop: 20}} title="Đăng ký tài khoản" onPress={handleRegisterAccountByUsernameAndPassword}/>
