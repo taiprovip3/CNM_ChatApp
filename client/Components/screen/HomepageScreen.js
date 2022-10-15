@@ -1,5 +1,5 @@
-import { View, Text, Button, TextInput, Image, SafeAreaView, FlatList, Pressable, StyleSheet } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import { View, Text, Button, TextInput, Image, SafeAreaView, Pressable, StyleSheet } from 'react-native';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { AuthContext } from '../provider/AuthProvider';
 import { auth, database } from '../../firebase';
 import { signOut } from 'firebase/auth';
@@ -11,38 +11,33 @@ import Toast from 'react-native-toast-message';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
 import { collection, getDocs, orderBy, query, onSnapshot } from 'firebase/firestore';
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
-import { HamburgerIcon, Menu, NativeBaseProvider } from 'native-base';
+import { Menu, NativeBaseProvider, FlatList } from 'native-base';
+import FirebaseGetRooms from '../service/FirebaseGetRooms';
 
 export default function HomepageScreen({ navigation }) {
 
-  //0. Khởi tạo tất cả biến
-  const [isShowActionPopupMenu, setIsShowActionPopupMenu] = useState(false);
+  //0. Khởi tạo tất cả biến => khởi tạo biến + rerender => gọi useEffect
   const [listRoom, setListRoom] = useState([]);
   const { currentUser, socket } = useContext(AuthContext);
+  const { id } = currentUser;
 
-  //1. Nếu bug chưa login sẽ đẩy về login
-  useEffect(() => {
-    if(!currentUser){
-      setTimeout(() => {
-          navigation.navigate('AuthScreen');
-      }, 0);
-    }
-  }, [currentUser]);
+  const memoIdUser = useMemo(() => {
+    console.log('Memo HomepageScreen.js was called.');
+    return id;
+  },[id]);
+  const rooms = FirebaseGetRooms(memoIdUser);
 
-  //2. Load danh sách 'Rooms'
-  const getRoomsFromFirestore = async () => {
-    const DATALIST_ROOM = [];
-    const querySnapshot = await getDocs(collection(database, "Rooms"));
-    querySnapshot.forEach((doc) => {
-      DATALIST_ROOM.push(doc.data());
+  useEffect(() => { //biến room do trên firebase thay đổi => chạy service => gắn lại docRooms trên FB zo rooms => dẫn đến biến rooms thay đổi => chạy useEffect này => set lại data listRoom + rerender
+    rooms.sort(function(x, y){
+      return x.createAt - y.createAt;
     });
-    setListRoom([...DATALIST_ROOM]);
-  }
-  useEffect(() => {
-    getRoomsFromFirestore();
-  }, []);
+    console.log('rooms sorted:', rooms);
+    setListRoom(rooms);
+  }, [rooms]);
+
+
   
-  //3. Tạo hàm cần thiết trong khi sử dụng
+  //1. Tạo hàm cần thiết trong khi sử dụng
   const OneBoxItem = ({ id, urlImage, name, description }) => (
     <Pressable onPress={() => moveToScreenChat(id, name)}>
       <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>
@@ -69,15 +64,6 @@ export default function HomepageScreen({ navigation }) {
   const insertSampleData = () => {
     navigation.navigate('InsertData');
   }
-  const handleSignOut = () => {
-    signOut(auth)
-      .then(() => {
-        console.log('Logout success');
-      })
-      .catch((err) => {
-        console.log('Error logout: ', err);
-      });
-  };
   function moveToScreenChat(id, name){
     socket.emit("join_room", name);
     setTimeout(() => {
@@ -132,29 +118,14 @@ export default function HomepageScreen({ navigation }) {
               <Text>Thêm bạn</Text>
             </Menu.Item>
           </Menu>
-          {/* <View>
-            <IconAntDesign name='plus' size={24} color='white' style={{marginHorizontal:8}} onPress={() => setIsShowActionPopupMenu(!isShowActionPopupMenu)} />
-            <View style={isShowActionPopupMenu ? css.showActionPopupMenu : css.hideActionPopupMenu}>
-              <View style={{flexDirection: 'row'}}>
-                <IconAntDesign name='addusergroup' size={24} />
-                <Text onPress={changeToCreateGroupScreen}>Tạo nhóm</Text>
-              </View>
-              <View style={{flexDirection: 'row'}}>
-                <IconAntDesign name='adduser' size={24} onPress={changeToAddFriendScreen} />
-                <Text onPress={changeToAddFriendScreen}>Thêm bạn</Text>
-              </View>
-            </View>
-          </View> */}
         </View>
         {/* Box2 */}
-        <View style={{flex:20, width:'100%', overflow: 'scroll'}}>
-          <SafeAreaView>
+        <View style={{flex:20, width:'100%'}}>
             <FlatList
               data={listRoom}
               renderItem={functionCallOneItem}
               keyExtractor={item => item.id}
             />
-          </SafeAreaView>
         </View>
         {/* Box3 */}
         <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:15, width:'100%', flex:1}}>
@@ -171,7 +142,7 @@ export default function HomepageScreen({ navigation }) {
             <IconFeather name='clock' size={27} color='white' onPress={insertSampleData} />
           </View>
           <View style={{flex:1, alignItems:'center'}}>
-            <IconFontAwesome name='user-circle' size={27} color='white' onPress={handleSignOut} />
+            <IconFontAwesome name='user-circle' size={27} color='white' onPress={() => signOut(auth)} />
           </View>
         </View>
 
@@ -181,26 +152,3 @@ export default function HomepageScreen({ navigation }) {
     </NativeBaseProvider>
   )
 };
-
-const css = StyleSheet.create({
-  showPlusIcon: {
-    marginHorizontal:8,
-    marginVertical:5
-  },
-  hidePlusIcon: {
-    display: 'none',
-  },
-  showActionPopupMenu: {
-    backgroundColor:'white', 
-    padding:8, 
-    position:'absolute', 
-    top:25, 
-    right:22, 
-    width:200,
-    borderWidth: 0.5,
-    borderColor: 'rgba(0,0,0,0.2)'
-  },
-  hideActionPopupMenu: {
-    display: 'none',
-  },
-});

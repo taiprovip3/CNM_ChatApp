@@ -14,7 +14,7 @@ export default function AuthProvider({ children }) {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-    // setSocket(io.connect("http://localhost:4000"));
+    setSocket(io.connect("http://localhost:4000"));
     onAuthStateChanged(auth, (user) => {
         if(user != null){ //Nếu đăng nhập
           const { uid } = user;

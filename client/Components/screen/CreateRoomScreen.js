@@ -8,12 +8,11 @@ import { database } from '../../firebase';
 import Toast from 'react-native-toast-message';
 import ListFriendSelected from '../component/ListFriendSelected';
 import FlatListOfYourFriend from '../component/FlatListOfYourFriend';
-import { async } from '@firebase/util';
-import { v4 } from 'uuid';
 
-export default function CreateRoomScreen() {
+export default function CreateRoomScreen({ navigation }) {
   //0. Khởi tạo biến
   const { currentUser } = useContext(AuthContext);
+  const { id, photoURL } = currentUser;
   const [roomName, setRoomName] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [listOfYourFriend, setListOfYourFriend] = useState(null);
@@ -22,9 +21,11 @@ export default function CreateRoomScreen() {
   const [isShowDanhBa, setIsShowDanhBa] = useState(false);
   const DATALISTUSERFRIENDS = [];
   const DATA = [{id:'1', fullName: 'Rowan Africa 1', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'2', fullName: 'Rowan Africa 2', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'3', fullName: 'Rowan Africa 3', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'4', fullName: 'Rowan Africa 4', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'5', fullName: 'Rowan Africa 5', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'6', fullName: 'Rowan Africa 6', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'7', fullName: 'Rowan Africa 7', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'8', fullName: 'Rowan Africa 8', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'9', fullName: 'Rowan Africa 9', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'10', fullName: 'Rowan Africa 10', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'11', fullName: 'Rowan Africa 11', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'12', fullName: 'Rowan Africa 12', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'13', fullName: 'Rowan Africa 13', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}];
+  //Giải thuật toán:
+  //B1: App chạy khai báo biến trước -> render -> function javascript
+  //  + div4 & div5 -> có dùng listOfYourFriend nhưng == null nền sử dụng isNullListFriend để kiểm
+  //  + Render xong gọi useEffect1
   useEffect(() => {
-
-      const { id } = currentUser;
       getDoc(doc(database, 'UserFriends', id))
         .then(documentSnapShot => {
           const DATALISTIDFRIEND = documentSnapShot.data().listFriend;
@@ -33,16 +34,17 @@ export default function CreateRoomScreen() {
             .then(docSnap => {
               const objectData = {...docSnap.data(),isSelected:false};
               DATALISTUSERFRIENDS.push(objectData);
-              console.log('hehe1', objectData);
             });
           });
+        });
+        setTimeout(() => {
+          console.log('----DataListOfUserFriend awaited 2s----\n', DATALISTUSERFRIENDS);
           setListOfYourFriend(DATALISTUSERFRIENDS);
-        })
-    console.log('hehe2');
-    setListOfYourFriend(DATA);
-    setIsNullListFriend(false);
-    console.log('Effect >> Loaded data from firestore');
-  },[]);
+          setIsNullListFriend(false);
+          console.log('Effect >> Loaded data from firestore');
+        }, 2000);
+    },[]);
+
 
   console.log('App Rendered');
 
@@ -77,27 +79,41 @@ export default function CreateRoomScreen() {
       });
       return;
     }
-    Toast.show({
-      type: 'success',
-      text1: 'Tạo nhóm thành công',
-      text2: 'Vui lòng chờ chút'
-    });
-    const { id } = currentUser;
-    const DATA_LIST_FRIEND_SELECTED = [];
-    listOfYourFriend.map(obj => {
-      if(obj.isSelected){
-        DATA_LIST_FRIEND_SELECTED.push(obj);
-      }
-    });
-    setDoc(doc(database, 'Rooms', v4()), {
-      id: v4(),
-      createAt: Timestamp.now(),
-      name: roomName,
-      owner: id,
-      type: 'group',
-      urlImage: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
-      listMember: DATA_LIST_FRIEND_SELECTED
-    });
+    if(listCheckboxSelected <= 2){
+      Toast.show({
+        type: 'error',
+        text1: 'Chưa đủ người',
+        text2: 'Nhóm chat ít nhất 3 người'
+      });
+      return;
+    }
+      const DATA_LIST_FRIEND_SELECTED = [];
+      listOfYourFriend.map(obj => {
+        if(obj.isSelected){
+          DATA_LIST_FRIEND_SELECTED.push(obj.id);
+        }
+      });
+      DATA_LIST_FRIEND_SELECTED.push(currentUser.id);
+      let r = (Math.random() + 1).toString(36).substring(2);
+      console.log("random", r);
+      setDoc(doc(database, 'Rooms', r), {
+        id: r,
+        createAt: Timestamp.now(),
+        name: roomName,
+        owner: id,
+        type: 'group',
+        urlImage: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
+        listMember: DATA_LIST_FRIEND_SELECTED,
+        description: 'Bắt đầu chia sẽ các câu chuyện thú vị cùng nhau'
+      });
+      Toast.show({
+        type: 'success',
+        text1: 'Tạo nhóm thành công',
+        text2: 'Vui lòng chờ chút'
+      });
+      setTimeout(() => {
+        navigation.navigate('HomepageScreen');
+      }, 1500);
   };
   const updateListOfYourFriend = useCallback((idUser, isChecked) => {
       setListOfYourFriend(
@@ -122,8 +138,8 @@ export default function CreateRoomScreen() {
             <Toast />  
           </View>
           {/* div 1 */}
-          <Box mt='0.5' borderWidth="0.4" borderColor="grey" borderRadius="2xl">
-            <HStack>
+          <Box mt='0.5' borderWidth="0.4" borderColor="grey" borderRadius="lg">
+            <HStack p='3'>
                   <MaterialIcons name="camera-enhance" size={32} color="#0b97e3" />
                   <Input 
                       w='100%'
@@ -162,12 +178,15 @@ export default function CreateRoomScreen() {
             </HStack>
           </Box>
           {/* div 4 */}
-          <FlatListOfYourFriend listOfYourFriend={listOfYourFriend} functionUpdateListOfYourFriend={updateListOfYourFriend} />
+          {
+            !isNullListFriend &&
+            <FlatListOfYourFriend listOfYourFriend={listOfYourFriend} functionUpdateListOfYourFriend={updateListOfYourFriend} />
+          }
           {/* div 5 */}
           <Box style={modalVisible ? css.showMyModal : css.hideMyModal}>
-            <Text style={{textAlign:'center'}}>Đã chọn: {listCheckboxSelected}</Text>
+            <Text style={{textAlign:'center'}}>Đã chọn: {listCheckboxSelected+1}</Text>
             <HStack space={3} style={{flexWrap:'wrap'}}>
-              {/* <Image source={{uri: 'https://wallpaperaccess.com/full/317501.jpg'}} alt="photoURL" size="xs" borderRadius={100} /> */}
+              <Image source={{ uri: photoURL }} alt="photoURL" size="xs" borderRadius={100} />
               {
                 !isNullListFriend
                 &&
