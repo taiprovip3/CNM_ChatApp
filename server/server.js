@@ -9,13 +9,13 @@ const io = socket(server);
 io.on("connection", (socket) => {
     console.log(`User Connected: ${socket.id}`);
 
-    socket.on("join_room", (room) => {
-        socket.join(room);
-        console.log(`User with ID: ${socket.id} joined room: ${room}`);
+    socket.on("join_room", (idRoom) => {
+        socket.join(idRoom);
+        console.log(`User with ID: ${socket.id} joined room: ${idRoom}`);
     });
 
-    socket.on("send_message", (data) => {
-        socket.to(data.room).emit("receive_message", data);
+    socket.on("send_message", (objectMessage, idRoom) => {
+        socket.to(idRoom).emit("receive_message", objectMessage);
     });
 
     io.on("disconnect", () => {

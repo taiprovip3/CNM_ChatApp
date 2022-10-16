@@ -79,7 +79,7 @@ export default function CreateRoomScreen({ navigation }) {
       });
       return;
     }
-    if(listCheckboxSelected <= 2){
+    if(listCheckboxSelected < 2){
       Toast.show({
         type: 'error',
         text1: 'Chưa đủ người',

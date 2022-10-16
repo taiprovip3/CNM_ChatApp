@@ -9,35 +9,49 @@ import IconFeather from 'react-native-vector-icons/Feather';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import Toast from 'react-native-toast-message';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
-import { collection, getDocs, orderBy, query, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, onSnapshot, Timestamp } from 'firebase/firestore';
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Menu, NativeBaseProvider, FlatList } from 'native-base';
 import FirebaseGetRooms from '../service/FirebaseGetRooms';
 
 export default function HomepageScreen({ navigation }) {
-
-  //0. Khởi tạo tất cả biến => khởi tạo biến + rerender => gọi useEffect
-  const [listRoom, setListRoom] = useState([]);
+//Khởi tạo biến
   const { currentUser, socket } = useContext(AuthContext);
-  const { id } = currentUser;
-
+  const objectCurrentUser = { id: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', address: 'Admin Adress', age:999, email: 'taito1doraemon@gmail.com', fullName: 'Phan Tấn Tài', joinDate: Timestamp.now(), photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1665818815/seo-off-page_imucfs.png', roles: ['MEMBER', 'ADMIN'], sex: false };
+  if(!currentUser || currentUser == null){
+    setTimeout(() => {
+      Toast.show({
+        type: 'info',
+        text1: 'Signing out...',
+        text2: 'See you again!'
+      });
+      navigation.navigate('AuthScreen');
+    }, 1500);
+  } else{
+    Object.assign(objectCurrentUser,currentUser);
+  }
+  const [listRoom, setListRoom] = useState([]);
+  const id = objectCurrentUser.id;
   const memoIdUser = useMemo(() => {
-    console.log('Memo HomepageScreen.js was called.');
     return id;
   },[id]);
   const rooms = FirebaseGetRooms(memoIdUser);
-
   useEffect(() => { //biến room do trên firebase thay đổi => chạy service => gắn lại docRooms trên FB zo rooms => dẫn đến biến rooms thay đổi => chạy useEffect này => set lại data listRoom + rerender
     rooms.sort(function(x, y){
       return x.createAt - y.createAt;
     });
-    console.log('rooms sorted:', rooms);
     setListRoom(rooms);
   }, [rooms]);
-
-
-  
-  //1. Tạo hàm cần thiết trong khi sử dụng
+  useEffect(() => {
+    if(currentUser){
+      Toast.show({
+        type: 'info',
+        text1: 'Cookie Activated',
+        text2: 'Vẫn sẽ lưu vết cho lần đăng nhập sau!'
+      });
+    }
+}, [currentUser]);
+//Khởi tạo hàm cần thiết
   const OneBoxItem = ({ id, urlImage, name, description }) => (
     <Pressable onPress={() => moveToScreenChat(id, name)}>
       <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>
@@ -65,9 +79,9 @@ export default function HomepageScreen({ navigation }) {
     navigation.navigate('InsertData');
   }
   function moveToScreenChat(id, name){
-    socket.emit("join_room", name);
+    socket.emit("join_room", id);
     setTimeout(() => {
-      navigation.navigate('ChatScreen', {id: id, name: name});
+      navigation.navigate('ChatScreen', {idRoom: id, nameRoom: name});
     }, 0);
   }
   const changeToCreateGroupScreen = () => {
@@ -95,10 +109,10 @@ export default function HomepageScreen({ navigation }) {
   return (
     <NativeBaseProvider>
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', overflow:'hidden'}}>
-      <Toast position='bottom' bottomOffset={20} />
-
-
-
+        {/* Box0 */}
+        <View style={{zIndex:1}}>
+          <Toast />
+        </View>
         {/* Box1 */}
         <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:10, width:'100%', flex:1, zIndex:1}}>
           <IconEvillcon name='search' size={24} color='white' style={{paddingTop:4}} />
@@ -145,9 +159,6 @@ export default function HomepageScreen({ navigation }) {
             <IconFontAwesome name='user-circle' size={27} color='white' onPress={() => signOut(auth)} />
           </View>
         </View>
-
-
-
       </View>
     </NativeBaseProvider>
   )

@@ -34,12 +34,6 @@ export default function AuthScreen({ navigation }){
             setTimeout(() => {
                 navigation.navigate('HomepageScreen');
             }, 500);
-        } else{
-            Toast.show({
-                type: 'info',
-                text1: 'Phiên đăng nhập đã hết',
-                text2: 'Vui lòng đăng nhập lại.'
-            });
         }
     }, [currentUser]);
     
@@ -130,7 +124,7 @@ export default function AuthScreen({ navigation }){
                 });
                 setTimeout(() => {
                     navigation.navigate('HomepageScreen');
-                }, 0);
+                }, 1500);
             })
             .catch( (error) => {
                 const errorCode = error.code;
