@@ -17,16 +17,22 @@ import FirebaseGetRooms from '../service/FirebaseGetRooms';
 export default function HomepageScreen({ navigation }) {
 //Khởi tạo biến
   const { currentUser, socket } = useContext(AuthContext);
-  const objectCurrentUser = { id: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', address: 'Admin Adress', age:999, email: 'taito1doraemon@gmail.com', fullName: 'Phan Tấn Tài', joinDate: Timestamp.now(), photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1665818815/seo-off-page_imucfs.png', roles: ['MEMBER', 'ADMIN'], sex: false };
-  if(!currentUser || currentUser == null){
+  const objectCurrentUser = { id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', address: 'Admin Adress', age:999, email: 'taito1doraemon@gmail.com', fullName: 'Phan Tấn Tài', joinDate: Timestamp.now(), photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1665818815/seo-off-page_imucfs.png', roles: ['MEMBER', 'ADMIN'], sex: false };
+  if(!currentUser || currentUser == null || currentUser.length <= 0){
+    console.log('Phát hiện null currentUser -> stop render');
     setTimeout(() => {
-      Toast.show({
-        type: 'info',
-        text1: 'Signing out...',
-        text2: 'See you again!'
-      });
       navigation.navigate('AuthScreen');
-    }, 1500);
+    }, 2000);
+    return (
+    <>
+    <View style={{ flex:1,justifyContent:'center',alignItems:'center' }}>
+      <View style={{ padding:30, backgroundColor: '#2190ff', borderRadius:10 }}>
+        <Text style={{ color:'white', fontSize: 30, textAlign:'center' }}>Cookie and session are cleaning</Text>
+        <Text style={{ color:'white', fontSize: 30, textAlign:'center' }}>We'll redirecting you soon...2s</Text>
+      </View>
+    </View>
+    </>
+    );
   } else{
     Object.assign(objectCurrentUser,currentUser);
   }
@@ -42,25 +48,25 @@ export default function HomepageScreen({ navigation }) {
     });
     setListRoom(rooms);
   }, [rooms]);
-  useEffect(() => {
-    if(currentUser){
-      Toast.show({
-        type: 'info',
-        text1: 'Cookie Activated',
-        text2: 'Vẫn sẽ lưu vết cho lần đăng nhập sau!'
-      });
-    }
-}, [currentUser]);
+//   useEffect(() => {
+//     if(currentUser){
+//       Toast.show({
+//         type: 'info',
+//         text1: 'Cookie Activated',
+//         text2: 'Vẫn sẽ lưu vết cho lần đăng nhập sau!'
+//       });
+//     }
+// }, [currentUser]);
 //Khởi tạo hàm cần thiết
-  const OneBoxItem = ({ id, urlImage, name, description }) => (
-    <Pressable onPress={() => moveToScreenChat(id, name)}>
+  const OneBoxItem = ({ item }) => (
+    <Pressable onPress={() => moveToScreenChat(item)}>
       <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>
         <View>
-          <Image source={{uri:urlImage}} style={{width:50,height:50,borderRadius:50/2}} />
+          <Image source={{uri: item.urlImage}} style={{width:50,height:50,borderRadius:50/2}} />
         </View>
         <View style={{flex:1, marginHorizontal:8, marginVertical:5}}>
-          <Text style={{fontWeight:'bold'}}>{name}</Text>
-          <Text>{description}</Text>
+          <Text style={{fontWeight:'bold'}}>{item.name}</Text>
+          <Text>{item.description}</Text>
         </View>
       </View>
       <View
@@ -73,15 +79,12 @@ export default function HomepageScreen({ navigation }) {
     </Pressable>
   );
   const functionCallOneItem = ({ item }) => (
-    <OneBoxItem id={item.id} urlImage={item.urlImage} name={item.name} description={item.description} />
+    <OneBoxItem item={item} />
   );
-  const insertSampleData = () => {
-    navigation.navigate('InsertData');
-  }
-  function moveToScreenChat(id, name){
-    socket.emit("join_room", id);
+  function moveToScreenChat(item){
+    socket.emit("join_room", item.id);
     setTimeout(() => {
-      navigation.navigate('ChatScreen', {idRoom: id, nameRoom: name});
+      navigation.navigate('ChatScreen', {roomObj: item});
     }, 0);
   }
   const changeToCreateGroupScreen = () => {
@@ -153,7 +156,7 @@ export default function HomepageScreen({ navigation }) {
             <IconAntDesign name='appstore-o' size={27} color='white' />
           </View>
           <View style={{flex:1, alignItems:'center'}}>
-            <IconFeather name='clock' size={27} color='white' onPress={insertSampleData} />
+            <IconFeather name='clock' size={27} color='white' onPress={() => alert('Change to nhật ký')} />
           </View>
           <View style={{flex:1, alignItems:'center'}}>
             <IconFontAwesome name='user-circle' size={27} color='white' onPress={() => signOut(auth)} />

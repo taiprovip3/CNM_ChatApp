@@ -17,7 +17,6 @@ const FirebaseGetRooms = (owner) => {
         const q = query(RoomsCollectionRef, where("listMember", "array-contains", owner));
         const unsubcribe = onSnapshot(q, (querySnapShot) => {
             const documents = querySnapShot.docs.map( (doc) => ({...doc.data()}) );
-            console.log('FirebaseGetRooms.js was called.');
             setRooms(documents);
         });
         return unsubcribe;

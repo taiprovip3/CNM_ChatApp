@@ -16,7 +16,6 @@ const FirebaseGetRoomMessages = (idRoom) => {
         const getData = async() => {
             const RoomMessagesDocRef = doc(database, "RoomMessages", idRoom);
             const RoomMessagesSnap = await getDoc(RoomMessagesDocRef);
-            console.log('Document Data', RoomMessagesSnap.data());
             const DATA = RoomMessagesSnap.data().listObjectMessage;
             setRoomMessages(DATA);
         }

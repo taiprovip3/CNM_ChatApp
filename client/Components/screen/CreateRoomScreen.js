@@ -10,7 +10,7 @@ import ListFriendSelected from '../component/ListFriendSelected';
 import FlatListOfYourFriend from '../component/FlatListOfYourFriend';
 
 export default function CreateRoomScreen({ navigation }) {
-  //0. Khởi tạo biến
+//0. Khởi tạo biến
   const { currentUser } = useContext(AuthContext);
   const { id, photoURL } = currentUser;
   const [roomName, setRoomName] = useState('');
@@ -20,7 +20,6 @@ export default function CreateRoomScreen({ navigation }) {
   const [listCheckboxSelected,setListCheckboxSelected] = useState(0);
   const [isShowDanhBa, setIsShowDanhBa] = useState(false);
   const DATALISTUSERFRIENDS = [];
-  const DATA = [{id:'1', fullName: 'Rowan Africa 1', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'2', fullName: 'Rowan Africa 2', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'3', fullName: 'Rowan Africa 3', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'4', fullName: 'Rowan Africa 4', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'5', fullName: 'Rowan Africa 5', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'6', fullName: 'Rowan Africa 6', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'7', fullName: 'Rowan Africa 7', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'8', fullName: 'Rowan Africa 8', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'9', fullName: 'Rowan Africa 9', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'10', fullName: 'Rowan Africa 10', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'11', fullName: 'Rowan Africa 11', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'12', fullName: 'Rowan Africa 12', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}, {id:'13', fullName: 'Rowan Africa 13', photoURL:'https://wallpaperaccess.com/full/317501.jpg', isSelected: false}];
   //Giải thuật toán:
   //B1: App chạy khai báo biến trước -> render -> function javascript
   //  + div4 & div5 -> có dùng listOfYourFriend nhưng == null nền sử dụng isNullListFriend để kiểm
@@ -69,7 +68,7 @@ export default function CreateRoomScreen({ navigation }) {
         }
   },[listOfYourFriend]);
 
-  //1. Tạo hàm cần thiết
+//1. Tạo hàm cần thiết
   const handleCreateRoom = () => {
     if(roomName == '') {
       Toast.show({
@@ -106,6 +105,10 @@ export default function CreateRoomScreen({ navigation }) {
         listMember: DATA_LIST_FRIEND_SELECTED,
         description: 'Bắt đầu chia sẽ các câu chuyện thú vị cùng nhau'
       });
+      setDoc(doc(database, 'RoomMessages', r), {
+        idRoom: r,
+        listObjectMessage: []
+      });
       Toast.show({
         type: 'success',
         text1: 'Tạo nhóm thành công',
@@ -113,7 +116,7 @@ export default function CreateRoomScreen({ navigation }) {
       });
       setTimeout(() => {
         navigation.navigate('HomepageScreen');
-      }, 1500);
+      }, 2000);
   };
   const updateListOfYourFriend = useCallback((idUser, isChecked) => {
       setListOfYourFriend(
@@ -129,7 +132,7 @@ export default function CreateRoomScreen({ navigation }) {
 
 
 
-  //1. Render html
+//2. Render html
   return (
     <NativeBaseProvider>
       <View style={{flex:1, overflow: 'hidden'}}>

@@ -12,18 +12,18 @@ import { collection, addDoc, Timestamp, doc, setDoc } from "firebase/firestore";
 import { database } from '../../firebase';
 
 export default function AuthScreen({ navigation }){
-    //0. Khởi tạo biến
+//0. Khởi tạo biến
+    const { currentUser } = useContext(AuthContext);
     const [isShowPassword, setIsShowPassword] = useState(false);
     const [regEmail, setRegEmail] = useState('');
     const [regPassword, setRegPassword] = useState('');
     const [logEmail, setLogEmail] = useState('');
     const [logPassword, setLogPassword] = useState('');
     const [isShowRegisterComponent, setIsShowRegisterComponent] = useState(false);
-    const { currentUser } = useContext(AuthContext);
     const [fullName, setFullName] = useState('');
     const [rePassword, setRePassword] = useState('');
 
-    //1. Sử lý ngoại lệ
+//1. Sử lý ngoại lệ
     useEffect(() => {
         if(currentUser){
             Toast.show({
@@ -33,7 +33,7 @@ export default function AuthScreen({ navigation }){
             });
             setTimeout(() => {
                 navigation.navigate('HomepageScreen');
-            }, 500);
+            }, 1000);
         }
     }, [currentUser]);
     
