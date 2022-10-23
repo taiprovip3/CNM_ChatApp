@@ -9,13 +9,15 @@ import IconFeather from 'react-native-vector-icons/Feather';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
 import Toast from 'react-native-toast-message';
 import IconIonicons from 'react-native-vector-icons/Ionicons';
-import { collection, getDocs, orderBy, query, onSnapshot, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, orderBy, query, onSnapshot, Timestamp, where } from 'firebase/firestore';
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Menu, NativeBaseProvider, FlatList } from 'native-base';
 import FirebaseGetRooms from '../service/FirebaseGetRooms';
+import FirebaseGetFriends from '../service/FirebaseGetFriends';
 
 export default function HomepageScreen({ navigation }) {
 //Khởi tạo biến
+  // Sử lý khi bấm signout hàm chống rerender lỗi
   const { currentUser, socket } = useContext(AuthContext);
   const objectCurrentUser = { id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', address: 'Admin Adress', age:999, email: 'taito1doraemon@gmail.com', fullName: 'Phan Tấn Tài', joinDate: Timestamp.now(), photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1665818815/seo-off-page_imucfs.png', roles: ['MEMBER', 'ADMIN'], sex: false };
   if(!currentUser || currentUser == null || currentUser.length <= 0){
@@ -36,6 +38,7 @@ export default function HomepageScreen({ navigation }) {
   } else{
     Object.assign(objectCurrentUser,currentUser);
   }
+  // Lấy list rooms mà user có tham gia
   const [listRoom, setListRoom] = useState([]);
   const id = objectCurrentUser.id;
   const memoIdUser = useMemo(() => {
@@ -46,19 +49,22 @@ export default function HomepageScreen({ navigation }) {
     rooms.sort(function(x, y){
       return x.createAt - y.createAt;
     });
+    console.log('ROOM LIST :: ', rooms);
     setListRoom(rooms);
   }, [rooms]);
-//   useEffect(() => {
-//     if(currentUser){
-//       Toast.show({
-//         type: 'info',
-//         text1: 'Cookie Activated',
-//         text2: 'Vẫn sẽ lưu vết cho lần đăng nhập sau!'
-//       });
-//     }
-// }, [currentUser]);
+  // Lấy list friends mà user kết bạn
+  const [listFriend, setListFriend] = useState([]);
+  const friends = FirebaseGetFriends(memoIdUser);
+  useEffect(() => { //biến room do trên firebase thay đổi => chạy service => gắn lại docRooms trên FB zo rooms => dẫn đến biến rooms thay đổi => chạy useEffect này => set lại data listRoom + rerender
+    console.log('SetListFiend actived :: ', friends);
+    setTimeout(() => {
+      setListFriend(friends);
+      console.log('SetListFiend actived after 3000 :: ', friends);
+    }, 500);
+  }, [friends]);
+
 //Khởi tạo hàm cần thiết
-  const OneBoxItem = ({ item }) => (
+  const OneBoxRoom = ({ item }) => (
     <Pressable onPress={() => moveToScreenChat(item)}>
       <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>
         <View>
@@ -78,13 +84,46 @@ export default function HomepageScreen({ navigation }) {
       />
     </Pressable>
   );
-  const functionCallOneItem = ({ item }) => (
-    <OneBoxItem item={item} />
+  const OneBoxFriend= ({ item }) => (
+    <Pressable onPress={() => moveToScreenChatFriend(item)}>
+      <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>
+        <View>
+          <Image source={{uri: item.photoURL}} style={{width:50,height:50,borderRadius:50/2}} />
+        </View>
+        <View style={{flex:1, marginHorizontal:8, marginVertical:5}}>
+          <Text style={{fontWeight:'bold'}}>{item.fullName}</Text>
+          <Text>{item.joinDate}</Text>
+        </View>
+      </View>
+      <View
+        style={{
+          borderBottomColor: 'lightgrey',
+          borderBottomWidth: 0.4,
+          borderStyle: 'dotted'
+        }}
+      />
+    </Pressable>
+  );
+  const renderListRoom = ({ item }) => (
+    <OneBoxRoom item={item} />
+  );
+  const renderListFriend = ({ item }) => (
+    <OneBoxFriend item={item} />
   );
   function moveToScreenChat(item){
     socket.emit("join_room", item.id);
     setTimeout(() => {
-      navigation.navigate('ChatScreen', {roomObj: item});
+      navigation.navigate('ChatRoomScreen', {roomObj: item});
+    }, 0);
+  }
+  async function moveToScreenChatFriend(item){
+    const q = query(collection(database, "FriendMessages"), where("listeners", "in", [item.id + "__" + id, id + "__" + item.id]));
+    const querySnapShot = await getDocs(q);
+    const idRoom = querySnapShot.docs[0].data().idRoom;
+    console.log('ID ROOM :: ', idRoom);
+    socket.emit("join_room", idRoom);
+    setTimeout(() => {
+      navigation.navigate('ChatFriendScreen', {friendObj: item, idRoom: idRoom});
     }, 0);
   }
   const changeToCreateGroupScreen = () => {
@@ -140,8 +179,13 @@ export default function HomepageScreen({ navigation }) {
         <View style={{flex:20, width:'100%'}}>
             <FlatList
               data={listRoom}
-              renderItem={functionCallOneItem}
-              keyExtractor={item => item.id}
+              renderItem={renderListRoom}
+              keyExtractor={(item) => item.id}
+            />
+            <FlatList
+              data={listFriend}
+              renderItem={renderListFriend}
+              keyExtractor={(item) => item.id}
             />
         </View>
         {/* Box3 */}

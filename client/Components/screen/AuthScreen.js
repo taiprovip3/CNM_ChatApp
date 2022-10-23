@@ -33,7 +33,7 @@ export default function AuthScreen({ navigation }){
             });
             setTimeout(() => {
                 navigation.navigate('HomepageScreen');
-            }, 1000);
+            }, 200);
         }
     }, [currentUser]);
     
@@ -85,11 +85,12 @@ export default function AuthScreen({ navigation }){
                     email: email,
                     fullName: fullName,
                     age: 0,
-                    joinDate: Timestamp.now(),
+                    joinDate: Timestamp.now().toDate().toLocaleTimeString('en-US'),
                     address: 'undifined',
                     roles: ['MEMBER'],
                     sex: false,
-                    photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg'
+                    photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
+                    slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'
                 });
             })
             .catch( (error) => {
@@ -180,7 +181,7 @@ export default function AuthScreen({ navigation }){
                 </View>
                 <View style={{padding: 30}}>
                     <Input
-                        w={{ base: "100%", md: "25%" }} mb='1'
+                        w={{ base: "100%", md: "25%", lg: "100%" }} mb='1'
                         InputLeftElement={
                             <Icon as={<MaterialIcons name="person" />} size={5} ml="2" color="muted.400" />
                         }
@@ -189,7 +190,7 @@ export default function AuthScreen({ navigation }){
                         value={logEmail}
                     />
                     <Input
-                        w={{ base: "100%", md: "25%" }} mt='1'
+                        w={{ base: "100%", md: "25%", lg: "100%" }} mt='1'
                         type={isShowPassword ? "text" : "password"}
                         InputRightElement={
                             <Pressable onPress={() => setIsShowPassword(!isShowPassword)}>
@@ -220,7 +221,7 @@ export default function AuthScreen({ navigation }){
                 </View>
                 <Box mx='5'>
                     <Input
-                        w={{ base: '100%', md: '25%' }}
+                        w={{ base: '100%', md: '25%', lg: "100%" }}
                         InputLeftElement={
                             <Icon as={<FontAwesome5 name="user-alt" size={24} />} color="blue.900" />
                         }
@@ -230,7 +231,7 @@ export default function AuthScreen({ navigation }){
                         onChangeText={(e) => setFullName(e)} value={fullName}
                     />
                     <Input
-                        w={{ base: '100%', md: '25%' }}
+                        w={{ base: '100%', md: '25%', lg: "100%" }}
                         InputLeftElement={
                             <Icon as={<Zocial name="email" size={24} />} color="blue.900" />
                         }
@@ -240,7 +241,7 @@ export default function AuthScreen({ navigation }){
                         onChangeText={(e) => setRegEmail(e)} value={regEmail}
                     />
                     <Input
-                        w={{ base: '100%', md: '25%' }}
+                        w={{ base: '100%', md: '25%', lg: "100%" }}
                         InputLeftElement={
                             <Icon as={<Ionicons name="keypad-sharp" size={24} />} color="blue.900" />
                         }
@@ -251,7 +252,7 @@ export default function AuthScreen({ navigation }){
                         onChangeText={(e) => setRegPassword(e)} value={regPassword}
                     />
                     <Input
-                        w={{ base: '100%', md: '25%' }}
+                        w={{ base: '100%', md: '25%', lg: "100%" }}
                         InputLeftElement={
                             <Icon as={<MaterialCommunityIcons name="folder-key" size={24} />} color="blue.900" />
                         }
