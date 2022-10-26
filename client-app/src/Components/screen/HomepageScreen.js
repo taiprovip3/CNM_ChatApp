@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthContext } from '../provider/AuthProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
@@ -20,16 +20,35 @@ import introduction5 from '../assets/introduction5.png';
 import introduction6 from '../assets/introduction6.png';
 import introduction7 from '../assets/introduction7.png';
 import introduction8 from '../assets/introduction8.png';
-import moment from 'moment';
+import FirebaseGetRooms from '../service/FirebaseGetRooms';
+import ChatRoom from '../fragment/ChatRoom';
 
 export default function HomepageScreen() {
+// -> Khai báo biến
+  const [listRoom, setListRoom] = useState([]);
+  // const myInterval = useRef(null);
+  const [tempObject, setTempObject] = useState(null);
+
 // -> Các useEffect đặt lên đầu, useEffect chạy slider
 useEffect(() => {
-  carousel();
+  const sliderInterval = setInterval(() => {
+      var i;
+      for (i = 0; i < 8; i++) {
+        var obj1 = "#imgSliders" + i;
+        $(obj1).css("display", "none");
+      }
+      myIndex++;
+      if (myIndex > 8)
+        myIndex = 1;
+      var rs = myIndex-1;
+      var obj2 = "#imgSliders" + rs;
+      $(obj2).css("display", "block");
+      console.log('>> Slidering');
+  }, 2000);
 }, []);
 
 // -> Kiểm tra null user
-  const { currentUser } = useContext(AuthContext);
+  const { currentUser, socket } = useContext(AuthContext);
   if( !currentUser ) {
     console.log('Current user in Homepage', currentUser);
     toast.error("Session and cookie was not found.");
@@ -49,11 +68,27 @@ useEffect(() => {
       </div>
     </div>;
   }
-// -> Deconstructering currentUser
-  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan } = currentUser;
-// -> Chạy slider image
-  var myIndex = 0;
 
+// -> Deconstructering currentUser
+  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
+
+// -> Lấy list room from Firebase
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const memoIdUser = useMemo(() => {
+    return id;
+  },[id]);
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+const rooms = FirebaseGetRooms(memoIdUser);
+// eslint-disable-next-line react-hooks/rules-of-hooks
+useEffect(() => {
+  rooms.sort(function(x, y){
+    return x.createAt - y.createAt;
+  });
+  setListRoom(rooms);
+}, [rooms]);
+console.log('List rooms = ', listRoom);
+
+  var myIndex = 0;
   function carousel() {
     var i;
     for (i = 0; i < 8; i++) {
@@ -112,34 +147,58 @@ useEffect(() => {
             </ul>
           </div>
 
-          <div id='OneBoxItem' className='container d-flex align-items-center'>
-            <div className='col-lg-2'>
-              <img src="https://ava-grp-talk.zadn.vn/4/a/e/3/2/360/5bc9c637c7bf430ec5a5ad9139eb10fe.jpg" alt="photoURL" id='roundedAvatarInItem' className='rounded-circle' />
-            </div>
-            <div className='col-lg-10 p-1'>
-              <span className='fw-bold'>My First Room</span>
-              <br />
-              <small className='text-secondary'>Bạn: {fullName}</small>
-            </div>
+          <div id="FlatListOneBoxItem" className='border'>
+              <div id='needCursor' className='container d-flex align-items-center border-bottom'>
+                <div className='col-lg-2'>
+                  <img src="https://ava-grp-talk.zadn.vn/4/a/e/3/2/360/5bc9c637c7bf430ec5a5ad9139eb10fe.jpg" alt="photoURL" id='roundedAvatarInItem' className='rounded-circle' />
+                </div>
+                <div className='col-lg-10 p-1'>
+                  <span className='fw-bold'>My First Room</span>
+                  <br />
+                  <small className='text-secondary'>Bạn: {fullName}</small>
+                </div>
+              </div>
+              {
+                listRoom.map( obj => {
+                    return <div id='needCursor' className={tempObject !== obj ? 'container d-flex align-items-center border-bottom' : 'container d-flex align-items-center border border-primary'} key={obj.id} onClick={() => {
+                      socket.emit("join_room", obj.id);
+                      setTempObject(obj)
+                    }}>
+                    <div className='col-lg-2'>
+                      <img src={obj.urlImage} alt="photoURL" id='roundedAvatarInItem' className='rounded-circle' width='45' height='45' />
+                    </div>
+                    <div className='col-lg-10 p-1'>
+                      <span className='fw-bold'>{obj.name}</span>
+                      <br />
+                      <small className='text-secondary'>{obj.description}</small>
+                    </div>
+                  </div>
+                })
+              }
           </div>
 
       </div>
 
       <div id='divC' className='col-lg-8'>
-        <div id='contentDivC' className='text-center'>
-          <p>Chào mừng đến với <span className='fw-bold fs-5'>UChat PC</span></p>
-          <span>Khám phá những tiện ích hỗ trợ làm việc và trò chuyện cùng</span>
-          <br />
-          <span>người thân, bạn bè được tối ưu hoá cho máy tính của bạn</span>
-          <img src={introduction1} alt="introduction1" id='imgSliders0' className='mySliders' />
-          <img src={introduction2} alt="introduction2" id='imgSliders1' className='mySliders' />
-          <img src={introduction3} alt="introduction2" id='imgSliders2' className='mySliders' />
-          <img src={introduction4} alt="introduction4" id='imgSliders3' className='mySliders' />
-          <img src={introduction5} alt="introduction5" id='imgSliders4' className='mySliders' />
-          <img src={introduction6} alt="introduction6" id='imgSliders5' className='mySliders' />
-          <img src={introduction7} alt="introduction7" id='imgSliders6' className='mySliders' />
-          <img src={introduction8} alt="introduction8" id='imgSliders7' className='mySliders' />
-        </div>
+        {
+          !tempObject ?
+          <div id='contentDivC' className='text-center'>
+              <p>Chào mừng đến với <span className='fw-bold fs-5'>UChat PC</span></p>
+              <span>Khám phá những tiện ích hỗ trợ làm việc và trò chuyện cùng</span>
+              <br />
+              <span>người thân, bạn bè được tối ưu hoá cho máy tính của bạn</span>
+              <img src={introduction1} alt="introduction1" id='imgSliders0' className='mySliders' style={{display:'block'}} />
+              <img src={introduction2} alt="introduction2" id='imgSliders1' className='mySliders' />
+              <img src={introduction3} alt="introduction2" id='imgSliders2' className='mySliders' />
+              <img src={introduction4} alt="introduction4" id='imgSliders3' className='mySliders' />
+              <img src={introduction5} alt="introduction5" id='imgSliders4' className='mySliders' />
+              <img src={introduction6} alt="introduction6" id='imgSliders5' className='mySliders' />
+              <img src={introduction7} alt="introduction7" id='imgSliders6' className='mySliders' />
+              <img src={introduction8} alt="introduction8" id='imgSliders7' className='mySliders' />
+          </div>
+          :
+          <ChatRoom tempObject={tempObject} currentUser={currentUser} socket={socket} />
+        }
       </div>
 
 
@@ -344,56 +403,48 @@ useEffect(() => {
                           <img src={photoURL} alt="photoURL" width='70' height='70' className='rounded-circle border border-dark border-3' />
                           <br />
                           <span className='fw-bold'>{fullName}</span>
-                          <div className='d-flex'>
+                            <table className='table table-striped'>
+                                <thead>
+                                  <tr>
+                                    <th>Điện thoại</th>
+                                    <th>Email</th>
+                                    <th>Giới tính</th>
+                                    <th>Tuổi</th>
+                                  </tr>
+                                </thead>
+                              <tbody>
+                                <tr>
+                                  <td>{phoneNumber}</td>
+                                  <td>{email === null ? 'Chưa cập nhật' : email}</td>
+                                  <td>{sex ? 'Nữ' : 'Nam'}</td>
+                                  <td>{age} tuổi</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                            <table className='table table-striped'>
+                                <thead>
+                                  <tr>
+                                    <th>Địa chỉ</th>
+                                    <th>Lần đầu tham gia</th>
+                                  </tr>
+                                </thead>
+                              <tbody>
+                                <tr>
+                                  <td>{address}</td>
+                                  <td>{joinDate}</td>
+                                </tr>
+                              </tbody>
+                            </table>
                             <div className='border'>
-                                <div className="d-flex justify-content-between mt-3">
-                                    <p className='text-muted'>Điện thoại</p>
-                                    <p className=''>(+84) 0338188506</p>
-                                </div>
                                 <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Email</p>
-                                    <p className=''>{email}</p>
-                                </div>
-                                <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Giới tính</p>
-                                    <p className=''>{sex ? 'Nữ' : 'Nam'}</p>
-                                </div>
-                                <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Tuổi</p>
-                                    <p className=''>{age} tuổi</p>
-                                </div>
-                                <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Địa chỉ</p>
-                                    <p className=''>{address}</p>
+                                    <p className='text-muted'>Chăm ngôn</p>
+                                    <p className=''>{slogan}</p>
                                 </div>
                             </div>
-                            <div className='border'>
-                                <div className="d-flex justify-content-between mt-3">
-                                    <p className='text-muted'>Điện thoại</p>
-                                    <p className=''>(+84) 0338188506</p>
-                                </div>
-                                <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Email</p>
-                                    <p className=''>{email}</p>
-                                </div>
-                                <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Giới tính</p>
-                                    <p className=''>{sex ? 'Nữ' : 'Nam'}</p>
-                                </div>
-                                <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Tuổi</p>
-                                    <p className=''>{age} tuổi</p>
-                                </div>
-                                <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Địa chỉ</p>
-                                    <p className=''>{address}</p>
-                                </div>
-                            </div>
-                          </div>
                       </div>
                   </div>
                   <div className="modal-footer">
-                      <button className='btn btn-success w-100 text-dark'>Cập nhật lại thông tin <TbPencilOff /></button>
+                      <button className='btn btn-success w-100 text-white'>Cập nhật lại thông tin <TbPencilOff /></button>
                   </div>
 
               </div>

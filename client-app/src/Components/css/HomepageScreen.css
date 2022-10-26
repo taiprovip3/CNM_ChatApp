@@ -21,13 +21,14 @@
     height: 100vh;
 }
 #divB{
+    display: flex;
+    flex-flow: column;
 }
 #roundedAvatar{
     width: 100%;
 }
 #frameIconBackgroundSelected{
     background-color: #0e58ad;
-    box-shadow: rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px;
 }
 #settings{
     position: absolute;
@@ -65,4 +66,11 @@
 }
 #backgroundURL{
     width: 100%;
+}
+#FlatListOneBoxItem{
+    overflow: scroll;
+    flex-grow : 1
+}
+.mySliders{
+    display: none;
 }

@@ -31,7 +31,6 @@ export default function AuthenticationScreen() {
     const [rePassword, setRePassword] = useState('');
     const [regPhoneNumber, setRegPhoneNumber] = useState('+84');
     const [regOTP, setRegOTP] = useState('');
-    const [resultOfRegisterPhoneNumber, setResultOfRegisterPhoneNumber] = useState('');
     const { setUserContext } = useContext(AuthContext);
     const history = useNavigate();
 
@@ -61,6 +60,29 @@ const onRegOTPChange = useCallback((e) => {
   setRegOTP(e.target.value);
 }, []);
 
+const registerUserSuccessfully = useCallback((userObject) => {
+  toast.success('Đăng ký tài khoản thành công');
+  toast.success('Dịch chuyển bạn đến trang chủ... 👋');
+  const { email, uid } = userObject;
+  const user = {
+    id: uid,
+    email: email,
+    fullName: fullName === '' ? 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991) : fullName,
+    age: -1,
+    joinDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
+    address: 'undifined',
+    roles: ['MEMBER'],
+    sex: false,
+    photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
+    slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!',
+    phoneNumber: regPhoneNumber
+  }
+  setDoc(doc(database, 'Users', uid), user);
+  setUserContext(user);
+  setTimeout(() => {
+      history('/');
+  }, 2500);
+}, [fullName, history, setUserContext, regPhoneNumber]);
 const handleLoginAccountByUsernameAndPassword = useCallback((e) => {
     signInWithEmailAndPassword(auth, logEmail, logPassword)
         .then(async (userCredential) => {
@@ -70,7 +92,7 @@ const handleLoginAccountByUsernameAndPassword = useCallback((e) => {
             const UsersDocSnap = await getDoc(UsersDocRef);
             console.log(UsersDocSnap.data());
             setUserContext(UsersDocSnap.data());
-            toast.success('Login Successfully');
+            toast.success('Đăng nhập thành công');
             setTimeout(() => {
                 history('/');
             }, 1500);
@@ -106,26 +128,7 @@ const handleRegisterAccountByUsernameAndPassword = useCallback((e) => {
     }
     createUserWithEmailAndPassword(auth, regEmail, regPassword)
         .then( (userCredential) => {
-            const user = userCredential.user;
-            console.log('Just registerd an user: ', user);
-            toast.success('Đăng ký tài khoản thành công');
-            toast.success('Dịch chuyển bạn đến trang chủ... 👋');
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 2000);
-            const { email, uid } = user;
-            setDoc(doc(database, 'Users', uid), {
-                id: uid,
-                email: email,
-                fullName: fullName,
-                age: 0,
-                joinDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
-                address: 'undifined',
-                roles: ['MEMBER'],
-                sex: false,
-                photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
-                slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'
-            });
+            registerUserSuccessfully(userCredential.user);
         })
         .catch( (error) => {
             const errorCode = error.code;
@@ -138,40 +141,53 @@ const handleRegisterAccountByUsernameAndPassword = useCallback((e) => {
                 toast.error(errorMessage);
             }
         });
-}, [fullName, rePassword, regEmail, regPassword]);
-const generateRecaptcha = () => {
+}, [fullName, rePassword, regEmail, regPassword, registerUserSuccessfully]);
+const generateCaptcha = () => {
   window.recaptchaVerifier = new RecaptchaVerifier("recaptcha-container", {
     'size': 'invisible',
-    'callback': (response) => {
+    'callback': (response) => { //Recaptcha thành công
       console.log(response);
+      setIsShowConfirmOTP(true);
     }
   }, auth);
 }
-const handleRegisterAccountByPhoneNumberProvider = useCallback(async (e) => {
+const handleRegisterAccountByPhoneNumberProvider = useCallback(() => {
     if(regPhoneNumber === "" || regPhoneNumber === undefined || regPhoneNumber === "+84") {
       toast.error('Vui lòng nhập số điện thoại');
       return;
     }
-    // try {
-      setIsShowConfirmOTP(true);
-      generateRecaptcha();
-      let appVerifier = window.recaptchaVerifier;
-      signInWithPhoneNumber(auth, regPhoneNumber, appVerifier)
-        .then(confirmationResult => {
+      generateCaptcha();
+      let appVerified = window.recaptchaVerifier; //appVerified -> con window đã recaptcha thành công
+      signInWithPhoneNumber(auth, regPhoneNumber, appVerified)
+        .then(confirmationResult => { //Firebase trả về 1 xác thực có chứa OTP, hết hạn sau 30s
           window.confirmationResult = confirmationResult;
+          toast.info('Mã OTP đã gửi đến `'+ regPhoneNumber + '`');
+          toast.info('Hết hạn sau 30s...');
         })
         .catch(err => {
           console.log(err);
           toast.error(err.message);
+        })
+        .finally(() => {
+          window.recaptchaVerifier.clear();
         });
-      // const response = await signInWithPhoneNumber(auth, regPhoneNumber, recaptchaVerifier);
-      // setResultOfRegisterPhoneNumber(response);
-      // setIsShowConfirmOTP(true);
-    // } catch (error) {
-    //   console.log('New Exception : ', error);
-    //   toast.error(error.message);
-    // }
+
 }, [regPhoneNumber]);
+const handleRegisterByConfirmOTP = useCallback((e) => {
+  if(regOTP === "" || regOTP == null || regOTP === undefined || regOTP.length <6){
+    toast.error('Vui lòng kiểm tra lại field OTP');
+    return;
+  }
+  let token = window.confirmationResult;
+  token.confirm(regOTP)
+    .then((userCredential) => {
+      registerUserSuccessfully(userCredential.user);
+    })
+    .catch(err => {
+      console.log(err);
+      toast.error(err.message);
+    });
+}, [regOTP, registerUserSuccessfully]);
 
   return (
     <div className='container-fluid border' id='myOuter'>
@@ -269,7 +285,8 @@ const handleRegisterAccountByPhoneNumberProvider = useCallback(async (e) => {
                           <span className="input-group-text" id="addon-wrapping"><GoUnverified /></span>
                           <input type="text" className="form-control p-2" placeholder="Nhập mã OTP gồm 6 chữ số" aria-label="Nhập mã OTP gồm 6 chữ số" aria-describedby="addon-wrapping" onChange={onRegOTPChange} value={regOTP} />
                         </div>
-                        <button className='btn btn-primary w-75 my-3' onClick={handleRegisterAccountByPhoneNumberProvider}>Xác nhận OTP</button>
+                        <button className='btn btn-primary w-75 my-3' onClick={handleRegisterByConfirmOTP}>Xác nhận OTP</button>
+                        <br />
                         <button className='btn btn-link text-decoration-none' onClick={() => setIsShowConfirmOTP(!isShowConfirmOTP)}>Huỷ bỏ</button>
                     </div>
                   </div>
