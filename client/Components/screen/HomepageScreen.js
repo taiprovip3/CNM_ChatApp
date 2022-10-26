@@ -17,6 +17,7 @@ import FirebaseGetFriends from '../service/FirebaseGetFriends';
 
 export default function HomepageScreen({ navigation }) {
 //Khởi tạo biến
+
   // Sử lý khi bấm signout hàm chống rerender lỗi
   const { currentUser, socket } = useContext(AuthContext);
   const objectCurrentUser = { id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', address: 'Admin Adress', age:999, email: 'taito1doraemon@gmail.com', fullName: 'Phan Tấn Tài', joinDate: Timestamp.now(), photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1665818815/seo-off-page_imucfs.png', roles: ['MEMBER', 'ADMIN'], sex: false };
@@ -38,6 +39,7 @@ export default function HomepageScreen({ navigation }) {
   } else{
     Object.assign(objectCurrentUser,currentUser);
   }
+
   // Lấy list rooms mà user có tham gia
   const [listRoom, setListRoom] = useState([]);
   const id = objectCurrentUser.id;
@@ -52,6 +54,7 @@ export default function HomepageScreen({ navigation }) {
     console.log('ROOM LIST :: ', rooms);
     setListRoom(rooms);
   }, [rooms]);
+
   // Lấy list friends mà user kết bạn
   const [listFriend, setListFriend] = useState([]);
   const friends = FirebaseGetFriends(memoIdUser);
@@ -86,7 +89,7 @@ export default function HomepageScreen({ navigation }) {
   );
   const OneBoxFriend= ({ item }) => (
     <Pressable onPress={() => moveToScreenChatFriend(item)}>
-      <View style={{backgroundColor:'white', padding:20, flexDirection:'row'}}>
+      <View style={{backgroundColor:'#f0f5f1', padding:20, flexDirection:'row'}}>
         <View>
           <Image source={{uri: item.photoURL}} style={{width:50,height:50,borderRadius:50/2}} />
         </View>
@@ -137,17 +140,7 @@ export default function HomepageScreen({ navigation }) {
     }, 100);
   }
 
-
-
-
-
-
-
-
-
-
-
-  //4. Render html
+//Render html
   return (
     <NativeBaseProvider>
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', overflow:'hidden'}}>

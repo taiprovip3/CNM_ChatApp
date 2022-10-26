@@ -6,7 +6,7 @@ import { database } from '../../firebase';
 
 
 
-export default function TestScreen() {
+export default function DirectoryScreen() {
 
   const { currentUser } = useContext(AuthContext);
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function TestScreen() {
 
   return (
     <View>
-      <Text onPress={handleSomething}>TestScreen</Text>
+      <Text onPress={handleSomething}>DirectoryScreen</Text>
     </View>
   )
 };

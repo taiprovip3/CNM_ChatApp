@@ -1,0 +1,68 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+#none-log{
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#none-log-child{
+    background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px;
+}
+#outer{
+    height: 100vh;
+}
+#divA, #divB, #divC{
+    position: relative;
+    height: 100vh;
+}
+#divB{
+}
+#roundedAvatar{
+    width: 100%;
+}
+#frameIconBackgroundSelected{
+    background-color: #0e58ad;
+    box-shadow: rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px;
+}
+#settings{
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+#iconSetting{
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+#category{
+    justify-items: center;
+    border-bottom: 0.5px solid lightgrey;
+}
+#roundedAvatarInItem{
+    width: 100%;
+}
+.mySliders{
+    width: 100%;
+}
+#contentDivC{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    width: 100%;
+}
+#needCursor:hover, #iconSetting:hover{
+    cursor: pointer;
+    box-shadow: rgba(17, 17, 26, 0.1) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 8px 24px, rgba(17, 17, 26, 0.1) 0px 16px 48px;
+}
+#FlatListFriend, #FlatListStranger{
+    overflow: scroll;
+    max-height: 30vh;
+}
+#backgroundURL{
+    width: 100%;
+}

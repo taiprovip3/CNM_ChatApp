@@ -3,7 +3,7 @@ import { NativeBaseProvider, Input, Icon, Box } from 'native-base';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, FacebookAuthProvider, signInWithPopup } from 'firebase/auth';
 import Toast from 'react-native-toast-message';
 import { AuthContext } from '../provider/AuthProvider';
 import { auth } from '../../firebase';
@@ -22,6 +22,7 @@ export default function AuthScreen({ navigation }){
     const [isShowRegisterComponent, setIsShowRegisterComponent] = useState(false);
     const [fullName, setFullName] = useState('');
     const [rePassword, setRePassword] = useState('');
+    const fbProvider = new FacebookAuthProvider();
 
 //1. Sử lý ngoại lệ
     useEffect(() => {
@@ -37,7 +38,21 @@ export default function AuthScreen({ navigation }){
         }
     }, [currentUser]);
     
-    //2. Tạo hàm cần thiết sử dụng
+//2. Tạo hàm cần thiết sử dụng
+    const handleRegisterAccountByFacebookAuthProvider = () => {
+        signInWithPopup(auth, fbProvider)
+            .then((result) => {
+                const user = result.user;
+                Toast.show({
+                    type: 'success',
+                    text1: 'Login Successully by FacebookProvider',
+                    text2: 'We"ll redirect you to panel soon...'
+                });
+                setTimeout(() => {
+                    navigation.navigate('HomepageScreen');
+                }, 1500);
+            })
+    }
     const handleRegisterAccountByUsernameAndPassword = () => {
         if(regEmail == ''){
             Toast.show({
@@ -150,7 +165,7 @@ export default function AuthScreen({ navigation }){
 
 
 
-    //3. Render html
+//3. Render html
     return(
     <NativeBaseProvider>
         <Toast position='bottom' bottomOffset={20} />
@@ -268,6 +283,7 @@ export default function AuthScreen({ navigation }){
                     <IconFontAwesome.Button
                         name="facebook"
                         backgroundColor="#3b5998"
+                        onPress={handleRegisterAccountByFacebookAuthProvider}
                     >
                         Đăng ký với tài khoản Facebook
                     </IconFontAwesome.Button>
