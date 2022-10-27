@@ -190,12 +190,12 @@ const handleRegisterByConfirmOTP = useCallback((e) => {
 }, [regOTP, registerUserSuccessfully]);
 
   return (
-    <div className='container-fluid border' id='myOuter'>
+    <div id='myOuter'>
       <ToastContainer />
       <div id='recaptcha-container'></div>
 
-      <div className='text-center' id='centerContent'>
-        <img src="https://images.cooltext.com/5625406.png" width="244" height="74" alt="U CHAT" />
+      <div className='text-center'>
+        <img src="https://images.cooltext.com/5625945.png" width="100%" alt="ULTIMATE CHAT" />
         <br />
         <span className='fw-bold'>Đăng nhập tài khoản UChat</span>
         <br />
@@ -205,7 +205,7 @@ const handleRegisterByConfirmOTP = useCallback((e) => {
               {/* WhiteBox Component */}
               {
                 !isShowRegisterBox ?
-                <div className='border bg-white' id='loginBox'>
+                <div className='border bg-white rounded' id='loginBox'>
                 <div id="headerFrameBox" className='d-flex'>
                     <div className='flex-fill border fw-bold p-3 text-decoration-underline'>ĐĂNG NHẬP</div>
                     <div className='flex-fill border p-3' onClick={() => setIsShowRegisterBox(!isShowRegisterBox)}>ĐĂNG KÝ</div>
@@ -226,7 +226,7 @@ const handleRegisterByConfirmOTP = useCallback((e) => {
               </div>
               :
                 !isShowPhonenumberBox ?
-                <div className='border bg-white' id='registerBox'>
+                <div className='border bg-white rounded' id='registerBox'>
                   <div id="headerFrameBox" className='d-flex'>
                       <div className='flex-fill border p-3' onClick={() => setIsShowRegisterBox(!isShowRegisterBox)}>ĐĂNG NHẬP</div>
                       <div className='flex-fill border p-3 fw-bold text-decoration-underline'>ĐĂNG KÝ</div>
@@ -251,12 +251,12 @@ const handleRegisterByConfirmOTP = useCallback((e) => {
                       <button className='btn btn-primary w-75 my-3' onClick={handleRegisterAccountByUsernameAndPassword}>Đăng ký tài khoản</button>
                       <br />
                       <span>Hoặc</span>
-                      <button className='btn btn-link w-100' onClick={() => setIsShowPhonenumberBox(!isShowPhonenumberBox)}><BsPhoneVibrateFill />Đăng ký bằng `Số điện thoại` <BsTelephoneFill /></button>
+                      <button className='btn btn-link w-100 text-decoration-none' onClick={() => setIsShowPhonenumberBox(!isShowPhonenumberBox)}>Đăng ký bằng số điện thoại</button>
                   </div>
                 </div>
                 :
                 !isShowConfirmOTP ?
-                <div className='border bg-white' id='phoneNumberBox'>
+                <div className='border bg-white rounded' id='phoneNumberBox'>
                   <div id="headerFrameBox" className='d-flex'>
                       <div className='flex-fill border p-3' onClick={() => setIsShowRegisterBox(!isShowRegisterBox)}>ĐĂNG NHẬP</div>
                       <div className='flex-fill border p-3 fw-bold text-decoration-underline'>ĐĂNG KÝ</div>
@@ -275,7 +275,7 @@ const handleRegisterByConfirmOTP = useCallback((e) => {
                   </div>
                 </div>
                 :
-                  <div className='border bg-white' id='confirmOTPBox'>
+                  <div className='border bg-white rounded' id='confirmOTPBox'>
                     <div id="headerFrameBox" className='d-flex'>
                         <div className='flex-fill border p-3' onClick={() => setIsShowRegisterBox(!isShowRegisterBox)}>ĐĂNG NHẬP</div>
                         <div className='flex-fill border p-3 fw-bold text-decoration-underline'>ĐĂNG KÝ</div>

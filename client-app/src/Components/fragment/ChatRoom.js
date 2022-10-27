@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { HiUserGroup } from 'react-icons/hi';
 import { FiUserPlus } from 'react-icons/fi';
 import { RiEmotionLaughFill, RiImageAddFill } from 'react-icons/ri';
@@ -10,20 +10,25 @@ import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { database } from '../../firebase';
 import FirebaseGetRoomMessages from '../service/FirebaseGetRoomMessages';
 
-export default function ChatRoom({ tempObject, currentUser, socket }) {
+export default memo(function ChatRoom({ selectedRoom, currentUser, socket }) {
 //Khởi tạo biến
   const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
   const memoIdRoom = useMemo(() => {
-    return tempObject.id;
-  }, [tempObject.id]);
+    return selectedRoom.id;
+  }, [selectedRoom.id]);
   const roomMessages = FirebaseGetRoomMessages(memoIdRoom);
 
 //Khởi tạo useEffect
 useEffect(() => {
   setListObjectMessage(roomMessages);
 }, [roomMessages]);
+useEffect(() => {
+  socket.on("receive_message", (objectMessage) => {
+      setListObjectMessage((list) => [...list, objectMessage]);
+  });
+}, [socket]);
 
 //Khởi tạo hàm
   const onCurrentMessageChange = useCallback((e) => {
@@ -39,9 +44,9 @@ useEffect(() => {
               photoURL: photoURL,
               idMessage: (Math.random() + 1).toString(36).substring(2)
           }
-          socket.emit("send_message", objectMessage, tempObject.id);
+          socket.emit("send_message", objectMessage, selectedRoom.id);
           setListObjectMessage((list) => [...list, objectMessage]);
-          const RoomMessagesDocRef = doc(database, "RoomMessages", tempObject.id);
+          const RoomMessagesDocRef = doc(database, "RoomMessages", selectedRoom.id);
           await updateDoc(RoomMessagesDocRef, {
             listObjectMessage: arrayUnion(objectMessage)
           });
@@ -56,12 +61,12 @@ useEffect(() => {
 
         <div className='d-flex border align-items-center'>
             <div>
-                <img src={tempObject.urlImage} alt="urlImage" width='45' height='45' className='rounded-circle' />
+                <img src={selectedRoom.urlImage} alt="urlImage" width='45' height='45' className='rounded-circle' />
             </div>
             <div className='mx-1 flex-fill'>
-                <span className='fw-bold'>{tempObject.name}</span>
+                <span className='fw-bold'>{selectedRoom.name}</span>
                 <br />
-                <span className='small'><HiUserGroup /> {tempObject.listMember.length} thành viên</span>
+                <span className='small'><HiUserGroup /> {selectedRoom.listMember.length} thành viên</span>
             </div>
             <div>
                 <FiUserPlus className='fs-3' />
@@ -71,12 +76,12 @@ useEffect(() => {
         <div id='chatContent' className='flex-fill bg-secondary' style={{overflow: 'scroll'}}>
             
             <div className='border bg-white w-50 mt-5 mx-auto rounded p-3 text-center'>
-                <span className='fs-2 fw-bold'>{tempObject.name}</span>
+                <span className='fs-2 fw-bold'>{selectedRoom.name}</span>
                 <br />
-                <span>{tempObject.description}</span>
+                <span>{selectedRoom.description}</span>
                 <div className='d-flex flex-wrap justify-content-center'>
                 {
-                  tempObject.listMember.map((o) => {
+                  selectedRoom.listMember.map((o) => {
                     return <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='45' height='45' className='rounded-circle mx-1' key={Math.random()} />;
                   })
                 }
@@ -134,10 +139,10 @@ useEffect(() => {
                 }
               }
             } />
-            <MdSend className='text-primary fs-1' id='needCursor' />
+            <MdSend className='text-primary fs-1' id='needCursor' onClick={sendMessage} />
         </div>
 
 
     </div>
   );
-}
+})
