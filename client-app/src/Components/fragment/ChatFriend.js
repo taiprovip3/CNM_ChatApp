@@ -201,7 +201,12 @@ useEffect(() => {
                             <div className='bg-white rounded p-2 mx-1'>
                                 <span className='text-muted small'>{objectMessage.nameSender}</span>
                                 <br />
-                                <span className='fw-bold'>{objectMessage.msg}</span>
+                                {
+                                  objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
+                                  <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
+                                  :
+                                  <span className='text-white fw-bold'>{objectMessage.msg}</span>
+                                }
                                 <br />
                                 <span className='text-muted small'>{objectMessage.time}</span>
                             </div>

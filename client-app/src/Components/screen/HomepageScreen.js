@@ -1,17 +1,20 @@
-/* eslint-disable react-hooks/rules-of-hooks */
+/* eslint-disable array-callback-return */
+/* eslint-disable no-unused-vars */
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthContext } from '../provider/AuthProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import "../css/HomepageScreen.css";
-import { BsFillShieldLockFill, BsFillChatDotsFill, BsFillChatTextFill } from 'react-icons/bs'
+import { BsFillShieldLockFill, BsFillChatTextFill } from 'react-icons/bs'
 import { RiSettings5Line, RiFolderUserFill } from 'react-icons/ri';
-import { BiSearchAlt, BiCategory } from 'react-icons/bi';
+import { BiSearchAlt } from 'react-icons/bi';
 import { HiUserAdd, HiSearch, HiOutlineUserGroup } from 'react-icons/hi';
-import { MdCameraswitch } from 'react-icons/md';
+import { MdCameraswitch, MdOutlineEditOff } from 'react-icons/md';
 import { FcSmartphoneTablet } from 'react-icons/fc';
 import { FaUserFriends, FaSortAlphaDown } from 'react-icons/fa';
-import { TbPencilOff } from 'react-icons/tb';
+import { TbPencilOff, TbUpload } from 'react-icons/tb';
+import { TiCamera } from 'react-icons/ti';
+import { IoIosImages } from 'react-icons/io';
 import $ from 'jquery';
 import introduction1 from '../assets/introduction1.png';
 import introduction2 from '../assets/introduction2.png';
@@ -24,45 +27,143 @@ import introduction8 from '../assets/introduction8.png';
 import FirebaseGetRooms from '../service/FirebaseGetRooms';
 import FirebaseGetFriends from '../service/FirebaseGetFriends';
 import ChatRoom from '../fragment/ChatRoom';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
 import { database } from '../../firebase';
 import ChatFriend from '../fragment/ChatFriend';
 
 export default function HomepageScreen() {
-// -> Khai báo biến
+
+//Khai báo biến
+  var { currentUser, socket } = useContext(AuthContext);
+  var defaultObjectUser = {id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', email: 'ptt@gmail.com', address: 'undifined', age: 0, fullName: 'Phan Tấn Tài', joinDate: 'October 26th 2022, 3:38:30 pm', phoneNumber: '+84', photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg', role: ['MEMBER', 'ADMIN'], sex: false, slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'};
+  const myIndex = useRef(0);
+  const intervalRef = useRef(null);
   const [listRoom, setListRoom] = useState([]);
+  const [listFriend, setListFriend] = useState([]);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [idRoomOfSelectedFriendAndYou, setIdRoomOfSelectedFriendAndYou] = useState('');
+  const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
+  //*Deconstructering currentUser
+  if(currentUser == null){
+    currentUser = defaultObjectUser;
+    defaultObjectUser = null;
+  }
+  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
+  const memoIdUser = useMemo(() => {
+    return id;
+  },[id]);
 
-// -> Các useEffect đặt lên đầu, useEffect chạy slider
-var myIndex = 0;
+//Tạo hàm & useEffect[]
 useEffect(() => {
-  const sliderInterval = setInterval(() => {
-      var i;
-      for (i = 0; i < 8; i++) {
-        var obj1 = "#imgSliders" + i;
-        $(obj1).css("display", "none");
-      }
-      myIndex++;
-      if (myIndex > 8)
-        myIndex = 1;
-      var rs = myIndex-1;
-      var obj2 = "#imgSliders" + rs;
-      $(obj2).css("display", "block");
-      console.log('>> Slidering');
-  }, 2000);
-}, []);
 
-// -> Kiểm tra null user
-  const { currentUser, socket } = useContext(AuthContext);
-  if( !currentUser ) {
-    console.log('Current user in Homepage', currentUser);
-    setTimeout(() => {
-      window.location.href = '/auth';
+    const testFunction = async () => {
+        const querySnapShot = await getDocs(collection(database, "Users"));
+        querySnapShot.forEach(doc => {
+            console.log(doc.id);
+        });
+    }
+
+    testFunction();
+
+
+    // onSnapshot(doc(database, "UserFriends", id), (document) => {
+    //     const dataTemp = document.data().listFriend;
+    //     dataTemp.map((obj) => {
+
+    //         console.log('loser = ', obj.idFriend);
+
+    //     });
+    // });
+},[]);
+const intervalSlider = () => {
+    intervalRef.current = setInterval(() => {
+        var i;
+        for (i = 0; i < 8; i++) {
+            var obj1 = "#imgSliders" + i;
+            $(obj1).css("display", "none");
+        }
+        myIndex.current++;
+        if (myIndex.current > 8)
+            myIndex.current = 1;
+        var rs = myIndex.current-1;
+        var obj2 = "#imgSliders" + rs;
+        $(obj2).css("display", "block");
+    }, 2000);
+}
+const stopSlider = () => {
+    clearInterval(intervalRef.current);
+    intervalRef.current = null;
+}
+useEffect(() => {
+    intervalSlider();
+},[]);
+useEffect(() => {
+    if(selectedRoom !== null || selectedFriend !== null){
+        stopSlider();
+    }
+},[selectedRoom, selectedFriend]);
+    const rooms = FirebaseGetRooms(memoIdUser); //Lấy list room firebase
+    useEffect(() => {
+    rooms.sort(function(x, y){
+        return x.createAt - y.createAt;
+    });
+    setListRoom(rooms);
+    }, [rooms]);
+    const friends = FirebaseGetFriends(memoIdUser); //Lấy list friend firebase
+    useEffect(() => {
+        setTimeout(() => {
+        setListFriend(friends);
+        }, 500);
+    }, [friends]);
+    const onClickOneRoom = useCallback((obj) => {
+        socket.emit("join_room", obj.id);
+        setSelectedFriend(null);
+        setSelectedRoom(obj);
+    }, [socket]);
+    const onClickOneFriend = useCallback(async (obj) => {
+        const q = query(collection(database, "FriendMessages"), where("listeners", "in", [obj.id + "__" + id, id + "__" + obj.id]));
+        const querySnapShot = await getDocs(q);
+        const idRoom = querySnapShot.docs[0].data().idRoom;
+        socket.emit("join_room", idRoom);
+        setSelectedRoom(null);
+        setSelectedFriend(obj);
+        setIdRoomOfSelectedFriendAndYou(idRoom);
+    }, [id, socket]);
+    const handleSelectedImage = useCallback((e) => {
+        alert('Do something with img user upload đi');
+    },[]);
+    const renderYobDays = () => {
+        const arr = [];
+        for(var i=1;i<32;i++){
+            arr.push(i);
+        }
+        return arr;
+    };
+    const renderYobMonths = () => {
+        const arr = [];
+        for(var i=1;i<13;i++){
+            arr.push(i);
+        }
+        return arr;
+    };
+    const renderYobYears = () => {
+        const currentYear = new Date().getFullYear();
+        const arr = [];
+        for(var i=currentYear-119;i<=currentYear;i++){
+            arr.push(i);
+        }
+        return arr;
+    };
+
+//Kiểm tra null user
+    if( !defaultObjectUser ) {
+        console.log('Current user in Homepage', currentUser);
+        setTimeout(() => {
+            window.location.href = '/auth';
     }, 500);
     return <div id='none-log'>
-      <div className='border text-center p-3 rounded' id='none-log-child'>
+        <div className='border text-center p-3 rounded' id='none-log-child'>
         <ToastContainer />
         <BsFillShieldLockFill className='text-white display-6' />
         <br />
@@ -71,51 +172,11 @@ useEffect(() => {
         Chúng tôi sẽ chuyển bạn đi trong phút chốc
         <br />
         ...(sau 2s)...
-      </div>
+        </div>
     </div>;
-  }
+    }
 
-// -> Deconstructering currentUser
-  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
-  const memoIdUser = useMemo(() => {
-    return id;
-  },[id]);
-
-// -> Lấy list room from Firebase
-  const rooms = FirebaseGetRooms(memoIdUser);
-  useEffect(() => {
-    rooms.sort(function(x, y){
-      return x.createAt - y.createAt;
-    });
-    setListRoom(rooms);
-  }, [rooms]);
-console.log('List rooms = ', listRoom);
-// -> Lấy list friend from Firebase
-const [listFriend, setListFriend] = useState([]);
-const friends = FirebaseGetFriends(memoIdUser);
-useEffect(() => {
-  setTimeout(() => {
-    setListFriend(friends);
-    console.log('SetListFiend actived after 3000 :: ', friends);
-  }, 500);
-}, [friends]);
-// -> Tạo hàm
-const onClickOneRoom = useCallback((obj) => {
-  socket.emit("join_room", obj.id);
-  setSelectedFriend(null);
-  setSelectedRoom(obj);
-}, [socket]);
-const onClickOneFriend = useCallback(async (obj) => {
-  const q = query(collection(database, "FriendMessages"), where("listeners", "in", [obj.id + "__" + id, id + "__" + obj.id]));
-  const querySnapShot = await getDocs(q);
-  const idRoom = querySnapShot.docs[0].data().idRoom;
-  socket.emit("join_room", idRoom);
-  setSelectedRoom(null);
-  setSelectedFriend(obj);
-  setIdRoomOfSelectedFriendAndYou(idRoom);
-}, [id, socket]);
-
-// -> Render giao diện
+//Render giao diện
   return(
     <div className='container-fluid bg-white' id='outer'>
     <div className="row">
@@ -215,11 +276,11 @@ const onClickOneFriend = useCallback(async (obj) => {
       </div>
 
 
-      <div className="modal" id="CreateRoomModal">
+      <div className="modal fade" id="CreateRoomModal">
           <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                   <div className="modal-header">
-                    <h4 className="modal-title">Tạo nhóm</h4>
+                    <p className="modal-title fw-bold">Tạo nhóm</p>
                     <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div className="modal-body">
@@ -317,11 +378,11 @@ const onClickOneFriend = useCallback(async (obj) => {
               </div>
           </div>
       </div>
-      <div className="modal" id="AddFriendModal">
+      <div className="modal fade" id="AddFriendModal">
           <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                   <div className="modal-header">
-                      <h4 className="modal-title">Thêm bạn</h4>
+                      <p className="modal-title fw-bold">Thêm bạn</p>
                       <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div className="modal-body">
@@ -401,63 +462,161 @@ const onClickOneFriend = useCallback(async (obj) => {
               </div>
           </div>
       </div>
-      <div className="modal" id="UserInfoModal">
+      <div className="modal fade" id="UserInfoModal">
+            <div className="modal-dialog modal-dialog-centered">
+                {
+                !isShowUpdateInfoModal ?
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <p className="modal-title fw-bold">Thông tin tài khoản</p>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div className="modal-body">
+                        <div style={{position:'relative', backgroundImage:'url("https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg")', backgroundSize:'cover', backgroundRepeat:'no-repeat',width:'100%'}} className='p-5'>
+                                <div style={{position:'absolute',top:'100%',left:'50%',transform: 'translate(-50%,-50%)'}} className='text-center'>
+                                    <img src={photoURL} alt="photoURL" width='70' height='70' className='rounded-circle border border-white border-3' />
+                                    <br />
+                                    <span className='fw-bold'>{fullName}</span>
+                                </div>
+                        </div>
+                        <div className='pt-5'>
+                                <label htmlFor="" className='fw-bold'>Thông tin cá nhân</label>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Điện thoại/email</div>
+                                    <div className='w-100'>{phoneNumber}/{!email ? 'Chưa cập nhật' : email}</div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Giới tính</div>
+                                    <div className='w-100'>{sex ? 'Nữ' : 'Nam'}</div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Tuổi</div>
+                                    <div className='w-100'>{age} tuổi</div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Địa chỉ</div>
+                                    <div className='w-100'>{address}</div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Ngày tham gia</div>
+                                    <div className='w-100'>{joinDate}</div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Chăm ngôn</div>
+                                    <div className='w-100'>{slogan}</div>
+                                </div>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button className='btn btn-success w-100 text-white' onClick={() => setIsShowUpdateInfoModal(!isShowUpdateInfoModal)}>Cập nhật lại thông tin <TbPencilOff /></button>
+                    </div>
+                </div>
+                :
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <p className="modal-title fw-bold">Cập nhật thông tin <MdOutlineEditOff /></p>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div className="modal-body">
+                        <div style={{position:'relative', backgroundImage:'url("https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg")', backgroundSize:'cover', backgroundRepeat:'no-repeat',width:'100%'}} className='p-5'>
+                                <div style={{position:'absolute',top:'100%',left:'50%',transform: 'translate(-50%,-50%)'}} className='text-center'>
+                                    <div style={{position:'relative', width:70, height:70, margin:'auto'}}>
+                                        <img src={photoURL} alt="photoURL" className='rounded-circle border border-white border-3' width='100%' height='100%' />
+                                        <label htmlFor="selectedImage" style={{position:'absolute',bottom:0,right:0}}>
+                                            <IoIosImages />
+                                        </label>
+                                        <input type="file" name="selectedImage" id="selectedImage" accept='image/png, image/jpeg' style={{visibility: 'hidden', width:0, height:0}} onChange={(e) => handleSelectedImage(e)} />
+                                        <TbUpload style={{position:'absolute',bottom:0,left:0}}/>
+                                    </div>
+                                    <input className='form-control' type="text" placeholder='Nhập tên đại điện muốn thay đổi' value={fullName} style={{textAlign:'center'}} />
+                                </div>
+                        </div>
+                        <div className='pt-5'>
+                                <label htmlFor="" className='fw-bold'>Thông tin cá nhân <MdOutlineEditOff /></label>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Điện thoại/email</div>
+                                    <div className='w-100'>{phoneNumber}/{!email ? 'Chưa cập nhật' : email}</div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Giới tính</div>
+                                    <div className='w-100 d-flex'>
+                                        <div className="form-check flex-fill">
+                                            <input type="radio" className="form-check-input" id="editSexBoy" name="editSex" value="false" defaultChecked />
+                                            <label className='form-check-label' htmlFor="editSexBoy">Nam</label>
+                                        </div>
+                                        <div className="form-check flex-fill">
+                                            <input type="radio" className="form-check-input" id="editSexGird" name="editSex" value="true" />
+                                            <label className='form-check-label' htmlFor="editSexGirl">Nữ</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Ngày sinh</div>
+                                    <div className='w-100 d-flex'>
+                                        <div><select className='form-select' name="selectYobDays" id="selectYobDays">{
+                                            renderYobDays().map(d => {
+                                                return <option value={d} key={d}>{(d<10 ? '0'+d : d)}</option>;
+                                            })
+                                        }</select></div>
+                                        <div><select className='form-select' name="selecteYobMonths" id="selecteYobMonths">{
+                                            renderYobMonths().map(m => {
+                                                return <option value={m} key={m}>{(m<10 ? '0'+m : m)}</option>;
+                                            })
+                                        }</select></div>
+                                        <div><select className='form-select' name="selecteYobYears" id="selecteYobYears">{
+                                            renderYobYears().map(y => {
+                                                return <option value={y} key={y}>{y}</option>;
+                                            })
+                                        }</select></div>
+                                    </div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Địa chỉ</div>
+                                    <div className='w-100'>
+                                        <input className='form-control' type="text" placeholder='Nhập địa chỉ nhà riêng của bạn' value={address} />
+                                    </div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Ngày tham gia</div>
+                                    <div className='w-100'>{joinDate}</div>
+                                </div>
+                                <div className="d-flex">
+                                    <div className='text-muted w-100'>Chăm ngôn</div>
+                                    <div className='w-100'>
+                                        <input className='form-control' type="text" placeholder='Nhập câu nói thương hiệu của bạn' value={slogan} />
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button className='btn btn-primary w-100 text-white' onClick={() => setIsShowUpdateInfoModal(!isShowUpdateInfoModal)}>Cập nhật thông tin <TbPencilOff /></button>
+                    </div>
+                </div>
+                }
+            </div>
+      </div>
+      <div className="modal fade" id="UpdateMyInfo">
           <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content">
                   <div className="modal-header">
-                      <h4 className="modal-title">Thông tin tài khoản</h4>
+                      <p className="modal-title fw-bold">Cập nhật thông tin</p>
                       <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
                   </div>
                   <div className="modal-body">
                       <div>
                           <img src="https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg" alt="backgroundURL" id='backgroundURL' />
                       </div>
-                      <div className='text-center'>
-                          <img src={photoURL} alt="photoURL" width='70' height='70' className='rounded-circle border border-dark border-3' />
-                          <br />
-                          <span className='fw-bold'>{fullName}</span>
-                            <table className='table table-striped'>
-                                <thead>
-                                  <tr>
-                                    <th>Điện thoại</th>
-                                    <th>Email</th>
-                                    <th>Giới tính</th>
-                                    <th>Tuổi</th>
-                                  </tr>
-                                </thead>
-                              <tbody>
-                                <tr>
-                                  <td>{phoneNumber}</td>
-                                  <td>{email === null ? 'Chưa cập nhật' : email}</td>
-                                  <td>{sex ? 'Nữ' : 'Nam'}</td>
-                                  <td>{age} tuổi</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                            <table className='table table-striped'>
-                                <thead>
-                                  <tr>
-                                    <th>Địa chỉ</th>
-                                    <th>Lần đầu tham gia</th>
-                                  </tr>
-                                </thead>
-                              <tbody>
-                                <tr>
-                                  <td>{address}</td>
-                                  <td>{joinDate}</td>
-                                </tr>
-                              </tbody>
-                            </table>
-                            <div className='border'>
-                                <div className="d-flex justify-content-between">
-                                    <p className='text-muted'>Chăm ngôn</p>
-                                    <p className=''>{slogan}</p>
-                                </div>
-                            </div>
+                      <div className='border border-primary'>
+                        <div style={{position:'relative', margin:'auto', width:70, height:70, backgroundImage: `url(${photoURL})`, backgroundRepeat:'no-repeat', backgroundSize:'cover'}} className='border border-dark rounded-circle'>
+                            {/* <img src={photoURL} alt="photoURL" className='rounded-circle border border-dark border-3' width='100%' /> */}
+                            <TiCamera style={{position:'absolute',right:-3,bottom:-5, color:'purple'}} className='lead' />
+                        </div>
+
                       </div>
                   </div>
                   <div className="modal-footer">
-                      <button className='btn btn-success w-100 text-white'>Cập nhật lại thông tin <TbPencilOff /></button>
+                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
+                      <button className='btn btn-primary text-white'>Cập nhật</button>
                   </div>
 
               </div>

@@ -4,13 +4,12 @@ import { auth, database } from '../../firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-import $, { data } from 'jquery';
 import "../css/AuthenticationScreen.css";
 import { MdEmail } from 'react-icons/md';
 import { IoIosLock } from 'react-icons/io';
 import { FaCopyright } from 'react-icons/fa';
 import { HiUserCircle } from 'react-icons/hi';
-import { BsPhoneVibrateFill, BsTelephoneFill } from 'react-icons/bs';
+import { BsPhoneVibrateFill } from 'react-icons/bs';
 import { RiRotateLockFill } from 'react-icons/ri';
 import { TiWarning } from 'react-icons/ti';
 import { GoUnverified } from 'react-icons/go';
@@ -23,7 +22,7 @@ export default function AuthenticationScreen() {
     const [isShowRegisterBox, setIsShowRegisterBox] = useState(false);
     const [isShowPhonenumberBox, setIsShowPhonenumberBox] = useState(false);
     const [isShowConfirmOTP, setIsShowConfirmOTP] = useState(false);
-    const [logEmail, setLogEmail] = useState('pttoan@gmail.com');
+    const [logEmail, setLogEmail] = useState('nva@gmail.com');
     const [logPassword, setLogPassword] = useState('123123az');
     const [fullName, setFullName] = useState('');
     const [regEmail, setRegEmail] = useState('');
@@ -70,11 +69,11 @@ const registerUserSuccessfully = useCallback((userObject) => {
     fullName: fullName === '' ? 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991) : fullName,
     age: -1,
     joinDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
-    address: 'undifined',
+    address: 'Không',
     roles: ['MEMBER'],
     sex: false,
     photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
-    slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!',
+    slogan: 'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!',
     phoneNumber: regPhoneNumber
   }
   setDoc(doc(database, 'Users', uid), user);
@@ -213,11 +212,17 @@ const handleRegisterByConfirmOTP = useCallback((e) => {
                 <div id='bodyFrameBox' className='border p-4'>
                     <div className="input-group flex-nowrap">
                       <span className="input-group-text" id="addon-wrapping"><MdEmail /></span>
-                      <input type="text" className="form-control p-2" placeholder="Địa chỉ email" aria-label="Địa chỉ email" aria-describedby="addon-wrapping" onChange={onLogEmailChange} value={logEmail} />
+                      <input type="text" className="form-control p-2" placeholder="Địa chỉ email" aria-label="Địa chỉ email" aria-describedby="addon-wrapping" onChange={onLogEmailChange} value={logEmail} onKeyPress={e => {
+                        if(e.key === 'Enter')
+                          handleLoginAccountByUsernameAndPassword();
+                      }} />
                     </div>
                     <div className="input-group flex-nowrap my-1">
                       <span className="input-group-text" id="addon-wrapping"><IoIosLock /></span>
-                      <input type="text" className="form-control p-2" placeholder="Mật khẩu" aria-label="Mật khẩu" aria-describedby="addon-wrapping" onChange={onLogPasswordChange} value={logPassword}/>
+                      <input type="text" className="form-control p-2" placeholder="Mật khẩu" aria-label="Mật khẩu" aria-describedby="addon-wrapping" onChange={onLogPasswordChange} value={logPassword} onKeyPress={e => {
+                        if(e.key === 'Enter')
+                          handleLoginAccountByUsernameAndPassword();
+                      }} />
                     </div>
                     <button className='btn btn-primary w-75 my-3' onClick={handleLoginAccountByUsernameAndPassword}>Đăng nhập tài khoản</button>
                     <br />
