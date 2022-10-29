@@ -27,7 +27,7 @@ import introduction8 from '../assets/introduction8.png';
 import FirebaseGetRooms from '../service/FirebaseGetRooms';
 import FirebaseGetFriends from '../service/FirebaseGetFriends';
 import ChatRoom from '../fragment/ChatRoom';
-import { collection, doc, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, doc, documentId, getDoc, getDocs, onSnapshot, query, where } from 'firebase/firestore';
 import { database } from '../../firebase';
 import ChatFriend from '../fragment/ChatFriend';
 
@@ -44,6 +44,7 @@ export default function HomepageScreen() {
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [idRoomOfSelectedFriendAndYou, setIdRoomOfSelectedFriendAndYou] = useState('');
   const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
+  const [listUserStranger, setListUserStranger] = useState([]);
   //*Deconstructering currentUser
   if(currentUser == null){
     currentUser = defaultObjectUser;
@@ -55,28 +56,7 @@ export default function HomepageScreen() {
   },[id]);
 
 //Tạo hàm & useEffect[]
-useEffect(() => {
-
-    const testFunction = async () => {
-        const querySnapShot = await getDocs(collection(database, "Users"));
-        querySnapShot.forEach(doc => {
-            console.log(doc.id);
-        });
-    }
-
-    testFunction();
-
-
-    // onSnapshot(doc(database, "UserFriends", id), (document) => {
-    //     const dataTemp = document.data().listFriend;
-    //     dataTemp.map((obj) => {
-
-    //         console.log('loser = ', obj.idFriend);
-
-    //     });
-    // });
-},[]);
-const intervalSlider = () => {
+const intervalSlider = () => { //Hàm start slidering
     intervalRef.current = setInterval(() => {
         var i;
         for (i = 0; i < 8; i++) {
@@ -91,18 +71,21 @@ const intervalSlider = () => {
         $(obj2).css("display", "block");
     }, 2000);
 }
-const stopSlider = () => {
+const stopSlider = () => { //Hàm stop slidering
     clearInterval(intervalRef.current);
     intervalRef.current = null;
 }
-useEffect(() => {
+useEffect(() => { //useEffect gọi hàm start sliderding
     intervalSlider();
 },[]);
-useEffect(() => {
+useEffect(() => { //useEffect gọi hàm stop slidering
     if(selectedRoom !== null || selectedFriend !== null){
         stopSlider();
     }
 },[selectedRoom, selectedFriend]);
+useEffect(() => { //useEffect gọi hàm listStranger để addfriend
+    filterStrangerUser();
+},[]);
     const rooms = FirebaseGetRooms(memoIdUser); //Lấy list room firebase
     useEffect(() => {
     rooms.sort(function(x, y){
@@ -155,6 +138,56 @@ useEffect(() => {
         }
         return arr;
     };
+
+    const getUserById = async (id) => {
+        const UsersDocRef = doc(database, "Users", id);
+        const UsersDocSnap = await getDoc(UsersDocRef);
+        var userObject = null;
+        if(UsersDocSnap.exists()){
+            userObject = UsersDocSnap.data();
+        } else{
+            console.log('No such document!');
+        }
+        return userObject;
+    }
+    const getArrayListYourFriendAndYou = async () => {
+        const arrayIdOfYourFriend = [id];
+        const UserFriendsDocRef = doc(database, "UserFriends", id);
+        const UserFriendsDocSnap = await getDoc(UserFriendsDocRef);
+        const arrayObject = UserFriendsDocSnap.data().listFriend;
+        arrayObject.map(o => {
+            arrayIdOfYourFriend.push(o.idFriend);
+        });
+        return arrayIdOfYourFriend;
+    }
+    const filterStrangerUser = async () => {
+        let userStrangers = [];
+        const q = query(collection(database, "Users"), where(documentId(), "not-in", await getArrayListYourFriendAndYou()));
+        const querySnapShot = await getDocs(q);
+        querySnapShot.forEach( async doc => {
+            userStrangers.push(await getUserById(doc.id));
+        });
+        console.log('function in arr = ', userStrangers);
+
+        const idsRequesterExisted = [];
+        const FriendRequestsDocRef = doc(database, "FriendRequests", id);
+        const FriendRequestsDocSnap = await getDoc(FriendRequestsDocRef);
+        if(FriendRequestsDocSnap.exists()){
+            const listObjectRequestToOwner = FriendRequestsDocSnap.data().listRequest;
+            listObjectRequestToOwner.map(oneObjectPersonRequest => {
+                idsRequesterExisted.push(oneObjectPersonRequest.idRequester);
+            })
+        }
+        idsRequesterExisted.forEach(idRequester => {
+            userStrangers.forEach(userSranger => {
+                if(idRequester === userSranger.id){
+                    var index = userStrangers.indexOf(userSranger);
+                    userStrangers.splice(index,1);
+                }
+            });
+        });
+        setListUserStranger(userStrangers);
+    }
 
 //Kiểm tra null user
     if( !defaultObjectUser ) {
@@ -392,66 +425,15 @@ useEffect(() => {
                       </div>
                       <FaUserFriends /> Có thể bạn quen:
                       <div id="FlatListStranger">
-                        <div className='border d-flex align-items-center my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
-                        <div className='border d-flex align-items-center  my-1'>
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='40' height='40' />
-                            <span className='mx-2 flex-fill'>Robin Hakisan</span>
-                            <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
-                        </div>
+                        {
+                            listUserStranger.map(oneStranger => {
+                                return <div className='border d-flex align-items-center my-1' key={oneStranger.id}>
+                                    <img src={oneStranger.photoURL} alt="photoURL" className='rounded-circle' width='40' height='40' />
+                                    <span className='mx-2 flex-fill'>{oneStranger.fullName}</span>
+                                    <button className='btn btn-outline-primary btn-sm'>Kết bạn</button>
+                                </div>
+                            })
+                        }
                       </div>
                   </div>
                   <div className="modal-footer">
