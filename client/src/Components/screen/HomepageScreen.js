@@ -200,12 +200,15 @@ useEffect(() => { //useEffect gọi hàm stop slidering
 //Render giao diện
   return(
     <div className='container-fluid bg-white' id='outer'>
+    {
+    currentRowShow === 'row-chat'
+    ?
     <div className="row">
         <div className='col-lg-1 bg-primary border' id='divA'>
             <div>
                 <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
             </div>
-            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected'>
+            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected' onClick={() => setCurrentRowShow("row-phonebook")}>
                 <BsFillChatTextFill className='fs-3 text-white mx-auto d-block' />
             </div>
             <div className='py-3 rounded' id='needCursor'>
@@ -292,6 +295,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             }
         </div>
     </div>
+    :
     <div className="row">
         <div className='col-lg-1 bg-primary border' id='divA'>
             <div>
@@ -300,7 +304,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             <div className='py-3 rounded' id='needCursor'>
                 <BsFillChatTextFill className='fs-3 text-white mx-auto d-block' />
             </div>
-            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected' >
+            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected' onClick={() => setCurrentRowShow("row-chat")} >
                 <RiFolderUserFill className='fs-3 text-white mx-auto d-block' />
             </div>
             <div id='settings' className='p-1'>
@@ -349,6 +353,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             }
         </div>
     </div>
+    }
 
 
 

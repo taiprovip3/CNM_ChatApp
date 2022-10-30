@@ -22,7 +22,6 @@ export default function FirebaseGetStrangers(idUser) {
                 let listIdUsers = [];   //*
                 const querySnapShot1 = await getDocs(collection(database, "Users"));
                 querySnapShot1.forEach((doc1) => {
-                    console.log('1 row = ', doc1.data());
                     listIdUsers.push(doc1.data().id);
                 });
                 const listIdRequester = [id];     //*
@@ -38,8 +37,6 @@ export default function FirebaseGetStrangers(idUser) {
                         listIdRequester.push(oneRequest.idRequester);
                     });
                 }
-                console.log('listIdUsers = ', listIdUsers);
-                console.log('listIdRequester = ', listIdRequester);
                 listIdRequester.forEach(id1 => {
                     listIdUsers.forEach(id2 => {
                         if(id1 === id2){
@@ -48,7 +45,6 @@ export default function FirebaseGetStrangers(idUser) {
                         }
                     });
                 });
-                console.log('listIdUser after blacklist = ', listIdUsers);
                 var listUserStranger = [];
                 listIdUsers.forEach(async id => {
                     listUserStranger.push(await getUserById(id));
