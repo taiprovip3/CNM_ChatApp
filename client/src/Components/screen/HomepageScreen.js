@@ -147,9 +147,10 @@ useEffect(() => { //useEffect gọi hàm stop slidering
         }
         return arr;
     };
-    const sendAddFriendRequest = useCallback(async (fromId, toId) => {
+    const sendAddFriendRequest = useCallback(async (fromId, toId, toName) => {
         // 1. Cập nhật toRequest cho bản thân
-        const toRequestObject = {idRequester: toId, description: 'Xin chào, tôi là `' + fullName + '`. Bạn có đồng ý kết bạn với tôi không?',isAccept: false,time: moment().format("MMMM Do YYYY, hh:mm:ss a")};
+        const currentTimeRequest = moment().format("MMMM Do YYYY, hh:mm:ss a");
+        const toRequestObject = {idRequester: toId, description: 'Xin chào `'+ toName +'`, tôi là `' + fullName + '`. Bạn có đồng ý kết bạn với tôi không?',isAccept: false,time: currentTimeRequest};
         const ToDocRef = doc(database, "FriendRequests", fromId);
         const ToDocSnap = await getDoc(ToDocRef);
         if(ToDocSnap.exists()){//Nếu ko phải newbie
@@ -160,7 +161,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             await setDoc(ToDocRef, {toRequest:[toRequestObject]});
         }
         // 2. Cập nhật fromRequest cho thằng mình gửi
-        const fromRequestObject = {idRequester: fromId, description: 'Xin chào, tôi là `' + fullName + '`. Bạn có đồng ý kết bạn với tôi không?',isAccept: false,time: moment().format("MMMM Do YYYY, hh:mm:ss a")};
+        const fromRequestObject = {idRequester: fromId, description: 'Xin chào `'+ toName +'`, tôi là `' + fullName + '`. Bạn có đồng ý kết bạn với tôi không?',isAccept: false,time: currentTimeRequest};
         const FromDocRef = doc(database, "FriendRequests", toId);
         const FromDocSnap = await getDoc(FromDocRef);
         if(FromDocSnap.exists()){//Nếu ko phải là newbie
@@ -473,7 +474,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                                     return <div className='border d-flex align-items-center my-1' key={oneStranger.id}>
                                         <img src={oneStranger.photoURL} alt="photoURL" className='rounded-circle' width='40' height='40' />
                                         <span className='mx-2 flex-fill'>{oneStranger.fullName}</span>
-                                        <button className='btn btn-outline-primary btn-sm' onClick={() => sendAddFriendRequest(id, oneStranger.id)}>Kết bạn</button>
+                                        <button className='btn btn-outline-primary btn-sm' onClick={() => sendAddFriendRequest(id, oneStranger.id, oneStranger.fullName)}>Kết bạn</button>
                                     </div>
                                 })
                             }

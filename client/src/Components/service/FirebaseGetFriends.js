@@ -9,15 +9,17 @@ const FirebaseGetFriends = (owner) => {
     useEffect(() => {
         const arrTemp = [];
         const unsubcribe = onSnapshot(doc(database, "UserFriends", owner), (document) => {
-            const dataTemp = document.data().listFriend;
-            dataTemp.map(async (obj) => {
-                
-                const docRef = doc(database, "Users", obj.idFriend);
-                const docSnap = await getDoc(docRef);
-                arrTemp.push(docSnap.data());
+            if(document.data() !== undefined){
+                const dataTemp = document.data().listFriend;
+                dataTemp.map(async (obj) => {
+                    
+                    const docRef = doc(database, "Users", obj.idFriend);
+                    const docSnap = await getDoc(docRef);
+                    arrTemp.push(docSnap.data());
 
-            });
-            setFriends(arrTemp);
+                });
+                setFriends(arrTemp);
+            }
         });
         return unsubcribe;
     }, [owner]);
