@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -15,6 +16,7 @@ import { FaUserFriends, FaSortAlphaDown } from 'react-icons/fa';
 import { TbPencilOff, TbUpload, TbUsers } from 'react-icons/tb';
 import { TiCamera } from 'react-icons/ti';
 import { IoIosImages } from 'react-icons/io';
+import { CgClose } from 'react-icons/cg';
 import { AiFillQuestionCircle } from 'react-icons/ai';
 import introduction1 from '../assets/introduction1.png';
 import introduction2 from '../assets/introduction2.png';
@@ -31,15 +33,16 @@ import ChatRoom from '../fragment/ChatRoom';
 import ListFriend from '../fragment/ListFriend';
 import ListRoom from '../fragment/ListRoom';
 import { arrayUnion, collection, doc, documentId, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore';
-import { database } from '../../firebase';
+import { database, storage } from '../../firebase';
 import moment from 'moment';
 import FirebaseGetStrangers from '../service/FirebaseGetStrangers';
 import $ from 'jquery';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 export default function HomepageScreen() {
 
 //Khai báo biến
-  var { currentUser, socket } = useContext(AuthContext);
+  var { currentUser, socket, setUserContext } = useContext(AuthContext);
   var defaultObjectUser = {id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', email: 'ptt@gmail.com', address: 'undifined', age: 0, fullName: 'Phan Tấn Tài', joinDate: 'October 26th 2022, 3:38:30 pm', phoneNumber: '+84', photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg', role: ['MEMBER', 'ADMIN'], sex: false, slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'};
   const myIndex = useRef(0);
   const intervalRef = useRef(null);
@@ -255,6 +258,87 @@ useEffect(() => { //useEffect gọi hàm stop slidering
         setCounterCheckedUser(0);
 
     },[counterCheckedUser, id, inputNameRoom, listFriend, listFriendCopy]);
+    const awaitHandleUploadPhotoURL = async (idUser, fileUpload) => {
+        let link;
+        if(fileUpload == null){
+            return link = photoURL;
+        }
+        console.log(' function convert. img now = ', link);
+        const pathStorage = `${idUser + "__" + fileUpload.name}`;
+        const imagesRef = ref(storage, 'photoURLs/' + pathStorage);
+        await uploadBytes(imagesRef, fileUpload)
+          .then(async () => {
+              await getDownloadURL(imagesRef)
+                .then((url) => {
+                    console.log(' img after promise = ', link);
+                    link = url;
+                });
+          })
+          .catch(err => {
+              console.log(err);
+          });
+        return link;
+    };
+    const handleUpdateUser = async (e) => {
+        e.preventDefault();
+        var selectedImage = e.target["selectedImage"].value;
+        const selectedImageBinary = e.target["selectedImage"].files[0];
+        const editFullName = e.target["editFullName"].value;
+        const editSex = e.target["editSex"].value;
+        const selectedYobDays = e.target["selectedYobDays"].value;
+        const selectedYobMonths = e.target["selectedYobMonths"].value;
+        const selectedYobYears = e.target["selectedYobYears"].value;
+        var editAddress = e.target["editAddress"].value;
+        var editSlogan = e.target["editSlogan"].value;
+        console.log(' e1 = ', e.target["selectedImage"].value);
+        console.log(' e2 = ', e.target["editFullName"].value);
+        console.log(' e3 = ', e.target["editSex"].value);
+        console.log(' e4 = ', e.target["selectedYobDays"].value);
+        console.log(' e5 = ', e.target["selectedYobMonths"].value);
+        console.log(' e6 = ', e.target["selectedYobYears"].value);
+        console.log(' e7 = ', e.target["editAddress"].value);
+        console.log(' e8 = ', e.target["editSlogan"].value);
+        if(editFullName === ""){
+            toast.error("Tên đại diện rỗng!", {
+                position: toast.POSITION.TOP_CENTER
+            });
+            return;
+        }
+        if(editAddress === ""){
+            editAddress = address;
+        }
+        if(editSlogan === ""){
+            editSlogan = slogan;
+        }
+        const newPhotoURL = await awaitHandleUploadPhotoURL(id, selectedImageBinary);
+        const ageCalc = parseInt(new Date().getFullYear() - selectedYobYears);
+        const newCurrentUser = {
+            address: editAddress,
+            age: ageCalc,
+            email: email,
+            fullName: editFullName,
+            id: id,
+            joinDate: joinDate,
+            phoneNumber: phoneNumber,
+            roles: ["MEMBER"],
+            sex: editSex,
+            slogan: editSlogan,
+            photoURL: newPhotoURL,
+            bod: selectedYobDays,
+            bom: selectedYobMonths,
+            boy: selectedYobYears
+        };
+        await setDoc(doc(database, "Users", id), newCurrentUser);
+        toast.success("Cập nhật thành công!", {
+            position: toast.POSITION.TOP_CENTER
+        });
+        setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
+        setUserContext(newCurrentUser);
+    };
+    const handleCloseUpdateUserInfoModal = () => {
+        $("#closeUpdateInfoModal").click();
+        setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
+    }
 
 //Kiểm tra null user
     if( !defaultObjectUser ) {
@@ -275,7 +359,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
         </div>
     </div>;
     }
-// //Javascript bootstrap
+//Javascript bootstrap
 // $(function () {
 //     $('[data-toggle="tooltip"]').tooltip();
 // });
@@ -283,7 +367,9 @@ useEffect(() => { //useEffect gọi hàm stop slidering
 //Render giao diện
   return(
     <div className='container-fluid bg-white' id='outer'>
-    <ToastContainer />
+    <ToastContainer
+        theme='colored'
+    />
     {
     currentRowShow === 'row-chat'
     ?
@@ -575,8 +661,10 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                     <div className="modal-content">
                         <div className="modal-header">
                             <p className="modal-title fw-bold">Cập nhật thông tin <MdOutlineEditOff /></p>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" className="btn-close" data-bs-dismiss="modal" style={{display: 'none'}} id="closeUpdateInfoModal"></button>
+                            <CgClose className='btn-close' id="needCursor" onClick={() => handleCloseUpdateUserInfoModal()} />
                         </div>
+                        <form onSubmit={handleUpdateUser}>
                         <div className="modal-body">
                             <div style={{position:'relative', backgroundImage:'url("https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg")', backgroundSize:'cover', backgroundRepeat:'no-repeat',width:'100%'}} className='p-5'>
                                     <div style={{position:'absolute',top:'100%',left:'50%',transform: 'translate(-50%,-50%)'}} className='text-center'>
@@ -588,7 +676,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                                             <input type="file" name="selectedImage" id="selectedImage" accept='image/png, image/jpeg' style={{visibility: 'hidden', width:0, height:0}} onChange={(e) => handleSelectedImage(e)} />
                                             <TbUpload style={{position:'absolute',bottom:0,left:0}}/>
                                         </div>
-                                        <input className='form-control' type="text" placeholder='Nhập tên đại điện muốn thay đổi' value={fullName} style={{textAlign:'center'}} />
+                                        <input className='form-control' type="text" placeholder='Nhập tên đại điện muốn thay đổi' defaultValue={fullName} style={{textAlign:'center'}} name="editFullName" />
                                     </div>
                             </div>
                             <div className='pt-5'>
@@ -613,17 +701,17 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                                     <div className="d-flex">
                                         <div className='text-muted w-100'>Ngày sinh</div>
                                         <div className='w-100 d-flex'>
-                                            <div><select className='form-select' name="selectYobDays" id="selectYobDays">{
+                                            <div><select className='form-select' name="selectedYobDays" id="selectedYobDays">{
                                                 renderYobDays().map(d => {
                                                     return <option value={d} key={d}>{(d<10 ? '0'+d : d)}</option>;
                                                 })
                                             }</select></div>
-                                            <div><select className='form-select' name="selecteYobMonths" id="selecteYobMonths">{
+                                            <div><select className='form-select' name="selectedYobMonths" id="selectedYobMonths">{
                                                 renderYobMonths().map(m => {
                                                     return <option value={m} key={m}>{(m<10 ? '0'+m : m)}</option>;
                                                 })
                                             }</select></div>
-                                            <div><select className='form-select' name="selecteYobYears" id="selecteYobYears">{
+                                            <div><select className='form-select' name="selectedYobYears" id="selectedYobYears">{
                                                 renderYobYears().map(y => {
                                                     return <option value={y} key={y}>{y}</option>;
                                                 })
@@ -633,7 +721,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                                     <div className="d-flex">
                                         <div className='text-muted w-100'>Địa chỉ</div>
                                         <div className='w-100'>
-                                            <input className='form-control' type="text" placeholder='Nhập địa chỉ nhà riêng của bạn' value={address} />
+                                            <input className='form-control' type="text" placeholder='Nhập địa chỉ nhà riêng của bạn' defaultValue={address} name="editAddress" />
                                         </div>
                                     </div>
                                     <div className="d-flex">
@@ -643,14 +731,15 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                                     <div className="d-flex">
                                         <div className='text-muted w-100'>Chăm ngôn</div>
                                         <div className='w-100'>
-                                            <input className='form-control' type="text" placeholder='Nhập câu nói thương hiệu của bạn' value={slogan} />
+                                            <input className='form-control' type="text" placeholder='Nhập câu nói thương hiệu của bạn' defaultValue={slogan} name="editSlogan" />
                                         </div>
                                     </div>
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className='btn btn-primary w-100 text-white' onClick={() => setIsShowUpdateInfoModal(!isShowUpdateInfoModal)}>Cập nhật thông tin <TbPencilOff /></button>
+                            <button type='submit' className='btn btn-primary w-100 text-white'>Cập nhật thông tin <TbPencilOff /></button>
                         </div>
+                        </form>
                     </div>
                     }
                 </div>
