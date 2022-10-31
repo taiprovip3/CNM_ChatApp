@@ -254,7 +254,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
         setListFriendCopy(listFriend);
         setCounterCheckedUser(0);
 
-    },[counterCheckedUser, id, inputNameRoom, listFriendCopy]);
+    },[counterCheckedUser, id, inputNameRoom, listFriend, listFriendCopy]);
 
 //Kiểm tra null user
     if( !defaultObjectUser ) {
@@ -405,11 +405,11 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                 <HiOutlineUserGroup className='h3 m-1' data-bs-toggle="modal" data-bs-target="#CreateRoomModal" id='needCursor' />
             </div>
             <div>
-                <div className={selectedObject === 'DanhSachKetBan' ? 'd-flex border border-primary align-items-center p-1' : 'd-flex border align-items-center p-1'} id="needCursor" onClick={() => setSelectedObject('DanhSachKetBan')}>
+                <div className='d-flex align-items-center p-1' id="needCursor" onClick={() => setSelectedObject('DanhSachKetBan')} style={selectedObject === 'DanhSachKetBan' ? {backgroundColor: '#69d0ff'} : {backgroundColor: 'white'}}>
                     <img src="https://chat.zalo.me/assets/NewFr@2x.820483766abed8ab03205b8e4a8b105b.png" alt="DanhSachKetBan" width='45' height='45' />
                     <span className='px-1'>Danh sách kết bạn</span>
                 </div>
-                <div className={selectedObject === 'DanhSachNhom' ? 'd-flex border border-primary align-items-center p-1' : 'd-flex border align-items-center p-1'} id="needCursor" onClick={() => setSelectedObject('DanhSachNhom')}>
+                <div className='d-flex align-items-center p-1' id="needCursor" onClick={() => setSelectedObject('DanhSachNhom')} style={selectedObject === 'DanhSachNhom' ? {backgroundColor: '#69d0ff'} : {backgroundColor: 'white'}}>
                     <img src="https://chat.zalo.me/assets/group@2x.2d184edd797db8782baa0d5c7a786ba0.png" alt="DanhSachNhom" width='45' height='45' />
                     <span className='px-1'>Danh sách nhóm</span>
                 </div>
@@ -420,7 +420,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                 </div>
                 {
                     listFriend.map( obj => {
-                        return <div className={selectedFriend === obj ? 'd-flex border border-primary border-3 align-items-center p-1' : 'd-flex border align-items-center p-1'} id="needCursor" key={obj.id} onClick={() => onClickOneFriend(obj)}>
+                        return <div className={selectedFriend === obj ? 'd-flex border border-primary border-3 align-items-center p-1' : 'd-flex align-items-center p-1'} id="needCursor" key={obj.id} onClick={() => onClickOneFriend(obj)}>
                                     <img src={obj.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                                     <span className='px-1'>{obj.fullName}</span>
                                 </div>;
@@ -668,7 +668,6 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                         </div>
                         <div className='border border-primary'>
                             <div style={{position:'relative', margin:'auto', width:70, height:70, backgroundImage: `url(${photoURL})`, backgroundRepeat:'no-repeat', backgroundSize:'cover'}} className='border border-dark rounded-circle'>
-                                {/* <img src={photoURL} alt="photoURL" className='rounded-circle border border-dark border-3' width='100%' /> */}
                                 <TiCamera style={{position:'absolute',right:-3,bottom:-5, color:'purple'}} className='lead' />
                             </div>
 
