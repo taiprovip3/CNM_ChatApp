@@ -16,7 +16,6 @@ import { TbPencilOff, TbUpload, TbUsers } from 'react-icons/tb';
 import { TiCamera } from 'react-icons/ti';
 import { IoIosImages } from 'react-icons/io';
 import { AiFillQuestionCircle } from 'react-icons/ai';
-import $ from 'jquery';
 import introduction1 from '../assets/introduction1.png';
 import introduction2 from '../assets/introduction2.png';
 import introduction3 from '../assets/introduction3.png';
@@ -35,6 +34,7 @@ import { arrayUnion, collection, doc, documentId, getDoc, getDocs, onSnapshot, q
 import { database } from '../../firebase';
 import moment from 'moment';
 import FirebaseGetStrangers from '../service/FirebaseGetStrangers';
+import $ from 'jquery';
 
 export default function HomepageScreen() {
 
@@ -52,6 +52,12 @@ export default function HomepageScreen() {
   const [listUserStranger, setListUserStranger] = useState([]);
   const [currentRowShow, setCurrentRowShow] = useState('row-chat'); //[row-chat, row-phonebook]
   const [selectedObject, setSelectedObject] = useState('DanhSachKetBan');
+
+  const [inputNameRoom, setInputNameRoom] = useState('');   //các useState dùng cho tạo room
+  const [selectedChkUser, setSelectedChkUser] = useState([]);
+  const [listFriendCopy, setListFriendCopy] = useState([]);
+  const counter = useRef(0);
+  const [counterCheckedUser, setCounterCheckedUser] = useState(0);
   if(currentUser == null){
     currentUser = defaultObjectUser;
     defaultObjectUser = null;
@@ -62,6 +68,27 @@ export default function HomepageScreen() {
   },[id]);
 
 //Tạo hàm & useEffect[]
+useEffect(() => {
+    if(listFriend.length > 0){
+        const data = [];
+        listFriend.forEach(e => {
+            data.push({...e, isChecked: false});
+        });
+        setListFriendCopy(data);
+    }
+},[listFriend]);
+useEffect(() => {
+    if(listFriendCopy.length > 0){
+        counter.current = 0;
+        for(var i=0; i<listFriendCopy.length; i++){
+            if(listFriendCopy[i].isChecked){
+                counter.current++;
+                console.log('counter.current now = ', counter.current);
+            }
+        }
+        setCounterCheckedUser(counter.current);
+    }
+},[listFriendCopy]);
 const intervalSlider = () => { //Hàm start slidering
     intervalRef.current = setInterval(() => {
         var i;
@@ -172,6 +199,62 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             await setDoc(FromDocRef, {fromRequest:[fromRequestObject]});
         }
     },[fullName]);
+    const onInputNameRoomChange = useCallback((e) => {
+        setInputNameRoom(e.target.value);
+    },[]);
+    const onSelectedChkUserChange = useCallback((obj) => {
+        setListFriendCopy(
+            (prevList) => prevList.map (
+                (userFriend) => userFriend.id === obj.id ? {...userFriend, isChecked: !obj.isChecked} : userFriend
+            )
+        );
+    },[]);
+    const handleCreateRoom = useCallback(() => {
+        console.log('my will = ', listFriendCopy);
+        if(inputNameRoom.length < 3 || inputNameRoom === ""){
+            toast.error("Tên nhóm rỗng hoặc quá ngắn", {
+                position: toast.POSITION.TOP_CENTER
+            });
+            return;
+        }
+        if(counterCheckedUser < 2){
+            const neededMember = parseInt(2 - counterCheckedUser);
+            toast.error("Cần chọn thêm "+neededMember+" thành viên", {
+                position: toast.POSITION.TOP_CENTER
+            });
+            return;
+        }
+        const DATA_LIST_FRIEND_SELECTED = [];
+        listFriendCopy.map(obj => {
+            if(obj.isChecked){
+            DATA_LIST_FRIEND_SELECTED.push(obj.id);
+            }
+        });
+        DATA_LIST_FRIEND_SELECTED.push(id);
+        let r = (Math.random() + 1).toString(36).substring(2);
+        setDoc(doc(database, 'Rooms', r), {
+            id: r,
+            createAt: moment().format("MMMM Do YYYY, hh:mm:ss a"),
+            name: inputNameRoom,
+            owner: id,
+            type: 'group',
+            urlImage: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
+            listMember: DATA_LIST_FRIEND_SELECTED,
+            description: 'Bắt đầu chia sẽ các câu chuyện thú vị cùng nhau'
+        });
+        setDoc(doc(database, 'RoomMessages', r), {
+            idRoom: r,
+            listObjectMessage: []
+        });
+        toast.success("Tạo nhóm thành công, chờ chút...", {
+            position: toast.POSITION.TOP_CENTER
+        });
+        $("#btnCancelCreateRoomModal").click();
+        setInputNameRoom('');
+        setListFriendCopy(listFriend);
+        setCounterCheckedUser(0);
+
+    },[counterCheckedUser, id, inputNameRoom, listFriendCopy]);
 
 //Kiểm tra null user
     if( !defaultObjectUser ) {
@@ -200,6 +283,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
 //Render giao diện
   return(
     <div className='container-fluid bg-white' id='outer'>
+    <ToastContainer />
     {
     currentRowShow === 'row-chat'
     ?
@@ -208,10 +292,10 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             <div>
                 <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
             </div>
-            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected' onClick={() => setCurrentRowShow("row-phonebook")}>
+            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected'>
                 <BsFillChatTextFill className='fs-3 text-white mx-auto d-block' />
             </div>
-            <div className='py-3 rounded' id='needCursor'>
+            <div className='py-3 rounded' id='needCursor' onClick={() => setCurrentRowShow("row-phonebook")}>
                 <RiFolderUserFill className='fs-3 text-white mx-auto d-block' />
             </div>
             <div id='settings' className='p-1'>
@@ -301,10 +385,10 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             <div>
                 <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
             </div>
-            <div className='py-3 rounded' id='needCursor'>
+            <div className='py-3 rounded' id='needCursor' onClick={() => setCurrentRowShow("row-chat")}>
                 <BsFillChatTextFill className='fs-3 text-white mx-auto d-block' />
             </div>
-            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected' onClick={() => setCurrentRowShow("row-chat")} >
+            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected' >
                 <RiFolderUserFill className='fs-3 text-white mx-auto d-block' />
             </div>
             <div id='settings' className='p-1'>
@@ -368,93 +452,38 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                     <div className="modal-body">
                         <div className='input-group'>
                             <span className='input-group-text'><MdCameraswitch /></span>
-                            <input type="text" className='form-control' placeholder='Nhập tên nhóm...' />
+                            <input type="text" className='form-control' placeholder='Nhập tên nhóm...' onChange={onInputNameRoomChange} value={inputNameRoom} />
                         </div>
                         <br />
                         Thêm bạn vào nhóm
                         <div className='input-group'>
                             <span className='input-group-text'><HiSearch /></span>
-                            <input type="text" className='form-control' placeholder='Nhập tên nhóm...' />
+                            <input type="text" className='form-control' placeholder='Nhập tên bạn bè...' />
                         </div>
                         <br />
                         <span className='badge bg-primary p-2 fw-normal'>Tất cả</span>
                         <hr />
                         <div id='FlatListFriend' className='border'>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
-                            <div id='OneBoxUser' className='d-flex align-items-center my-1'>
-                                <input type="checkbox" className="form-check-input rounded-circle" id="1H11AhDb5yawjteoxtevm67WE5i2" name="1H11AhDb5yawjteoxtevm67WE5i2" value="something" />
-                                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
-                                <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">Phan Tấn Toàn</label>
-                            </div>
+                        {
+                            listFriendCopy.map( obj => {
+                                return <div id='OneBoxUser' className='d-flex align-items-center my-1' key={Math.random()}>
+                                            {
+                                                obj.isChecked
+                                                ?
+                                                <input type="checkbox" className="form-check-input rounded-circle" id={"chkRadio_" + obj.id} name={"chkRadio_" + obj.id} value={obj.id} onChange={() => onSelectedChkUserChange(obj)} defaultChecked />
+                                                :
+                                                <input type="checkbox" className="form-check-input rounded-circle" id={"chkRadio_" + obj.id} name={"chkRadio_" + obj.id} value={obj.id} onChange={() => onSelectedChkUserChange(obj)} />
+                                            }
+                                            <img src={obj.photoURL} alt="photoURL" width='40' height='40' className='rounded-circle mx-2' />
+                                            <label className="form-check-label" htmlFor="1H11AhDb5yawjteoxtevm67WE5i2">{obj.fullName}</label>
+                                        </div>;
+                            })
+                        }
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
-                        <button disabled className='btn btn-primary'>Tạo nhóm</button>
+                        <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" id="btnCancelCreateRoomModal">Huỷ</button>
+                            <button className='btn btn-primary' onClick={() => handleCreateRoom()}>Tạo nhóm</button>
                     </div>
 
                 </div>

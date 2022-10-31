@@ -99,8 +99,8 @@ export default memo(function ListFriend({ currentUser }) {
                 fromRequestsBlacklisted.forEach(async (request, index) => {
                     const UsersDocRef = doc(database, "Users", request.idRequester);
                     const UsersDocSnap = await getDoc(UsersDocRef);
-                    const requesterPhotoURL = UsersDocSnap.data().photoURL;
-                    fromRequestsBlacklisted[index] = {...request, photoURL: requesterPhotoURL};
+                    const requesterPhotoURL = UsersDocSnap.data().photoURL; //Đang lỗi URL
+                    fromRequestsBlacklisted[index] = {...request, photoURL: "https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg"};
                 });
                 setListFromRequest(fromRequestsBlacklisted);
             }
