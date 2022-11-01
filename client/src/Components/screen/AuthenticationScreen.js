@@ -257,7 +257,7 @@ const handleRegisterByConfirmOTP = useCallback((e) => {
                         <span className="input-group-text" id="addon-wrapping"><RiRotateLockFill /></span>
                         <input type="text" className="form-control p-2" placeholder="Nhập lại mật khẩu" aria-label="Nhập lại mật khẩu" aria-describedby="addon-wrapping" onChange={onRePasswordChange} value={rePassword} />
                       </div>
-                      <button className='btn btn-primary w-75 my-3' onClick={handleRegisterAccountByUsernameAndPassword}>Đăng ký tài khoản</button>
+                      <button className='btn btn-primary w-75 my-3' onClick={handleRegisterAccountByUsernameAndPassword}>Gửi link xác thực email</button>
                       <br />
                       <span>Hoặc</span>
                       <button className='btn btn-link w-100 text-decoration-none' onClick={() => setIsShowPhonenumberBox(!isShowPhonenumberBox)}>Đăng ký bằng số điện thoại</button>
