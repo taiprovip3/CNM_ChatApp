@@ -324,9 +324,9 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             sex: editSex,
             slogan: editSlogan,
             photoURL: newPhotoURL,
-            bod: selectedYobDays,
-            bom: selectedYobMonths,
-            boy: selectedYobYears
+            bod: parseInt(selectedYobDays),
+            bom: parseInt(selectedYobMonths),
+            boy: parseInt(selectedYobYears)
         };
         await setDoc(doc(database, "Users", id), newCurrentUser);
         toast.success("Cập nhật thành công!", {
@@ -505,7 +505,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                     <AiFillQuestionCircle className='text-primary lead' data-bs-toggle="tooltip" title="Nhấp giải thích" />
                 </div>
                 {
-                    listFriend.map( obj => {
+                    listFriend.map(obj => {
                         return <div className={selectedFriend === obj ? 'd-flex border border-primary border-3 align-items-center p-1' : 'd-flex align-items-center p-1'} id="needCursor" key={obj.id} onClick={() => onClickOneFriend(obj)}>
                                     <img src={obj.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                                     <span className='px-1'>{obj.fullName}</span>
@@ -519,7 +519,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                 selectedObject === 'DanhSachKetBan' ?
                 <ListFriend currentUser={currentUser} />
                 :
-                <ListRoom />
+                <ListRoom currentUser={currentUser} listRoom={listRoom} />
             }
         </div>
     </div>

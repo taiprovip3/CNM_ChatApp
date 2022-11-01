@@ -74,7 +74,11 @@ const registerUserSuccessfully = useCallback((userObject) => {
     sex: false,
     photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
     slogan: 'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!',
-    phoneNumber: regPhoneNumber
+    phoneNumber: regPhoneNumber,
+    bod: 1,
+    bom: 1,
+    boy: parseInt(new Date().getFullYear-119)
+
   }
   setDoc(doc(database, 'Users', uid), user);
   setUserContext(user);

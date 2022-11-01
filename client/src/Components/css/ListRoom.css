@@ -1,0 +1,35 @@
+#OneRoom:hover{
+    cursor: pointer;
+    box-shadow: rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px;
+}
+#containerAvatar{
+    position: relative;
+    height: 70%;
+}
+#containerText{
+    height: 30%;
+}
+#FirstImage{
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+#SecondImage{
+    position: absolute;
+    top: 50%;
+    left: 40%;
+    transform: translate(-50%,-50%);
+}
+#ThirdImage{
+    position: absolute;
+    top: 50%;
+    left: 60%;
+    transform: translate(-50%,-50%);
+}
+#FourImage{
+    position: absolute;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}

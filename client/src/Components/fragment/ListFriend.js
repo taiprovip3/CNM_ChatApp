@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable array-callback-return */
-import { addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
+import { addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import React, { memo, useEffect, useState } from 'react';
 import { FcInvite } from 'react-icons/fc';
 import { database } from '../../firebase';
@@ -84,40 +84,37 @@ export default memo(function ListFriend({ currentUser }) {
     });
   }
 
+  const factoryTransformRequests = async (listRequests) => {
+    var requestsBlacklisted = [];
+    listRequests.map((r) => {
+        if(!r.isAccept){
+            requestsBlacklisted.push(r);
+        }
+    });
+    for (let index = 0; index < requestsBlacklisted.length; index++) {
+        const element = requestsBlacklisted[index];
+        const UsersDocRef = doc(database, "Users", element.idRequester);
+        const UserDocSnap = await getDoc(UsersDocRef);
+        requestsBlacklisted[index] = {...element, photoURL: UserDocSnap.data().photoURL}
+    }
+    return requestsBlacklisted;
+  };
   useEffect(() => {
     const unsub = onSnapshot(doc(database, "FriendRequests", id), (document) => {
         if(document.exists()){
             let fromRequests = document.data().fromRequest;
             let toRequests = document.data().toRequest;
             if(fromRequests !== undefined){
-                var fromRequestsBlacklisted = [];
-                fromRequests.map((r) => {
-                    if(!r.isAccept){
-                      fromRequestsBlacklisted.push(r);
-                    }
-                });
-                fromRequestsBlacklisted.forEach(async (request, index) => {
-                    const UsersDocRef = doc(database, "Users", request.idRequester);
-                    const UsersDocSnap = await getDoc(UsersDocRef);
-                    const requesterPhotoURL = UsersDocSnap.data().photoURL; //Đang lỗi URL
-                    fromRequestsBlacklisted[index] = {...request, photoURL: "https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg"};
-                });
-                setListFromRequest(fromRequestsBlacklisted);
+                factoryTransformRequests(fromRequests)//Hàm trả về 1 promise chứa rs là mảng
+                    .then((array) => {
+                        setListFromRequest(array);
+                    });
             }
             if(toRequests !== undefined){
-                var toRequestsBlacklisted = [];
-                toRequests.map((r) => {
-                    if(!r.isAccept){
-                      toRequestsBlacklisted.push(r);
-                    }
-                });
-                toRequestsBlacklisted.forEach(async (request, index) => {
-                    const UsersDocRef = doc(database, "Users", request.idRequester);
-                    const UsersDocSnap = await getDoc(UsersDocRef);
-                    const requesterPhotoURL = UsersDocSnap.data().photoURL; //Đang lỗi URL
-                    toRequestsBlacklisted[index] = {...request, photoURL: "https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg"};
-                });
-                setListToRequest(toRequestsBlacklisted);
+                factoryTransformRequests(toRequests)//Hàm trả về 1 promise chứa rs là mảng
+                    .then((array) => {
+                        setListToRequest(array);
+                    });
             }
         } else{
           console.log('Bạn chắc là newbie, no document existed!');
@@ -127,13 +124,13 @@ export default memo(function ListFriend({ currentUser }) {
   },[id]);
 
   return (
-    <div>
-        <div className='h-50'>
+    <div className='h-100'>
+        <div className='h-50 overflow-auto'>
             <p>Lời mời kết bạn (<FcInvite />):</p>
             <div className="d-flex flex-wrap">
                 {
                     listFromRequest.map(request => {
-                        return <div className='border text-center' style={{ backgroundColor: '#dce1e8', width: '25%', height:'25%'}} key={request.idRequester}>
+                        return <div className='border text-center rounded' style={{ backgroundColor: '#dce1e8', width: '25%', height:'25%'}} key={request.idRequester}>
                             <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
                             <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
                                 <span>{request.description}</span>
@@ -145,12 +142,12 @@ export default memo(function ListFriend({ currentUser }) {
                 }
             </div>
         </div>
-        <div className='h-50'>
+        <div className='h-50 border-top overflow-auto'>
             <p>Lời gởi kết bạn đến người khác (<FcInvite />):</p>
             <div className="d-flex flex-wrap">
                 {
                     listToRequest.map(request => {
-                        return <div className='border text-center' style={{ backgroundColor: '#dce1e8', width: '25%', height:'25%'}} key={request.idRequester}>
+                        return <div className='border text-center rounded' style={{ backgroundColor: '#dce1e8', width: '25%', height:'25%'}} key={request.idRequester}>
                             <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
                             <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
                                 <span>{request.description}</span>

@@ -19,37 +19,60 @@ export default function FirebaseGetStrangers(idUser) {
         };
         const filterStrangerUser = async (id) => {
             const unsub = onSnapshot(doc(database, "FriendRequests", id), async (doc) => {
-                let listIdUsers = [];   //*
-                const querySnapShot1 = await getDocs(collection(database, "Users"));
-                querySnapShot1.forEach((doc1) => {
-                    listIdUsers.push(doc1.data().id);
-                });
-                const listIdRequester = [id];     //*
-                const fromRequests = doc.data().fromRequest;
-                if(fromRequests !== undefined){
-                    fromRequests.forEach(oneRequest => {
-                        listIdRequester.push(oneRequest.idRequester);
+                if(doc.exists()){
+                    let listIdUsers = [];   //*
+                    const querySnapShot1 = await getDocs(collection(database, "Users"));
+                    querySnapShot1.forEach((doc1) => {
+                        listIdUsers.push(doc1.data().id);
                     });
+                    const listIdRequester = [id];     //*
+                    const fromRequests = doc.data().fromRequest;
+                    if(fromRequests !== undefined){
+                        fromRequests.forEach(oneRequest => {
+                            listIdRequester.push(oneRequest.idRequester);
+                        });
+                    }
+                    const toRequests = doc.data().toRequest;
+                    if(toRequests !== undefined){
+                        toRequests.forEach(oneRequest => {
+                            listIdRequester.push(oneRequest.idRequester);
+                        });
+                    }
+                    listIdRequester.forEach(id1 => {
+                        listIdUsers.forEach(id2 => {
+                            if(id1 === id2){
+                                var index = listIdUsers.indexOf(id2);
+                                listIdUsers.splice(index,1);
+                            }
+                        });
+                    });
+                    let listUserStranger = [];
+                    listIdUsers.forEach(async id => {
+                        listUserStranger.push(await getUserById(id));
+                    });
+                    setListStranger(listUserStranger);
+                } else{
+                    let listIdUsers = [];   //*
+                    const querySnapShot1 = await getDocs(collection(database, "Users"));
+                    querySnapShot1.forEach((doc1) => {
+                        listIdUsers.push(doc1.data().id);
+                    });
+                    const listIdRequester = [id];
+                    listIdRequester.forEach(id1 => {
+                        listIdUsers.forEach(id2 => {
+                            if(id1 === id2){
+                                var index = listIdUsers.indexOf(id2);
+                                listIdUsers.splice(index,1);
+                            }
+                        });
+                    });
+                    let listUserStranger = [];
+                    listIdUsers.forEach(async id => {
+                        listUserStranger.push(await getUserById(id));
+                    });
+                    setListStranger(listUserStranger);
                 }
-                const toRequests = doc.data().toRequest;
-                if(toRequests !== undefined){
-                    toRequests.forEach(oneRequest => {
-                        listIdRequester.push(oneRequest.idRequester);
-                    });
-                }
-                listIdRequester.forEach(id1 => {
-                    listIdUsers.forEach(id2 => {
-                        if(id1 === id2){
-                            var index = listIdUsers.indexOf(id2);
-                            listIdUsers.splice(index,1);
-                        }
-                    });
-                });
-                var listUserStranger = [];
-                listIdUsers.forEach(async id => {
-                    listUserStranger.push(await getUserById(id));
-                });
-                setListStranger(listUserStranger);
+
             });
             return unsub;
         };

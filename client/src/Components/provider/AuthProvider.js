@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useCallback, useEffect, useState } from 'react';
 import { auth, database } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -12,9 +13,8 @@ export const AuthProvider = ({ children }) => {  //AuthProvider đc gọi từ A
 
   useEffect(() => {
     setSocket(io.connect("http://localhost:4000"));
-  }, [])
+  }, []);
   
-
   console.log('>> AuthProvider rerender , current user : ', currentUser);
 
   const setUserContext = useCallback((user) => {
