@@ -1,3 +1,6 @@
+#OneRoom{
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 50px;
+}
 #OneRoom:hover{
     cursor: pointer;
     box-shadow: rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px;

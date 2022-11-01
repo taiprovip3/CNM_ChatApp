@@ -5,6 +5,8 @@ import { addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, onSn
 import React, { memo, useEffect, useState } from 'react';
 import { FcInvite } from 'react-icons/fc';
 import { database } from '../../firebase';
+import "../css/ListFriend.css";
+import { IoArrowRedoSharp, IoArrowUndoSharp } from 'react-icons/io5';
 
 export default memo(function ListFriend({ currentUser }) {
 
@@ -126,16 +128,16 @@ export default memo(function ListFriend({ currentUser }) {
   return (
     <div className='h-100'>
         <div className='h-50 overflow-auto'>
-            <p>Lời mời kết bạn (<FcInvite />):</p>
+            <p>Lời mời kết bạn (<IoArrowUndoSharp />):</p>
             <div className="d-flex flex-wrap">
                 {
                     listFromRequest.map(request => {
-                        return <div className='border text-center rounded' style={{ backgroundColor: '#dce1e8', width: '25%', height:'25%'}} key={request.idRequester}>
+                        return <div className='text-center rounded' id="OneBoxRequest" key={request.idRequester}>
                             <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
                             <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
                                 <span>{request.description}</span>
                                 <br />
-                                <button className='btn btn-primary btn-sm w-75' onClick={() => handleAcceptRequest(request)}>Đồng ý</button>
+                                <button className='btn btn-link btn-sm w-100' onClick={() => handleAcceptRequest(request)}>Đồng ý</button>
                             </div>
                         </div>;
                     })
@@ -143,16 +145,16 @@ export default memo(function ListFriend({ currentUser }) {
             </div>
         </div>
         <div className='h-50 border-top overflow-auto'>
-            <p>Lời gởi kết bạn đến người khác (<FcInvite />):</p>
+            <p>Lời gởi kết bạn đến người khác (<IoArrowRedoSharp />):</p>
             <div className="d-flex flex-wrap">
                 {
                     listToRequest.map(request => {
-                        return <div className='border text-center rounded' style={{ backgroundColor: '#dce1e8', width: '25%', height:'25%'}} key={request.idRequester}>
+                        return <div className='text-center rounded' id="OneBoxRequest" key={request.idRequester}>
                             <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
                             <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
                                 <span>{request.description}</span>
                                 <br />
-                                <button className='btn btn-danger btn-sm w-75' onClick={() => handleCancelRequest(request)}>Huỷ yêu cầu</button>
+                                <button className='btn btn-link btn-sm w-100' onClick={() => handleCancelRequest(request)}>Huỷ yêu cầu</button>
                             </div>
                         </div>;
                     })

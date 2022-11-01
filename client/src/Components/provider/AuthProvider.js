@@ -24,29 +24,6 @@ export const AuthProvider = ({ children }) => {  //AuthProvider đc gọi từ A
     return currentUser;
   }, [currentUser]);
 
-  // useEffect(() => {
-  //   // setSocket(io.connect("http://localhost:4000"));
-  //   onAuthStateChanged(auth, (user) => {
-  //       if(user){ //Nếu đăng nhập
-  //         const { uid } = user;
-  //         const UsersDocRef = doc(database, "Users", uid);
-  //         getDoc(UsersDocRef)
-  //         .then(docSnap => {
-  //           setCurrentUser(docSnap.data());
-  //           setLoading(false);
-  //         })
-  //         .catch(error => {
-  //           console.log('(x) In AuthProvider error: ', error);
-  //         });
-  //       } else{
-  //         console.log(user);
-  //         setCurrentUser(null);
-  //         console.log('owwww');
-  //         setLoading(true);
-  //       }
-  //   });
-  // }, []);
-
   return (
     <AuthContext.Provider value={{ currentUser, socket, setUserContext, getUserContext }}>  
       {children}
