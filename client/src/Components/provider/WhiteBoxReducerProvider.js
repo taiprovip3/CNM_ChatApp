@@ -5,8 +5,6 @@ import RegisterBoxComponent from '../fragment/homepage/RegisterBoxComponent';
 import RegisterOtpBoxComponent from '../fragment/homepage/RegisterOtpBoxComponent';
 import VerifyOtpBoxComponent from '../fragment/homepage/VerifyOtpBoxComponent';
 import ForgotPasswordBoxComponent from '../fragment/homepage/ForgotPasswordBoxComponent';
-import ResetPasswordOTPBoxComponent from '../fragment/homepage/ResetPasswordOTPBoxComponent';
-
 export const WhiteBoxReducerContext = React.createContext();
 export default function WhiteBoxReducerProvider({ children }) {
 
@@ -28,9 +26,6 @@ export default function WhiteBoxReducerProvider({ children }) {
     const forgotPasswordBoxComponent = () => {
         return <ForgotPasswordBoxComponent />;
     }
-    const resetPasswordOTPBoxComponent = () => {
-      return <ResetPasswordOTPBoxComponent />;
-  }
 
     const factoryReducer = (state, action) => {
         switch(action){
@@ -46,8 +41,6 @@ export default function WhiteBoxReducerProvider({ children }) {
             return verifyOtpBoxComponent();
           case "SHOW_FORGOT_PASSWORD_BOX_COMPONENT":
             return forgotPasswordBoxComponent();
-          case "SHOW_RESET_PASSWORD_OTP_BOX_COMPONENT":
-            return resetPasswordOTPBoxComponent();
           default:
             return state;
         }

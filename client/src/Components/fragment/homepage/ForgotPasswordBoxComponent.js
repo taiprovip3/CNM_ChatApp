@@ -1,5 +1,6 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable no-unused-vars */
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import React, { useCallback, useContext, useState } from 'react';
 import { auth, database } from '../../../firebase';
@@ -24,8 +25,25 @@ export default function LoginEmailBoxComponent() {
     },[]);
 
     const sendEmailVerify = useCallback(() => {
+        if(email === "" || email === undefined){
+            toast.error("Vui lòng nhập trường Email!");
+            return;
+        }
+        var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if(!email.match(mailformat)){
+            toast.error("Email không hợp lệ.");
+            return;
+        }
+        sendPasswordResetEmail(auth, email)
+            .then(() => {
+                toast.success("Vui lòng kiểm tra hộp thư!");
+            })
+            .catch((err) => {
+                console.log(err);
+                toast.error(err.code + err.message);
+            })
 
-    },[]);
+    },[email]);
 
     return (
         <>
@@ -48,22 +66,8 @@ export default function LoginEmailBoxComponent() {
                         </div>
                         <div className="form-check text-start">
                             <input type="radio" className="form-check-input" id="forgotPassword" name="selectLoginType" value="forgotPassword" defaultChecked />
-                            <label className="form-check-label" htmlFor="byOTP">Quên mật khẩu</label>
+                            <label className="form-check-label" htmlFor="forgotPassword">Quên mật khẩu</label>
                         </div>
-                        <ul>
-                            <li>
-                                <div className="form-check text-start">
-                                    <input type="radio" className="form-check-input" id="resetByEmail" name="selectResetType" value="resetByEmail" defaultChecked />
-                                    <label className="form-check-label" htmlFor="resetByEmail">Reset bằng email</label>
-                                </div>
-                            </li>
-                            <li>
-                                <div className="form-check text-start">
-                                    <input type="radio" className="form-check-input" id="resetByOTP" name="selectResetType" value="resetByOTP" onChange={() => dispatch("SHOW_RESET_PASSWORD_OTP_BOX_COMPONENT")} style={{cursor: 'pointer'}} />
-                                    <label className="form-check-label text-muted" htmlFor="resetByOTP">Reset bằng mã OTP</label>
-                                </div>
-                            </li>
-                        </ul>
 
 
                     <div className="input-group flex-nowrap mt-4">

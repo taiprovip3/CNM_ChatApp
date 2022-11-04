@@ -12,8 +12,8 @@ import { IoIosLock } from 'react-icons/io';
 
 export default function LoginBoxComponent() {
 
-    const [logEmail, setLogEmail] = useState('nva@gmail.com');
-    const [logPassword, setLogPassword] = useState('123123az');
+    const [logEmail, setLogEmail] = useState('nhito1doraemon@gmail.com');
+    const [logPassword, setLogPassword] = useState('087663az');
     const history = useNavigate();
 
     const { dispatch } = useContext(WhiteBoxReducerContext);
@@ -44,7 +44,7 @@ export default function LoginBoxComponent() {
                     }, 1500);
                 } else{
                     toast.error("Tài khoản này chưa được xác thực");
-                    toast.error("Vui lòng chọn mục `Quên mật khẩu` để reset");
+                    toast.error("Vui lòng chọn mục `Quên mật khẩu` để tái xác thực");
                     return;
                 }
 
@@ -83,7 +83,7 @@ export default function LoginBoxComponent() {
                         </div>
                         <div className="form-check text-start">
                             <input type="radio" className="form-check-input" id="forgotPassword" name="selectLoginType" value="forgotPassword" onChange={() => dispatch("SHOW_FORGOT_PASSWORD_BOX_COMPONENT")} style={{cursor: 'pointer'}} />
-                            <label className="form-check-label text-muted" htmlFor="byOTP">Quên mật khẩu</label>
+                            <label className="form-check-label text-muted" htmlFor="forgotPassword">Quên mật khẩu</label>
                         </div>
                         <br />
 
