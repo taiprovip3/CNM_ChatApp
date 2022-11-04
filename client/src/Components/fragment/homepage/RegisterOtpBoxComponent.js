@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useContext, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
@@ -8,40 +7,49 @@ import { BsPhoneVibrateFill } from 'react-icons/bs';
 import { TiWarning } from 'react-icons/ti';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../../../firebase';
+import { AuthContext } from '../../provider/AuthProvider';
 
 export default function RegisterOtpBoxComponent() {
 
-    const [regPhoneNumber, setRegPhoneNumber] = useState('+84');
-    
-
+    const [regPhoneNumber, setRegPhoneNumber] = useState('');
+    const [countryCode, setCountryCode] = useState('+84');
     const { dispatch } = useContext(WhiteBoxReducerContext);
+    const { setResultConfirmation } = useContext(AuthContext);
 
     const onRegPhoneNumberChange = useCallback((e) => {
         setRegPhoneNumber(e.target.value);
-    }, []);
+    },[]);
+    const onSelectedCountryChange = useCallback((e) => {
+        setCountryCode(e.target.value);
+    },[]);
 
-    const generateCaptcha = () => {
+    const generateCaptcha = useCallback(() => {
         window.recaptchaVerifier = new RecaptchaVerifier("recaptcha-container", {
-          'size': 'invisible',
-          'callback': (response) => { //Recaptcha thành công
-            console.log(response);
-            dispatch("SHOW_VERIFY_OTP_BOX_COMPONENT");
-          }
+            'size': 'invisible',
+            'callback': (token) => { //Recaptcha thành công
+                console.log(token);
+            },
+            'expired-callback': () => {
+                toast.error("reCAPTCHA đã quá hạn, vui lòng refresh.");
+            },
+            'error-callback': () => {
+                toast.error("Error reCAPTCHA callback, please retry");
+            }
         }, auth);
-    }
-
+    },[]);
     const handleRegisterAccountByPhoneNumberProvider = useCallback(() => {
-        if(regPhoneNumber === "" || regPhoneNumber === undefined || regPhoneNumber === "+84") {
+        if(regPhoneNumber === "" || regPhoneNumber === undefined) {
           toast.error('Vui lòng nhập số điện thoại');
           return;
         }
             generateCaptcha();
             let appVerified = window.recaptchaVerifier; //appVerified -> con window đã recaptcha thành công
-            signInWithPhoneNumber(auth, regPhoneNumber, appVerified)
+            signInWithPhoneNumber(auth, countryCode + regPhoneNumber, appVerified)
                 .then(confirmationResult => { //Firebase trả về 1 xác thực có chứa OTP, hết hạn sau 30s
-                    window.confirmationResult = confirmationResult;
                     toast.info('Mã OTP đã gửi đến `'+ regPhoneNumber + '`');
                     toast.info('Hết hạn sau 30s...');
+                    setResultConfirmation(confirmationResult);
+                    dispatch("SHOW_VERIFY_OTP_BOX_COMPONENT");
                 })
                 .catch(err => {
                     console.log(err);
@@ -50,8 +58,7 @@ export default function RegisterOtpBoxComponent() {
                 .finally(() => {
                     window.recaptchaVerifier.clear();
                 });
-    
-    }, [regPhoneNumber]);
+    }, [countryCode, dispatch, generateCaptcha, regPhoneNumber, setResultConfirmation]);
 
     return (
         <>
@@ -76,7 +83,7 @@ export default function RegisterOtpBoxComponent() {
 
                     <div className="input-group flex-nowrap mt-4 mb-3">
                         <span className="input-group-text" id="addon-wrapping">
-                            <select name="selectedCountry" id="selectedCountry" className='form-select'>
+                            <select name="selectedCountry" id="selectedCountry" className='form-select' onChange={(e) => onSelectedCountryChange(e)} >
                                 <option value="+84">Vietnam</option>
                                 <option value="+886">Taiwan</option>
                                 <option value="+82">South Korea</option>
@@ -85,11 +92,12 @@ export default function RegisterOtpBoxComponent() {
                                 <option value="+1">United States</option>
                             </select>
                         </span>
-                        <input type="text" className="form-control p-2" placeholder="Số điện thoại" aria-label="Số điện thoại" aria-describedby="addon-wrapping" onChange={onRegPhoneNumberChange} value={regPhoneNumber} />
+                        <input type="text" className="form-control p-2" placeholder="Số điện thoại" aria-label="Số điện thoại" aria-describedby="addon-wrapping" onChange={onRegPhoneNumberChange} value={regPhoneNumber} onKeyPress={e => {
+                            if(e.key === 'Enter')
+                            handleRegisterAccountByPhoneNumberProvider();
+                        }} />
                     </div>
                     <button className='btn btn-primary w-75 my-3' onClick={handleRegisterAccountByPhoneNumberProvider}>Gửi mã OTP</button>
-                    <br />
-                    <button className='btn btn-link text-decoration-none' onClick={() => dispatch("SHOW_REGISTER_BOX_COMPONENT")}>Quay lại</button>
                 </div>
             </div>
         </>

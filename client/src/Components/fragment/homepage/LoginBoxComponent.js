@@ -29,16 +29,25 @@ export default function LoginBoxComponent() {
     const handleLoginAccountByUsernameAndPassword = useCallback((e) => {
         signInWithEmailAndPassword(auth, logEmail, logPassword)
             .then(async (userCredential) => {
-                console.log('User signed in: ', userCredential);
-                const { user: { uid } } = userCredential;
-                const UsersDocRef = doc(database, "Users", uid);
-                const UsersDocSnap = await getDoc(UsersDocRef);
-                console.log(UsersDocSnap.data());
-                setUserContext(UsersDocSnap.data());
-                toast.success('Đăng nhập thành công');
-                setTimeout(() => {
-                    history('/');
-                }, 1500);
+                console.log('userCredential = ', userCredential);
+                const { emailVerified } = userCredential.user;
+                if(emailVerified){
+                    console.log('User signed in: ', userCredential);
+                    const { user: { uid } } = userCredential;
+                    const UsersDocRef = doc(database, "Users", uid);
+                    const UsersDocSnap = await getDoc(UsersDocRef);
+                    console.log(UsersDocSnap.data());
+                    setUserContext(UsersDocSnap.data());
+                    toast.success('Đăng nhập thành công');
+                    setTimeout(() => {
+                        history('/');
+                    }, 1500);
+                } else{
+                    toast.error("Tài khoản này chưa được xác thực");
+                    toast.error("Vui lòng chọn mục `Quên mật khẩu` để reset");
+                    return;
+                }
+
             })
             .catch( (error) => {
                 const errorCode = error.code;

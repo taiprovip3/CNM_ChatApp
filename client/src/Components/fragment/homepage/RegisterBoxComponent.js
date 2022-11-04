@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useContext, useState } from 'react';
 import { WhiteBoxReducerContext } from '../../provider/WhiteBoxReducerProvider';
 import { MdEmail } from 'react-icons/md';
@@ -10,7 +9,7 @@ import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/
 import { auth, database } from '../../../firebase';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import moment from 'moment';
 
 export default function RegisterBoxComponent() {
@@ -37,9 +36,10 @@ export default function RegisterBoxComponent() {
         setRePassword(e.target.value);
       }, []);
 
-      const registerUserSuccessfully = useCallback((userObject) => {
+      const registerAccount = useCallback((userObject) => {
+        console.log('user object = ', userObject);
         toast.success('Đăng ký tài khoản thành công');
-        toast.success('Dịch chuyển bạn đến trang chủ... 👋');
+        toast.success('Vui lòng kiểm tra hộp thư email... 👋');
         const { email, uid } = userObject;
         const user = {
           id: uid,
@@ -55,17 +55,17 @@ export default function RegisterBoxComponent() {
           phoneNumber: regPhoneNumber,
           bod: 1,
           bom: 1,
-          boy: parseInt(new Date().getFullYear-119)
+          boy: parseInt(new Date().getFullYear()-119)
         }
         setDoc(doc(database, 'Users', uid), user);
-      }, [fullName, regPhoneNumber]);
-      const verifyEmail = (userCredential) => {
-        sendEmailVerification(userCredential)
-            .then(() => {
-                toast.success("Vui lòng kiểm tra hộp thư email");
-                registerUserSuccessfully(userCredential);
-            });
-      }
+        dispatch("SHOW_LOGIN_BOX_COMPONENT");
+      }, [dispatch, fullName, regPhoneNumber]);
+      const sendVerifyEmail = useCallback((userCredential) => {
+            sendEmailVerification(auth.currentUser)
+                .then(() => {
+                    registerAccount(userCredential.user);
+                });
+      },[registerAccount]);
       const handleRegisterAccountByUsernameAndPassword = useCallback((e) => {
         if(regEmail === ''){
             toast.error('Vui lòng kiểm tra trường `Email`');
@@ -84,21 +84,22 @@ export default function RegisterBoxComponent() {
             return;
         }
         createUserWithEmailAndPassword(auth, regEmail, regPassword)
-            .then( (userCredential) => {
-                verifyEmail(userCredential);
+            .then((userCredential) => {
+                sendVerifyEmail(userCredential);
             })
             .catch( (error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
                 if(errorCode === 'auth/email-already-in-use'){
                     console.log('error1: ', errorCode + errorMessage);
-                    toast.error(errorMessage);
+                    toast.error('Email này đã bị ai đó đăng ký!');
+                    console.log('Nếu không phải là bạn, hãy chọn Reset Password.');
                 } else{
                     console.log('error2: ', errorCode + errorMessage);
                     toast.error(errorMessage);
                 }
             });
-        }, [fullName, rePassword, regEmail, regPassword]);
+        }, [fullName.length, rePassword, regEmail, regPassword, sendVerifyEmail]);
 
     return (
         <>

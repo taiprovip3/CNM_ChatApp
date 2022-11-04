@@ -13,18 +13,20 @@ import { IoIosLock } from 'react-icons/io';
 
 export default function ResetPasswordOTPBoxComponent() {
 
-    const [otp, setOTP] = useState('+84');
+    const [phoneNumber, setPhoneNumber] = useState('');
+    const [countryCode, setCountryCode] = useState('+84');
     const history = useNavigate();
-
     const { dispatch } = useContext(WhiteBoxReducerContext);
     const { setUserContext } = useContext(AuthContext);
 
     const onOTPChange = useCallback((e) => {
-        setOTP(e.target.value);
+        setPhoneNumber(e.target.value);
+    },[]);
+    const onSelectedCountryChange = useCallback((e) => {
+        setCountryCode(e.target.value);
     },[]);
 
     const sendOTPVerify = useCallback(() => {
-
     },[]);
 
     return (
@@ -39,15 +41,15 @@ export default function ResetPasswordOTPBoxComponent() {
 
 
                         <div className="form-check text-start">
-                            <input type="radio" className="form-check-input" id="byEmail" name="selectLoginTye" value="byEmail" onChange={() => dispatch("SHOW_LOGIN_BOX_COMPONENT")} style={{cursor: 'pointer'}} />
+                            <input type="radio" className="form-check-input" id="byEmail" name="selectLoginType" value="byEmail" onChange={() => dispatch("SHOW_LOGIN_BOX_COMPONENT")} style={{cursor: 'pointer'}} />
                             <label className="form-check-label text-muted" htmlFor="byEmail">Đăng nhập bằng tài khoản Email có sẵn</label>
                         </div>
                         <div className="form-check text-start">
-                            <input type="radio" className="form-check-input" id="byOTP" name="selectLoginTye" value="byOTP" onChange={() => dispatch("SHOW_LOGIN_OTP_BOX_COMPONENT")} style={{cursor: 'pointer'}} />
+                            <input type="radio" className="form-check-input" id="byOTP" name="selectLoginType" value="byOTP" onChange={() => dispatch("SHOW_LOGIN_OTP_BOX_COMPONENT")} style={{cursor: 'pointer'}} />
                             <label className="form-check-label text-muted" htmlFor="byOTP">Đăng nhập bằng mã xác thực OTP từ điện thoại</label>
                         </div>
                         <div className="form-check text-start">
-                            <input type="radio" className="form-check-input" id="forgotPassword" name="selectLoginTye" value="forgotPassword" defaultChecked />
+                            <input type="radio" className="form-check-input" id="forgotPassword" name="selectLoginType" value="forgotPassword" defaultChecked />
                             <label className="form-check-label" htmlFor="byOTP">Quên mật khẩu</label>
                         </div>
                         <ul>
@@ -68,7 +70,7 @@ export default function ResetPasswordOTPBoxComponent() {
 
                     <div className="input-group flex-nowrap mt-4">
                         <span className="input-group-text" id="addon-wrapping">
-                            <select name="selectedCountry" id="selectedCountry" className='form-select'>
+                            <select name="selectedCountry" id="selectedCountry" className='form-select' onChange={(e) => onSelectedCountryChange(e)}>
                                 <option value="+84">Vietnam</option>
                                 <option value="+886">Taiwan</option>
                                 <option value="+82">South Korea</option>
@@ -77,7 +79,7 @@ export default function ResetPasswordOTPBoxComponent() {
                                 <option value="+1">United States</option>
                             </select>
                         </span>
-                        <input type="text" className="form-control p-2" placeholder="Nhập số điện thoại" aria-label="Nhập số điện thoại" aria-describedby="addon-wrapping" onChange={onOTPChange} value={otp} onKeyPress={e => {
+                        <input type="text" className="form-control p-2" placeholder="Nhập số điện thoại" aria-label="Nhập số điện thoại" aria-describedby="addon-wrapping" onChange={onOTPChange} value={phoneNumber} onKeyPress={e => {
                             if(e.key === 'Enter')
                             sendOTPVerify();
                         }} />

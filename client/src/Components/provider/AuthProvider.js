@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {  //AuthProvider đc gọi từ A
 
   const [currentUser, setCurrentUser] = useState(null);
   const [socket, setSocket] = useState(null);
+  const [confirmationToken, setConfirmationToken] = useState(null);
 
   useEffect(() => {
     setSocket(io.connect("http://localhost:4000"));
@@ -23,9 +24,12 @@ export const AuthProvider = ({ children }) => {  //AuthProvider đc gọi từ A
   const getUserContext = useCallback(() => {
     return currentUser;
   }, [currentUser]);
+  const setResultConfirmation = useCallback((resultConfirmation) => {
+    setConfirmationToken(resultConfirmation);
+  },[]);
 
   return (
-    <AuthContext.Provider value={{ currentUser, socket, setUserContext, getUserContext }}>  
+    <AuthContext.Provider value={{ currentUser, socket, setUserContext, getUserContext, confirmationToken, setResultConfirmation }}>  
       {children}
     </AuthContext.Provider>
   )
