@@ -210,7 +210,7 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                                   objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
                                   <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
                                   :
-                                  <span className='text-white fw-bold'>{objectMessage.msg}</span>
+                                  <span className='fw-bold'>{objectMessage.msg}</span>
                                 }
                                 <br />
                                 <span className='text-muted small'>{objectMessage.time}</span>

@@ -72,7 +72,6 @@ export default function FirebaseGetStrangers(idUser) {
                     });
                     setListStranger(listUserStranger);
                 }
-
             });
             return unsub;
         };

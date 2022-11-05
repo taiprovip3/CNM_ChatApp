@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useContext, useState } from 'react';
 import { WhiteBoxReducerContext } from '../../provider/WhiteBoxReducerProvider';
@@ -58,13 +59,20 @@ export default function RegisterBoxComponent() {
           boy: parseInt(new Date().getFullYear()-119)
         }
         setDoc(doc(database, 'Users', uid), user);
-        dispatch("SHOW_LOGIN_BOX_COMPONENT");
+        setTimeout(() => {
+            dispatch("SHOW_LOGIN_BOX_COMPONENT");
+        }, 2000);
       }, [dispatch, fullName, regPhoneNumber]);
       const sendVerifyEmail = useCallback((userCredential) => {
             console.log('auth.currentUser now = ', auth.currentUser);
             sendEmailVerification(auth.currentUser)
                 .then(() => {
                     registerAccount(userCredential.user);
+                })
+                .catch((error) => {
+                    const errorMessage = error.message;
+                    console.log(errorMessage);
+                    toast.error(errorMessage)
                 });
       },[registerAccount]);
       const handleRegisterAccountByUsernameAndPassword = useCallback((e) => {

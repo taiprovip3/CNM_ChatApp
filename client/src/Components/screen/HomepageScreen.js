@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -359,10 +358,6 @@ useEffect(() => { //useEffect gọi hàm stop slidering
         </div>
     </div>;
     }
-//Javascript bootstrap
-// $(function () {
-//     $('[data-toggle="tooltip"]').tooltip();
-// });
 
 //Render giao diện
   return(
@@ -375,7 +370,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
     ?
     <div className="row">
         <div className='col-lg-1 bg-primary border' id='divA'>
-            <div>
+            <div data-bs-toggle="modal" data-bs-target="#SignoutModal">
                 <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
             </div>
             <div className='py-3 rounded my-3' id='frameIconBackgroundSelected'>
@@ -468,7 +463,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
     :
     <div className="row">
         <div className='col-lg-1 bg-primary border' id='divA'>
-            <div>
+            <div data-bs-toggle="modal" data-bs-target="#SignoutModal">
                 <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
             </div>
             <div className='py-3 rounded' id='needCursor' onClick={() => setCurrentRowShow("row-chat")}>
@@ -765,6 +760,38 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                     <div className="modal-footer">
                             <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Huỷ</button>
                         <button className='btn btn-primary text-white'>Cập nhật</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div className="modal fade" id="SignoutModal">
+            <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <p className="modal-title">Đăng xuất tài khoản</p>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div className="modal-body">
+                        <div>
+                            <img src="https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg" alt="backgroundURL" id='backgroundURL' />
+                        </div>
+                        <div className='text-center' style={{marginTop:'-35px'}}>
+                            <img src={photoURL} alt="photoURL" className='border border-dark rounded-circle' width='70' height='70' />
+                            <br />
+                            <span className='fw-bold'>{fullName}</span>
+                            <div class="form-check text-start">
+                                <input type="radio" class="form-check-input" id="nonbackup" name="selectBackupType" value="nonbackup" defaultChecked />
+                                <label class="form-check-label" htmlFor="nonbackup">Đăng xuất tức thị, không lưu vết cho lần đăng nhập sau.</label>
+                            </div>
+                            <div class="form-check text-start">
+                                <input type="radio" class="form-check-input" id="nonbackup" name="selectBackupType" value="nonbackup" />
+                                <label class="form-check-label" htmlFor="nonbackup">Sao lưu các vết session, cookie cho lần đăng nhập sau (Đăng xuất chậm sao lưu, load nhanh cho lần dùng sau).</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button className='btn btn-danger text-white w-100'>Đăng xuất tài khoản</button>
                     </div>
 
                 </div>

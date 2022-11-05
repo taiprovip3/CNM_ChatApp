@@ -57,6 +57,8 @@ export default function AuthenticationScreen() {
                     <br />
                     <AiOutlineFieldNumber />3. Trường hợp email của đã bị người khác cố tình đăng ký vui lòng chọn trường <code>`Quên Mật Khẩu`</code>.
                     <br />
+                    <AiOutlineFieldNumber />4. Trường hợp không thấy email xác thực đăng ký tài khoản vui lòng kiểm tra mục <code>`Thư rác` (spam mail)</code>.
+                    <br />
                     <mark>LOGIN</mark>
                     <br />
                     <AiOutlineFieldNumber />1. Tài khoản đã đăng ký nhưng chưa xác thực sẽ không thể đăng nhập.

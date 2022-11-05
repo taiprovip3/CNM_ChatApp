@@ -12,8 +12,8 @@ import { IoIosLock } from 'react-icons/io';
 
 export default function LoginBoxComponent() {
 
-    const [logEmail, setLogEmail] = useState('nhito1doraemon@gmail.com');
-    const [logPassword, setLogPassword] = useState('087663az');
+    const [logEmail, setLogEmail] = useState('taito1doraemon@gmail.com');
+    const [logPassword, setLogPassword] = useState('123123az');
     const history = useNavigate();
 
     const { dispatch } = useContext(WhiteBoxReducerContext);
@@ -53,7 +53,12 @@ export default function LoginBoxComponent() {
                 const errorCode = error.code;
                 const errorMessage = error.message;
                 console.log(errorMessage);
-                toast.error(errorCode === "auth/user-not-found" ? "Tài khoản chưa được đăng ký" : errorMessage);
+                if(errorCode === "auth/wrong-password"){
+                    toast.error("Sai mật khẩu");
+                }
+                if(errorCode === "auth/user-not-found"){
+                    toast.error("Tài khoản chưa được đăng ký");
+                }
             });
     }, [logEmail, logPassword, history, setUserContext]);
 
