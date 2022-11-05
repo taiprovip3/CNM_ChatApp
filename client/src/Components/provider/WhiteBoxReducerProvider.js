@@ -1,10 +1,10 @@
 import React, { useReducer } from 'react';
-import LoginBoxComponent from '../fragment/homepage/LoginBoxComponent';
-import LoginOTPBoxComponent from '../fragment/homepage/LoginOTPBoxComponent';
-import RegisterBoxComponent from '../fragment/homepage/RegisterBoxComponent';
-import RegisterOtpBoxComponent from '../fragment/homepage/RegisterOtpBoxComponent';
-import VerifyOtpBoxComponent from '../fragment/homepage/VerifyOtpBoxComponent';
-import ForgotPasswordBoxComponent from '../fragment/homepage/ForgotPasswordBoxComponent';
+import LoginBoxComponent from '../fragment/authentication/LoginBoxComponent';
+import LoginOTPBoxComponent from '../fragment/authentication/LoginOTPBoxComponent';
+import RegisterBoxComponent from '../fragment/authentication/RegisterBoxComponent';
+import RegisterOtpBoxComponent from '../fragment/authentication/RegisterOtpBoxComponent';
+import VerifyOtpBoxComponent from '../fragment/authentication/VerifyOtpBoxComponent';
+import ForgotPasswordBoxComponent from '../fragment/authentication/ForgotPasswordBoxComponent';
 export const WhiteBoxReducerContext = React.createContext();
 export default function WhiteBoxReducerProvider({ children }) {
 

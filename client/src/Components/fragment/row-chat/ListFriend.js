@@ -3,14 +3,33 @@
 /* eslint-disable array-callback-return */
 import { addDoc, arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, onSnapshot, setDoc, updateDoc } from 'firebase/firestore';
 import React, { memo, useEffect, useState } from 'react';
-import { FcInvite } from 'react-icons/fc';
-import { database } from '../../firebase';
-import "../css/ListFriend.css";
+import { GiSurprisedSkull, GiCardboardBox } from 'react-icons/gi';
+import { CgSmileNone } from 'react-icons/cg';
+import { TbMoodEmpty } from 'react-icons/tb';
+import { database } from '../../../firebase';
+import "../../css/ListFriend.css";
 import { IoArrowRedoSharp, IoArrowUndoSharp } from 'react-icons/io5';
+import { AuthContext } from '../../provider/AuthProvider';
 
-export default memo(function ListFriend({ currentUser }) {
+export default memo(function ListFriend() {
 
-  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
+    // <p>Lời mời kết bạn (<IoArrowUndoSharp />):</p>
+    // <div className="d-flex flex-wrap">
+    //     {
+    //         listFromRequest.map(request => {
+    //             return <div className='text-center rounded' id="OneBoxRequest" key={request.idRequester}>
+    //                 <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
+    //                 <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
+    //                     <span>{request.description}</span>
+    //                     <br />
+    //                     <button className='btn btn-link btn-sm w-100' onClick={() => handleAcceptRequest(request)}>Đồng ý</button>
+    //                 </div>
+    //             </div>;
+    //         })
+    //     }
+    // </div>
+
+  const { currentUser: { id } } = React.useContext(AuthContext);
   const [listFromRequest, setListFromRequest] = useState([]);
   const [listToRequest, setListToRequest] = useState([]);
 
@@ -128,20 +147,15 @@ export default memo(function ListFriend({ currentUser }) {
   return (
     <div className='h-100'>
         <div className='h-50 overflow-auto'>
-            <p>Lời mời kết bạn (<IoArrowUndoSharp />):</p>
-            <div className="d-flex flex-wrap">
-                {
-                    listFromRequest.map(request => {
-                        return <div className='text-center rounded' id="OneBoxRequest" key={request.idRequester}>
-                            <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
-                            <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
-                                <span>{request.description}</span>
-                                <br />
-                                <button className='btn btn-link btn-sm w-100' onClick={() => handleAcceptRequest(request)}>Đồng ý</button>
-                            </div>
-                        </div>;
-                    })
-                }
+            <div className='border h-100 d-flex justify-content-center align-items-center'>
+                <div className='text-center border p-3 rounded' style={{ boxShadow: 'rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px' }}>
+                    <div className='d-flex justify-content-center align-items-center'>
+                        <GiSurprisedSkull className='display-6' />
+                        <TbMoodEmpty className='display-6' />
+                        <CgSmileNone className='display-6' />
+                    </div>
+                    <div>Bạn không có bất cứ lời yêu cầu kết bạn nào cả!</div>
+                </div>
             </div>
         </div>
         <div className='h-50 border-top overflow-auto'>

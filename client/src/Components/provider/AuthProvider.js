@@ -8,29 +8,33 @@ import { doc, getDoc } from 'firebase/firestore';
 export const AuthContext = React.createContext();
 export const AuthProvider = ({ children }) => {  //AuthProvider đc gọi từ App.js bọc nguyên phần thân
 
-  const [currentUser, setCurrentUser] = useState(null);
-  const [socket, setSocket] = useState(null);
-  const [confirmationToken, setConfirmationToken] = useState(null);
+    const [currentUser, setCurrentUser] = useState(null);
+    const [socket, setSocket] = useState(null);
+    const [confirmationToken, setConfirmationToken] = useState(null);
+    const [listRoom, setListRoom] = useState([]);
+    const [listFriend, setListFriend] = useState([]);
+    const [isRunSlidering, setIsRunSlidering] = useState(true);
+    const [currentRowShow, setCurrentRowShow] = useState('row-chat'); //[row-chat, row-phonebook]
 
-  useEffect(() => {
-    setSocket(io.connect("http://localhost:4000"));
-  }, []);
-  
-  console.log('>> AuthProvider rerender , current user : ', currentUser);
+    console.log('>> AuthProvider rerender , current user : ', currentUser);
 
-  const setUserContext = useCallback((user) => {
-    setCurrentUser(user);
-  }, []);
-  const getUserContext = useCallback(() => {
-    return currentUser;
-  }, [currentUser]);
-  const setResultConfirmation = useCallback((resultConfirmation) => {
-    setConfirmationToken(resultConfirmation);
-  },[]);
+    useEffect(() => {
+      setSocket(io.connect("http://localhost:4000"));
+    }, []);
 
-  return (
-    <AuthContext.Provider value={{ currentUser, socket, setUserContext, getUserContext, confirmationToken, setResultConfirmation }}>  
-      {children}
-    </AuthContext.Provider>
-  )
+    const setUserContext = useCallback((user) => {
+      setCurrentUser(user);
+    }, []);
+    const getUserContext = useCallback(() => {
+      return currentUser;
+    }, [currentUser]);
+    const setResultConfirmation = useCallback((resultConfirmation) => {
+      setConfirmationToken(resultConfirmation);
+    },[]);
+
+    return (
+      <AuthContext.Provider value={{ socket, confirmationToken, setResultConfirmation, currentUser, setUserContext, getUserContext, setListRoom, listRoom, setListFriend, listFriend, setIsRunSlidering, isRunSlidering, currentRowShow, setCurrentRowShow }}>  
+        {children}
+      </AuthContext.Provider>
+    )
 }

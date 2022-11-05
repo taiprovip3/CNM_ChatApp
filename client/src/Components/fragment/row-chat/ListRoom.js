@@ -2,13 +2,14 @@
 /* eslint-disable no-unused-vars */
 import { doc, getDoc } from 'firebase/firestore';
 import React, { memo, useCallback, useEffect, useState } from 'react';
-import { database } from '../../firebase';
-import "../css/ListRoom.css";
+import { database } from '../../../firebase';
+import { AuthContext } from '../../provider/AuthProvider';
+import "../../css/ListRoom.css";
 
-export default memo(function ListRoom({ currentUser, listRoom }) {
+export default memo(function ListRoom() {
   console.log('App Rerender');
 //Khởi tạo biến
-  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
+  const { currentUser: { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber }, listRoom } = React.useContext(AuthContext);
   const [newListRoom, setNewListRoom] = useState([]);
 
   const convertListRoom = useCallback(async (listRoom) => {

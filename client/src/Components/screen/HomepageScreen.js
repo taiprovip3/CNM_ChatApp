@@ -5,62 +5,39 @@ import { AuthContext } from '../provider/AuthProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import "../css/HomepageScreen.css";
-import { BsFillShieldLockFill, BsFillChatTextFill } from 'react-icons/bs'
-import { RiSettings5Line, RiFolderUserFill } from 'react-icons/ri';
-import { BiSearchAlt } from 'react-icons/bi';
-import { HiUserAdd, HiSearch, HiOutlineUserGroup } from 'react-icons/hi';
+import { BsFillShieldLockFill } from 'react-icons/bs'
 import { MdCameraswitch, MdOutlineEditOff } from 'react-icons/md';
 import { FcSmartphoneTablet } from 'react-icons/fc';
-import { FaUserFriends, FaSortAlphaDown } from 'react-icons/fa';
-import { TbPencilOff, TbUpload, TbUsers } from 'react-icons/tb';
+import { FaUserFriends } from 'react-icons/fa';
+import { TbPencilOff, TbUpload } from 'react-icons/tb';
 import { TiCamera } from 'react-icons/ti';
 import { IoIosImages } from 'react-icons/io';
 import { CgClose } from 'react-icons/cg';
-import { AiFillQuestionCircle } from 'react-icons/ai';
-import introduction1 from '../assets/introduction1.png';
-import introduction2 from '../assets/introduction2.png';
-import introduction3 from '../assets/introduction3.png';
-import introduction4 from '../assets/introduction4.png';
-import introduction5 from '../assets/introduction5.png';
-import introduction6 from '../assets/introduction6.png';
-import introduction7 from '../assets/introduction7.png';
-import introduction8 from '../assets/introduction8.png';
+import { HiSearch } from 'react-icons/hi';
 import FirebaseGetRooms from '../service/FirebaseGetRooms';
 import FirebaseGetFriends from '../service/FirebaseGetFriends';
-import ChatFriend from '../fragment/ChatFriend';
-import ChatRoom from '../fragment/ChatRoom';
-import ListFriend from '../fragment/ListFriend';
-import ListRoom from '../fragment/ListRoom';
-import { arrayUnion, collection, doc, documentId, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../firebase';
 import moment from 'moment';
 import FirebaseGetStrangers from '../service/FirebaseGetStrangers';
 import $ from 'jquery';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import RowChat from '../fragment/homepage/RowChat';
+import RowPhonebook from '../fragment/homepage/RowPhonebook';
 
 export default function HomepageScreen() {
 
 //Khai báo biến
-  var { currentUser, socket, setUserContext } = useContext(AuthContext);
+  var { currentUser, setUserContext, setListRoom, setListFriend, listFriend, setIsRunSlidering, currentRowShow } = useContext(AuthContext);
   var defaultObjectUser = {id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', email: 'ptt@gmail.com', address: 'undifined', age: 0, fullName: 'Phan Tấn Tài', joinDate: 'October 26th 2022, 3:38:30 pm', phoneNumber: '+84', photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg', role: ['MEMBER', 'ADMIN'], sex: false, slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'};
-  const myIndex = useRef(0);
-  const intervalRef = useRef(null);
-  const [listRoom, setListRoom] = useState([]);
-  const [listFriend, setListFriend] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [selectedFriend, setSelectedFriend] = useState(null);
-  const [idRoomOfSelectedFriendAndYou, setIdRoomOfSelectedFriendAndYou] = useState('');
   const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
   const [listUserStranger, setListUserStranger] = useState([]);
-  const [currentRowShow, setCurrentRowShow] = useState('row-chat'); //[row-chat, row-phonebook]
-  const [selectedObject, setSelectedObject] = useState('DanhSachKetBan');
-
   const [inputNameRoom, setInputNameRoom] = useState('');   //các useState dùng cho tạo room
-  const [selectedChkUser, setSelectedChkUser] = useState([]);
   const [listFriendCopy, setListFriendCopy] = useState([]);
   const counter = useRef(0);
   const [counterCheckedUser, setCounterCheckedUser] = useState(0);
-  if(currentUser == null){
+  
+  if(currentUser == null) {
     currentUser = defaultObjectUser;
     defaultObjectUser = null;
   }
@@ -91,68 +68,29 @@ useEffect(() => {
         setCounterCheckedUser(counter.current);
     }
 },[listFriendCopy]);
-const intervalSlider = () => { //Hàm start slidering
-    intervalRef.current = setInterval(() => {
-        var i;
-        for (i = 0; i < 8; i++) {
-            var obj1 = "#imgSliders" + i;
-            $(obj1).css("display", "none");
-        }
-        myIndex.current++;
-        if (myIndex.current > 8)
-            myIndex.current = 1;
-        var rs = myIndex.current-1;
-        var obj2 = "#imgSliders" + rs;
-        $(obj2).css("display", "block");
-    }, 2000);
-}
-const stopSlider = () => { //Hàm stop slidering
-    clearInterval(intervalRef.current);
-    intervalRef.current = null;
-}
-useEffect(() => { //useEffect gọi hàm start sliderding
-    intervalSlider();
-},[]);
-useEffect(() => { //useEffect gọi hàm stop slidering
-    if(selectedRoom !== null || selectedFriend !== null){
-        stopSlider();
-    }
-},[selectedRoom, selectedFriend]);
     const rooms = FirebaseGetRooms(memoIdUser); //Lấy list room firebase
     useEffect(() => {
-    rooms.sort(function(x, y){
-        return x.createAt - y.createAt;
-    });
-    setListRoom(rooms);
-    }, [rooms]);
+        rooms.sort(function(x, y){
+            return x.createAt - y.createAt;
+        });
+        setListRoom(rooms);
+    }, [rooms, setListRoom]);
+
     const friends = FirebaseGetFriends(memoIdUser); //Lấy list friend firebase
     useEffect(() => {
         setTimeout(() => {
-        setListFriend(friends);
+            setListFriend(friends);
         }, 500);
-    }, [friends]);
+    }, [friends, setListFriend]);
+
     const strangers = FirebaseGetStrangers(memoIdUser); //Lấy list strangers firebase
     useEffect(() => {
         setTimeout(() => {
             setListUserStranger(strangers);
         }, 500);
     },[strangers]);
-    const onClickOneRoom = useCallback((obj) => {
-        socket.emit("join_room", obj.id);
-        setSelectedFriend(null);
-        setSelectedRoom(obj);
-    }, [socket]);
-    const onClickOneFriend = useCallback(async (obj) => {
-        const q = query(collection(database, "FriendMessages"), where("listeners", "in", [obj.id + "__" + id, id + "__" + obj.id]));
-        const querySnapShot = await getDocs(q);
-        const idRoom = querySnapShot.docs[0].data().idRoom;
-        socket.emit("join_room", idRoom);
-        setSelectedRoom(null);
-        setSelectedFriend(obj);
-        setIdRoomOfSelectedFriendAndYou(idRoom);
-    }, [id, socket]);
     const handleSelectedImage = useCallback((e) => {
-        alert('Do something with img user upload đi');
+        alert('You have just selected a image from your computer!');
     },[]);
     const renderYobDays = () => {
         const arr = [];
@@ -341,7 +279,6 @@ useEffect(() => { //useEffect gọi hàm stop slidering
 
 //Kiểm tra null user
     if( !defaultObjectUser ) {
-        console.log('Current user in Homepage', currentUser);
         setTimeout(() => {
             window.location.href = '/auth';
     }, 500);
@@ -362,163 +299,14 @@ useEffect(() => { //useEffect gọi hàm stop slidering
 //Render giao diện
   return(
     <div className='container-fluid bg-white' id='outer'>
-    <ToastContainer
-        theme='colored'
-    />
-    {
-    currentRowShow === 'row-chat'
-    ?
-    <div className="row">
-        <div className='col-lg-1 bg-primary border' id='divA'>
-            <div data-bs-toggle="modal" data-bs-target="#SignoutModal">
-                <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
-            </div>
-            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected'>
-                <BsFillChatTextFill className='fs-3 text-white mx-auto d-block' />
-            </div>
-            <div className='py-3 rounded' id='needCursor' onClick={() => setCurrentRowShow("row-phonebook")}>
-                <RiFolderUserFill className='fs-3 text-white mx-auto d-block' />
-            </div>
-            <div id='settings' className='p-1'>
-                <RiSettings5Line id='iconSetting' className='h1 text-white' data-bs-toggle="modal" data-bs-target="#UserInfoModal" />
-            </div>
-        </div>
-        <div className='col-lg-3 border' id='divB'>
-
-            <div className='d-flex align-items-center'>
-                <div className="input-group">
-                <span className="input-group-text"><BiSearchAlt /></span>
-                <input type="text" className="form-control" placeholder="Tìm kiếm" />
-                </div>
-                <HiUserAdd className='h3 m-2' id='needCursor' data-bs-toggle="modal" data-bs-target="#AddFriendModal" />
-                <HiOutlineUserGroup className='h3 m-1' data-bs-toggle="modal" data-bs-target="#CreateRoomModal" id='needCursor' />
-            </div>
-
-            <div className="dropdown p-1" id='category'>
-                <a className="dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" href='.'>Phân loại</a>
-                <ul className="dropdown-menu">
-                <li><a className="dropdown-item active" href=".">Tất cả <FaSortAlphaDown /></a></li>
-                <li><a className="dropdown-item" href=".">Nhóm</a></li>
-                <li><a className="dropdown-item" href=".">Bạn bè</a></li>
-                </ul>
-            </div>
-
-            <div id="FlatListOneBoxItem" className='border'>
-                {
-                    listRoom.map( obj => {
-                        return <div id='needCursor' className={selectedRoom !== obj ? 'container d-flex align-items-center border-bottom' : 'container d-flex align-items-center border border-primary'} key={obj.id} onClick={() => onClickOneRoom(obj)}>
-                        <div className='col-lg-2'>
-                        <img src={obj.urlImage} alt="photoURL" id='roundedAvatarInItem' className='rounded-circle' width='45' height='45' />
-                        </div>
-                        <div className='col-lg-10 p-1'>
-                        <span className='fw-bold'>{obj.name}</span>
-                        <br />
-                        <small className='text-secondary'>{obj.description}</small>
-                        </div>
-                    </div>
-                    })
-                }
-                {
-                    listFriend.map( obj => {
-                    return <div id='needCursor' className={selectedFriend !== obj ? 'container d-flex align-items-center border-bottom' : 'container d-flex align-items-center border border-primary'} key={obj.id} onClick={() => onClickOneFriend(obj)}>
-                                <div className='col-lg-2'>
-                                    <img src={obj.photoURL} alt="photoURL" id='roundedAvatarInItem' className='rounded-circle' width='45' height='45' />
-                                </div>
-                                <div className='col-lg-10 p-1'>
-                                    <span className='fw-bold'>{obj.fullName}</span>
-                                    <br />
-                                    <small className='text-secondary'>{obj.slogan}</small>
-                                </div>
-                            </div>
-                })
-                }
-            </div>
-
-        </div>
-        <div id='divC' className='col-lg-8'>
-            {
-            (!selectedRoom && !selectedFriend) ?
-                <div id='contentDivC' className='text-center'>
-                    <p>Chào mừng đến với <span className='fw-bold fs-5'>UChat PC</span></p>
-                    <span>Khám phá những tiện ích hỗ trợ làm việc và trò chuyện cùng</span>
-                    <br />
-                    <span>người thân, bạn bè được tối ưu hoá cho máy tính của bạn</span>
-                    <img src={introduction1} alt="introduction1" id='imgSliders0' className='mySliders' style={{display:'block'}} />
-                    <img src={introduction2} alt="introduction2" id='imgSliders1' className='mySliders' />
-                    <img src={introduction3} alt="introduction2" id='imgSliders2' className='mySliders' />
-                    <img src={introduction4} alt="introduction4" id='imgSliders3' className='mySliders' />
-                    <img src={introduction5} alt="introduction5" id='imgSliders4' className='mySliders' />
-                    <img src={introduction6} alt="introduction6" id='imgSliders5' className='mySliders' />
-                    <img src={introduction7} alt="introduction7" id='imgSliders6' className='mySliders' />
-                    <img src={introduction8} alt="introduction8" id='imgSliders7' className='mySliders' />
-                </div>
-            :
-            !selectedFriend ?
-                <ChatRoom selectedRoom={selectedRoom} currentUser={currentUser} socket={socket} />
-                :
-                <ChatFriend selectedFriend={selectedFriend} currentUser={currentUser} socket={socket} idRoomOfSelectedFriendAndYou={idRoomOfSelectedFriendAndYou} />
-            }
-        </div>
-    </div>
-    :
-    <div className="row">
-        <div className='col-lg-1 bg-primary border' id='divA'>
-            <div data-bs-toggle="modal" data-bs-target="#SignoutModal">
-                <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
-            </div>
-            <div className='py-3 rounded' id='needCursor' onClick={() => setCurrentRowShow("row-chat")}>
-                <BsFillChatTextFill className='fs-3 text-white mx-auto d-block' />
-            </div>
-            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected' >
-                <RiFolderUserFill className='fs-3 text-white mx-auto d-block' />
-            </div>
-            <div id='settings' className='p-1'>
-                <RiSettings5Line id='iconSetting' className='h1 text-white' data-bs-toggle="modal" data-bs-target="#UserInfoModal" />
-            </div>
-        </div>
-        <div className="col-lg-3 border" id='divB'>
-            <div className='d-flex align-items-center'>
-                <div className="input-group">
-                <span className="input-group-text"><BiSearchAlt /></span>
-                <input type="text" className="form-control" placeholder="Tìm kiếm" />
-                </div>
-                <HiUserAdd className='h3 m-2' id='needCursor' data-bs-toggle="modal" data-bs-target="#AddFriendModal" />
-                <HiOutlineUserGroup className='h3 m-1' data-bs-toggle="modal" data-bs-target="#CreateRoomModal" id='needCursor' />
-            </div>
-            <div>
-                <div className='d-flex align-items-center p-1' id="needCursor" onClick={() => setSelectedObject('DanhSachKetBan')} style={selectedObject === 'DanhSachKetBan' ? {backgroundColor: '#69d0ff'} : {backgroundColor: 'white'}}>
-                    <img src="https://chat.zalo.me/assets/NewFr@2x.820483766abed8ab03205b8e4a8b105b.png" alt="DanhSachKetBan" width='45' height='45' />
-                    <span className='px-1'>Danh sách kết bạn</span>
-                </div>
-                <div className='d-flex align-items-center p-1' id="needCursor" onClick={() => setSelectedObject('DanhSachNhom')} style={selectedObject === 'DanhSachNhom' ? {backgroundColor: '#69d0ff'} : {backgroundColor: 'white'}}>
-                    <img src="https://chat.zalo.me/assets/group@2x.2d184edd797db8782baa0d5c7a786ba0.png" alt="DanhSachNhom" width='45' height='45' />
-                    <span className='px-1'>Danh sách nhóm</span>
-                </div>
-                <hr />
-                <div className="d-flex align-items-center">
-                    <span className='text-primary flex-fill'><TbUsers /> Bạn bè ({listFriend.length})</span>
-                    <AiFillQuestionCircle className='text-primary lead' data-bs-toggle="tooltip" title="Nhấp giải thích" />
-                </div>
-                {
-                    listFriend.map(obj => {
-                        return <div className={selectedFriend === obj ? 'd-flex border border-primary border-3 align-items-center p-1' : 'd-flex align-items-center p-1'} id="needCursor" key={obj.id} onClick={() => onClickOneFriend(obj)}>
-                                    <img src={obj.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
-                                    <span className='px-1'>{obj.fullName}</span>
-                                </div>;
-                    })
-                }
-            </div>
-        </div>
-        <div className="col-lg-8" id='divC'>
-            {
-                selectedObject === 'DanhSachKetBan' ?
-                <ListFriend currentUser={currentUser} />
-                :
-                <ListRoom currentUser={currentUser} listRoom={listRoom} />
-            }
-        </div>
-    </div>
-    }
+    <ToastContainer theme='colored' />
+        {
+        currentRowShow === 'row-chat'
+        ?
+        <RowChat />
+        :
+        <RowPhonebook /> 
+        }
 
 
 
@@ -657,7 +445,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                         <div className="modal-header">
                             <p className="modal-title fw-bold">Cập nhật thông tin <MdOutlineEditOff /></p>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" style={{display: 'none'}} id="closeUpdateInfoModal"></button>
-                            <CgClose className='btn-close' id="needCursor" onClick={() => handleCloseUpdateUserInfoModal()} />
+                            <CgClose className='btn-close needCursor' onClick={() => handleCloseUpdateUserInfoModal()} />
                         </div>
                         <form onSubmit={handleUpdateUser}>
                         <div className="modal-body">
@@ -780,13 +568,13 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                             <img src={photoURL} alt="photoURL" className='border border-dark rounded-circle' width='70' height='70' />
                             <br />
                             <span className='fw-bold'>{fullName}</span>
-                            <div class="form-check text-start">
-                                <input type="radio" class="form-check-input" id="nonbackup" name="selectBackupType" value="nonbackup" defaultChecked />
-                                <label class="form-check-label" htmlFor="nonbackup">Đăng xuất tức thị, không lưu vết cho lần đăng nhập sau.</label>
+                            <div className="form-check text-start">
+                                <input type="radio" className="form-check-input" id="nonbackup" name="selectBackupType" value="nonbackup" defaultChecked />
+                                <label className="form-check-label" htmlFor="nonbackup">Đăng xuất tức thị, không lưu vết cho lần đăng nhập sau.</label>
                             </div>
-                            <div class="form-check text-start">
-                                <input type="radio" class="form-check-input" id="nonbackup" name="selectBackupType" value="nonbackup" />
-                                <label class="form-check-label" htmlFor="nonbackup">Sao lưu các vết session, cookie cho lần đăng nhập sau (Đăng xuất chậm sao lưu, load nhanh cho lần dùng sau).</label>
+                            <div className="form-check text-start">
+                                <input type="radio" className="form-check-input" id="nonbackup" name="selectBackupType" value="nonbackup" />
+                                <label className="form-check-label" htmlFor="nonbackup">Sao lưu các vết session, cookie cho lần đăng nhập sau (Đăng xuất chậm sao lưu, load nhanh cho lần dùng sau).</label>
                             </div>
                         </div>
                     </div>

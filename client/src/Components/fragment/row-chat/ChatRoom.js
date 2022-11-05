@@ -9,14 +9,15 @@ import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa
 import { GiHand } from 'react-icons/gi';
 import moment from 'moment';
 import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
-import { database, storage } from '../../firebase';
-import FirebaseGetRoomMessages from '../service/FirebaseGetRoomMessages';
+import { database, storage } from '../../../firebase';
+import FirebaseGetRoomMessages from '../../service/FirebaseGetRoomMessages';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from 'uuid';
+import { AuthContext } from '../../provider/AuthProvider';
 
-export default memo(function ChatRoom({ selectedRoom, currentUser, socket }) {
+export default memo(function ChatRoom({ selectedRoom }) {
 //Khởi tạo biến
-  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
+  const { currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
   const memoIdRoom = useMemo(() => {
