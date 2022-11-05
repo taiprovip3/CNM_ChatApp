@@ -52,13 +52,8 @@ export default function LoginBoxComponent() {
             .catch( (error) => {
                 const errorCode = error.code;
                 const errorMessage = error.message;
-                if(errorCode === 'auth/email-already-in-use'){
-                    console.log('error1: ', errorCode + errorMessage);
-                    toast.error(errorCode + errorMessage);
-                } else{
-                    console.log('error2: ', errorCode + errorMessage);
-                    toast.error(errorCode + errorMessage);
-                }
+                console.log(errorMessage);
+                toast.error(errorCode === "auth/user-not-found" ? "Tài khoản chưa được đăng ký" : errorMessage);
             });
     }, [logEmail, logPassword, history, setUserContext]);
 

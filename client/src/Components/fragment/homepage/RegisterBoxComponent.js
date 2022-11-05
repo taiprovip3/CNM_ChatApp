@@ -72,6 +72,11 @@ export default function RegisterBoxComponent() {
             toast.error('Vui lòng kiểm tra trường `Email`');
             return;
         }
+        var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if(!regEmail.match(mailformat)){
+            toast.error("Email không hợp lệ.");
+            return;
+        }
         if(regPassword.length <= 0){
             toast.error('Vui lòng kiểm tra trường `Mật khẩu`');
             return;
