@@ -43,6 +43,7 @@ export default memo(function RowChat() {
             var rs = myIndex.current-1;
             var obj2 = "#imgSliders" + rs;
             $(obj2).css("display", "block");
+            console.log('slidering is running...');
         }, 2000);
     }
     const stopSlider = () => {

@@ -1,5 +1,6 @@
 .mySliders{
     width: 100%;
+    display: none;
 }
 .needCursor:hover{
     cursor: pointer;
