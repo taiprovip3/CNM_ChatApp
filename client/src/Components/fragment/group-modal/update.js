@@ -89,13 +89,13 @@ export default memo(function Update({ objectGroupModal, users, currentUser, setC
             <div>
                 <ul className="nav nav-tabs">
                     <li className="nav-item">
-                        <span className='nav-link' onClick={() => setShowGroupModalComponent("info")}>Thông tin</span>
+                        <span className='nav-link needCursor' onClick={() => setShowGroupModalComponent("info")}>Thông tin</span>
                     </li>
                     <li className="nav-item">
                         <span className='nav-link active'>Cập nhật</span>
                     </li>
                     <li className="nav-item">
-                        <span className='nav-link' onClick={() => setShowGroupModalComponent("authorization")}>Phân quyền</span>
+                        <span className='nav-link needCursor' onClick={() => setShowGroupModalComponent("authorization")}>Phân quyền</span>
                     </li>
                 </ul>
             </div>

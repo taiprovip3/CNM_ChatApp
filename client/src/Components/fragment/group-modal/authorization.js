@@ -4,35 +4,13 @@ import { MdOutlineExitToApp } from 'react-icons/md';
 import { toast } from 'react-toastify';
 import { arrayRemove, doc, updateDoc } from 'firebase/firestore';
 import { database } from '../../../firebase';
+import { FaQuestionCircle } from 'react-icons/fa';
+import { GrUserManager } from 'react-icons/gr';
+import { MdVpnKey, MdGroups } from 'react-icons/md';
+import { RiGroup2Fill } from 'react-icons/ri';
+import { BsThreeDotsVertical } from 'react-icons/bs';
 
 export default memo(function Authorization({ objectGroupModal, users, currentUser, setCurrentRowShow, setShowGroupModalComponent }) {
-
-    //Biến
-    const [listUserInRoom, setListUserInRoom] = useState([]);
-
-    //Hàm
-    const handleLeaveRoom = async () => {
-        const RoomsDocRef = doc(database, "Rooms", objectGroupModal.id);
-        await updateDoc(RoomsDocRef, {
-            listMember: arrayRemove(currentUser.id)
-        });
-        setCurrentRowShow("row-phone-book")
-        toast.success("Rời nhóm thành công");
-    };
-
-    useEffect(() => {
-        const listUser = [];
-        for (let index = 0; index < objectGroupModal.listMember.length; index++) {
-            const element = objectGroupModal.listMember[index];
-            for (let index2 = 0; index2 < users.length; index2++) {
-                const element2 = users[index];
-                if(element === element2.id){
-                    listUser.push(element2);
-                }
-            }
-        }
-        setListUserInRoom(listUser);
-    },[objectGroupModal.listMember, users]);
 
   return (
     <div className="modal-content">
@@ -45,10 +23,10 @@ export default memo(function Authorization({ objectGroupModal, users, currentUse
             <div>
                 <ul className="nav nav-tabs">
                     <li className="nav-item">
-                        <span className='nav-link' onClick={() => setShowGroupModalComponent("info")}>Thông tin</span>
+                        <span className='nav-link needCursor' onClick={() => setShowGroupModalComponent("info")}>Thông tin</span>
                     </li>
                     <li className="nav-item">
-                        <span className='nav-link' onClick={() => setShowGroupModalComponent("update")}>Cập nhật</span>
+                        <span className='nav-link needCursor' onClick={() => setShowGroupModalComponent("update")}>Cập nhật</span>
                     </li>
                     <li className="nav-item">
                         <span className='nav-link active'>Phân quyền</span>
@@ -56,50 +34,55 @@ export default memo(function Authorization({ objectGroupModal, users, currentUse
                 </ul>
             </div>
             {/* 1div */}
-            <div className='border p-3 text-center'>
-                <img src={objectGroupModal.urlImage} alt="urlImage" width='80' height='80' className='rounded-circle needCursor border' />
-                <br />
-                <span className='fw-bold'>{objectGroupModal.name}</span>
-                <br />
-                <span className='small'>{objectGroupModal.description}</span>
+            <div className='border p-3'>
+                <span>Bạn <GrUserManager /></span>
+                <div className="d-flex border rounded p-3" style={{ backgroundColor: '#F8F8F8' }}>
+                    <div className='d-flex align-items-center'>
+                        <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1665818816/seo-on-page_ylu3bt.png" alt="photoURL" width='45' height='45' className='rounded-circle border' />
+                        </div>
+                    <div className='px-1'>
+                        <span className='fw-bold'>Nguyen Van A</span>
+                        <br />
+                        <span>Thanh vien</span>
+                    </div>
+                </div>
             </div>
             {/* 2div */}
-            <div className='border p-3 my-2'>
-                <span>Thành viên ({objectGroupModal.listMember.length})</span>
-                <br />
-                <div className='d-flex overflow-auto'>
-                    {
-                        listUserInRoom.map((user) => {
-                            return <img src={user.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle border' key={Math.random()} />
-                        })
-                    }
-                    <img src="https://cdn3.iconfinder.com/data/icons/math-numbers-solid/24/ellipsis-solid-512.png" alt="photoURL" width='45' height='45' className='rounded-circle border' />
+            <div className="border p-3 my-2">
+                <div className="d-flex">
+                    <span className="flex-fill">Trưởng nhóm <MdVpnKey className='text-warning' data-bs-toggle="tooltip" title="Xem quyền nhóm trưởng" /></span>
+                    <FaQuestionCircle className="text-primary" />
+                </div>
+                <div className="d-flex border rounded p-3" style={{ backgroundColor: '#F1F1F1' }}>
+                    <div className='d-flex align-items-center'>
+                        <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1665818816/seo-on-page_ylu3bt.png" alt="photoURL" width='45' height='45' className='rounded-circle border' />
+                        </div>
+                    <div className='px-1'>
+                        <span className='fw-bold'>Nguyen Van A</span>
+                        <br />
+                        <span>Thanh vien</span>
+                    </div>
                 </div>
             </div>
             {/* 3div */}
-            <div className="border p-3 my-2">
-                <span>Hình ảnh</span>
-                <div className="d-flex overflow-auto">
-                    <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1665818815/seo-off-page_imucfs.png" alt="imageChat" className='rounded border' width='60' height='60' />
-                    <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1665818815/seo-off-page_imucfs.png" alt="imageChat" className='rounded border' width='60' height='60' />
-                    <img src="https://cdn3.iconfinder.com/data/icons/math-numbers-solid/24/ellipsis-solid-512.png" alt="imageChat" className='rounded border' width='60' height='60' />
+            <div className="border p-3 my-2 overflow-auto" style={{ maxHeight: '40vh' }}>
+                <div className="d-flex">
+                    <span className="flex-fill" >Thành viên khác <MdGroups className='text-primary' data-bs-toggle="tooltip" title="Xem quyền thành viên" /></span>
+                    <FaQuestionCircle className="text-primary" />
                 </div>
-            </div>
-            {/* 4div */}
-            <div className='border p-3 my-2'>
-                <div className='d-flex'>
-                    <div className='d-flex justify-content-center align-items-center'><BiLinkAlt className='fs-4 text-primary' /></div>
-                    <div className='px-2'>
-                        <span>Token tham gia nhóm</span>
-                        <br />
-                        <span className='text-primary'>{objectGroupModal.id}</span>
+                    <div className="d-flex border rounded p-3 my-1" style={{ backgroundColor: '#F8F8F8' }}>
+                        <div className='d-flex align-items-center'>
+                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1665818816/seo-on-page_ylu3bt.png" alt="photoURL" width='45' height='45' className='rounded-circle border' />
+                            </div>
+                        <div className='px-1 flex-fill'>
+                            <span className='fw-bold'>Nguyen Van A</span>
+                            <br />
+                            <span>Thanh vien</span>
+                        </div>
+                        <div className='d-flex align-items-center'>
+                            <BsThreeDotsVertical className="lead needCursor" />
+                        </div>
                     </div>
-                </div>
-                <hr />
-                <div className="d-flex text-danger">
-                    <div className='d-flex justify-content-center align-items-center'><MdOutlineExitToApp className='fs-4' /></div>
-                    <div className='px-2 needCursor' onClick={() => handleLeaveRoom()} data-bs-dismiss="modal">Rời nhóm</div>
-                </div>
             </div>
         </div>
     </div>

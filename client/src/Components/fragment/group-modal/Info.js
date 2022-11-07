@@ -4,6 +4,7 @@ import { MdOutlineExitToApp } from 'react-icons/md';
 import { toast } from 'react-toastify';
 import { arrayRemove, doc, updateDoc } from 'firebase/firestore';
 import { database } from '../../../firebase';
+import '../../css/Common.css';
 
 export default memo(function Info({ objectGroupModal, users, currentUser, setCurrentRowShow, setShowGroupModalComponent }) {
 
@@ -48,10 +49,10 @@ export default memo(function Info({ objectGroupModal, users, currentUser, setCur
                         <span className='nav-link active'>Thông tin</span>
                     </li>
                     <li className="nav-item">
-                        <span className='nav-link' onClick={() => setShowGroupModalComponent("update")}>Cập nhật</span>
+                        <span className='nav-link needCursor' onClick={() => setShowGroupModalComponent("update")}>Cập nhật</span>
                     </li>
                     <li className="nav-item">
-                        <span className='nav-link' onClick={() => setShowGroupModalComponent("authorization")}>Phân quyền</span>
+                        <span className='nav-link needCursor' onClick={() => setShowGroupModalComponent("authorization")}>Phân quyền</span>
                     </li>
                 </ul>
             </div>
