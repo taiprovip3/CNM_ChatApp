@@ -15,9 +15,8 @@ export default function LoginBoxComponent() {
     const [logEmail, setLogEmail] = useState('taito1doraemon@gmail.com');
     const [logPassword, setLogPassword] = useState('123123az');
     const history = useNavigate();
-
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setUserContext } = useContext(AuthContext);
+    const { setCurrentUser } = useContext(AuthContext);
 
     const onLogEmailChange = useCallback((e) => {
         setLogEmail(e.target.value);
@@ -37,7 +36,7 @@ export default function LoginBoxComponent() {
                     const UsersDocRef = doc(database, "Users", uid);
                     const UsersDocSnap = await getDoc(UsersDocRef);
                     console.log(UsersDocSnap.data());
-                    setUserContext(UsersDocSnap.data());
+                    setCurrentUser(UsersDocSnap.data());
                     toast.success('Đăng nhập thành công');
                     setTimeout(() => {
                         history('/');
@@ -60,7 +59,7 @@ export default function LoginBoxComponent() {
                     toast.error("Tài khoản chưa được đăng ký");
                 }
             });
-    }, [logEmail, logPassword, history, setUserContext]);
+    }, [logEmail, logPassword, history, setCurrentUser]);
 
     return (
         <>

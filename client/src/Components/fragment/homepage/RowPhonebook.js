@@ -14,7 +14,7 @@ export default function RowPhonebook() {
 
     //Biến
     const { currentUser: { photoURL }, listFriend, setCurrentRowShow } = React.useContext(AuthContext);
-    const [selectedObject, setSelectedObject] = useState(null);
+    const [selectedObject, setSelectedObject] = useState('DanhSachKetBan');
 
     //Hàm
 

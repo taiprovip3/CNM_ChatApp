@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import '../../css/RowChat.css';//css
+import React, { memo, useCallback, useEffect, useState } from 'react';
+import '../../css/RowChat.css';
 import { BsFillChatTextFill } from 'react-icons/bs'
 import { RiSettings5Line, RiFolderUserFill } from 'react-icons/ri';
 import { BiSearchAlt } from 'react-icons/bi';
@@ -23,14 +23,15 @@ import $ from 'jquery';
 export default memo(function RowChat() {
 
     //Biến
-    const { socket, currentUser: { id, photoURL }, listRoom, listFriend, isRunSlidering, setCurrentRowShow } = React.useContext(AuthContext);
+    const { myIndex, intervalRef, stopSlider, socket, currentUser: { id, photoURL }, listRoom, listFriend, setCurrentRowShow } = React.useContext(AuthContext);
     const [selectedObject, setSelectedObject] = useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = useState('');
-    const myIndex = useRef(0);
-    const intervalRef = useRef(null);
 
     //Trợ
-    const intervalSlider = () => { //Hàm start slidering
+    useEffect(() => {//Khi list room trên firebase đc cập nhật do modal update 1 room
+        setSelectedObject(null);
+    },[listRoom])
+    const intervalSlider = useCallback(() => { //Hàm start slidering
         intervalRef.current = setInterval(() => {
             var i;
             for (i = 0; i < 8; i++) {
@@ -45,19 +46,15 @@ export default memo(function RowChat() {
             $(obj2).css("display", "block");
             console.log('slidering is running...');
         }, 2000);
-    }
-    const stopSlider = () => {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-    }
+    },[intervalRef, myIndex]);
     useEffect(() => {
-        intervalSlider();
-    },[]);
+        if(!selectedObject)
+            intervalSlider();
+    },[intervalSlider, selectedObject]);
     useEffect(() => {
-        if(!selectedObject){
+        if(selectedObject)
             stopSlider();
-        }
-    },[selectedObject]);
+    },[selectedObject, stopSlider]);
 
     //Hàm
     const onClickOneRoom = useCallback((obj) => {
@@ -146,13 +143,13 @@ export default memo(function RowChat() {
             </div>
             <div className='col-lg-8' id='divC'>
                 {
-                (isRunSlidering) ?
+                (!selectedObject) ?
                     <div id='sliderDiv' className='text-center'>
                         <p>Chào mừng đến với <span className='fw-bold fs-5'>UChat PC</span></p>
                         <span>Khám phá những tiện ích hỗ trợ làm việc và trò chuyện cùng</span>
                         <br />
                         <span>người thân, bạn bè được tối ưu hoá cho máy tính của bạn</span>
-                        <img src={introduction1} alt="introduction1" id='imgSliders0' className='mySliders' style={{display:'block'}} />
+                        <img src={introduction1} alt="introduction1" id='imgSliders0' className='mySliders' style={{ display: 'block' }} />
                         <img src={introduction2} alt="introduction2" id='imgSliders1' className='mySliders' />
                         <img src={introduction3} alt="introduction2" id='imgSliders2' className='mySliders' />
                         <img src={introduction4} alt="introduction4" id='imgSliders3' className='mySliders' />

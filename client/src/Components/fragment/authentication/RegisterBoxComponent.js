@@ -10,20 +10,20 @@ import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/
 import { auth, database } from '../../../firebase';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import moment from 'moment';
 
 export default function RegisterBoxComponent() {
 
+    //Biến
     const [fullName, setFullName] = useState('');
     const [regEmail, setRegEmail] = useState('');
     const [regPassword, setRegPassword] = useState('');
     const [rePassword, setRePassword] = useState('');
-    const [regPhoneNumber, setRegPhoneNumber] = useState('+84');
-
     const { dispatch } = useContext(WhiteBoxReducerContext);
     
 
+    //Hàm
     const onFullNameChange = useCallback((e) => {
         setFullName(e.target.value);
       }, []);
@@ -53,7 +53,7 @@ export default function RegisterBoxComponent() {
           sex: false,
           photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
           slogan: 'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!',
-          phoneNumber: regPhoneNumber,
+          phoneNumber: '+84',
           bod: 1,
           bom: 1,
           boy: parseInt(new Date().getFullYear()-119)
@@ -62,7 +62,7 @@ export default function RegisterBoxComponent() {
         setTimeout(() => {
             dispatch("SHOW_LOGIN_BOX_COMPONENT");
         }, 2000);
-      }, [dispatch, fullName, regPhoneNumber]);
+      }, [dispatch, fullName]);
       const sendVerifyEmail = useCallback((userCredential) => {
             console.log('auth.currentUser now = ', auth.currentUser);
             sendEmailVerification(auth.currentUser)
@@ -115,6 +115,7 @@ export default function RegisterBoxComponent() {
             });
         }, [fullName.length, rePassword, regEmail, regPassword, sendVerifyEmail]);
 
+    //FontEnd
     return (
         <>
             <ToastContainer theme='colored' />

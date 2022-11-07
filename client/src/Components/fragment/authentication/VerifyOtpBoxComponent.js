@@ -14,22 +14,20 @@ export default function VerifyOtpBoxComponent() {
 
     const [regOTP, setRegOTP] = useState('');
     const history = useNavigate();
-
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setUserContext, confirmationToken } = useContext(AuthContext);
+    const { setCurrentUser, confirmationToken } = useContext(AuthContext);
 
     const onRegOTPChange = useCallback((e) => {
         setRegOTP(e.target.value);
     }, []);
-
     const loginUserCredential = useCallback((userData) => {
         toast.success('Đăng nhập tài khoản thành công');
         toast.success('Dịch chuyển bạn đến trang chủ... 👋');
-        setUserContext(userData);
+        setCurrentUser(userData);
         setTimeout(() => {
             history('/');
         }, 2500);
-    },[history, setUserContext]);
+    },[history, setCurrentUser]);
     const registerAccountUser = useCallback((userObject) => {
         toast.success('Đăng ký tài khoản thành công');
         toast.success('Dịch chuyển bạn đến trang chủ... 👋');
@@ -51,18 +49,16 @@ export default function VerifyOtpBoxComponent() {
           boy: parseInt(new Date().getFullYear()-119)
         }
         setDoc(doc(database, 'Users', uid), user);
-        setUserContext(user);
+        setCurrentUser(user);
         setTimeout(() => {
             history('/');
         }, 2500);
-    }, [history, setUserContext]);
-
+    }, [history, setCurrentUser]);
     const handleConfirmOTP = useCallback((e) => {
         if(regOTP === "" || regOTP == null || regOTP === undefined || regOTP.length <6){
             toast.error('Vui lòng kiểm tra lại field OTP');
             return;
         }
-        // let token = confirmationToken;
         confirmationToken.confirm(regOTP)
             .then(async (userCredential) => {
                 const { uid } = userCredential.user;

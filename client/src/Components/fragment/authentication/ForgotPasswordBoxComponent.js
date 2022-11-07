@@ -1,29 +1,23 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable no-unused-vars */
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import React, { useCallback, useContext, useState } from 'react';
-import { auth, database } from '../../../firebase';
-import { AuthContext } from '../../provider/AuthProvider';
+import { auth } from '../../../firebase';
 import { WhiteBoxReducerContext } from '../../provider/WhiteBoxReducerProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from 'react-router-dom';
 import { MdEmail } from 'react-icons/md';
-import { IoIosLock } from 'react-icons/io';
 
 export default function LoginEmailBoxComponent() {
 
+    //Biến
     const [email, setEmail] = useState('');
-    const history = useNavigate();
-
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setUserContext } = useContext(AuthContext);
 
+    //Hàm
     const onEmailChange = useCallback((e) => {
         setEmail(e.target.value);
     },[]);
-
     const sendEmailVerify = useCallback(() => {
         if(email === "" || email === undefined){
             toast.error("Vui lòng nhập trường Email!");
@@ -45,6 +39,7 @@ export default function LoginEmailBoxComponent() {
 
     },[email]);
 
+    //FontEnd
     return (
         <>
             <ToastContainer theme='colored' />

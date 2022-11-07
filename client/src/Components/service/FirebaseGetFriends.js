@@ -18,6 +18,7 @@ const FirebaseGetFriends = (owner) => {
                     arrTemp.push(docSnap.data());
 
                 });
+                console.log('Getting datas   from firebase!');
                 setFriends(arrTemp);
             }
         });

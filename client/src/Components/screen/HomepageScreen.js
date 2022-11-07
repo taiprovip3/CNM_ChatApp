@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
@@ -6,7 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import "../css/HomepageScreen.css";
 import { BsFillShieldLockFill } from 'react-icons/bs'
-import { MdCameraswitch, MdOutlineEditOff } from 'react-icons/md';
+import { MdCameraswitch, MdOutlineEditOff, MdOutlineExitToApp } from 'react-icons/md';
 import { FcSmartphoneTablet } from 'react-icons/fc';
 import { FaUserFriends } from 'react-icons/fa';
 import { TbPencilOff, TbUpload } from 'react-icons/tb';
@@ -14,6 +15,7 @@ import { TiCamera } from 'react-icons/ti';
 import { IoIosImages } from 'react-icons/io';
 import { CgClose } from 'react-icons/cg';
 import { HiSearch } from 'react-icons/hi';
+import { BiLinkAlt } from 'react-icons/bi';
 import FirebaseGetRooms from '../service/FirebaseGetRooms';
 import FirebaseGetFriends from '../service/FirebaseGetFriends';
 import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
@@ -24,19 +26,39 @@ import $ from 'jquery';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import RowChat from '../fragment/homepage/RowChat';
 import RowPhonebook from '../fragment/homepage/RowPhonebook';
+import Info from '../fragment/group-modal/Info';
+import Update from '../fragment/group-modal/update';
+import Authorization from '../fragment/group-modal/authorization';
 
 export default function HomepageScreen() {
 
 //Khai báo biến
-  var { currentUser, setUserContext, setListRoom, setListFriend, listFriend, setIsRunSlidering, currentRowShow } = useContext(AuthContext);
+  var { currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, setIsRunSlidering, currentRowShow, setCurrentRowShow, objectGroupModal, users } = useContext(AuthContext);
+  if(!currentUser){
+    setTimeout(() => {
+        window.location.href = '/auth';
+    }, 1500);
+    return <div id='none-log'>
+                <div className='border text-center p-3 rounded' id='none-log-child'>
+                <ToastContainer />
+                <BsFillShieldLockFill className='text-white display-6' />
+                <br />
+                Bạn chưa đăng nhập tài khoản.
+                <br />
+                Chúng tôi sẽ chuyển bạn đi trong phút chốc
+                <br />
+                ...(sau 2s)...
+                </div>
+            </div>;
+  }
   var defaultObjectUser = {id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', email: 'ptt@gmail.com', address: 'undifined', age: 0, fullName: 'Phan Tấn Tài', joinDate: 'October 26th 2022, 3:38:30 pm', phoneNumber: '+84', photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg', role: ['MEMBER', 'ADMIN'], sex: false, slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'};
+  const [showGroupModalComponent, setShowGroupModalComponent] = useState('info');
   const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
   const [listUserStranger, setListUserStranger] = useState([]);
   const [inputNameRoom, setInputNameRoom] = useState('');   //các useState dùng cho tạo room
   const [listFriendCopy, setListFriendCopy] = useState([]);
   const counter = useRef(0);
   const [counterCheckedUser, setCounterCheckedUser] = useState(0);
-  
   if(currentUser == null) {
     currentUser = defaultObjectUser;
     defaultObjectUser = null;
@@ -68,22 +90,25 @@ useEffect(() => {
         setCounterCheckedUser(counter.current);
     }
 },[listFriendCopy]);
-    const rooms = FirebaseGetRooms(memoIdUser); //Lấy list room firebase
+
+
+    //Lấy listRoom từ Firebase 1 lần duy nhất
+    const rooms = FirebaseGetRooms(memoIdUser);
     useEffect(() => {
         rooms.sort(function(x, y){
             return x.createAt - y.createAt;
         });
         setListRoom(rooms);
     }, [rooms, setListRoom]);
-
-    const friends = FirebaseGetFriends(memoIdUser); //Lấy list friend firebase
+    //Lấy listFriend từ Firebase 1 lần duy nhất
+    const friends = FirebaseGetFriends(memoIdUser);
     useEffect(() => {
         setTimeout(() => {
             setListFriend(friends);
         }, 500);
     }, [friends, setListFriend]);
-
-    const strangers = FirebaseGetStrangers(memoIdUser); //Lấy list strangers firebase
+    //Lấy listStrangers từ Firebase 1 lần duy nhất
+    const strangers = FirebaseGetStrangers(memoIdUser);
     useEffect(() => {
         setTimeout(() => {
             setListUserStranger(strangers);
@@ -270,30 +295,11 @@ useEffect(() => {
             position: toast.POSITION.TOP_CENTER
         });
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
-        setUserContext(newCurrentUser);
+        setCurrentUser(newCurrentUser);
     };
     const handleCloseUpdateUserInfoModal = () => {
         $("#closeUpdateInfoModal").click();
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
-    }
-
-//Kiểm tra null user
-    if( !defaultObjectUser ) {
-        setTimeout(() => {
-            window.location.href = '/auth';
-    }, 500);
-    return <div id='none-log'>
-        <div className='border text-center p-3 rounded' id='none-log-child'>
-        <ToastContainer />
-        <BsFillShieldLockFill className='text-white display-6' />
-        <br />
-        Bạn chưa đăng nhập tài khoản.
-        <br />
-        Chúng tôi sẽ chuyển bạn đi trong phút chốc
-        <br />
-        ...(sau 2s)...
-        </div>
-    </div>;
     }
 
 //Render giao diện
@@ -583,6 +589,18 @@ useEffect(() => {
                     </div>
 
                 </div>
+            </div>
+        </div>
+        <div className="modal fade" id="ManagerGroupModal">
+            <div className="modal-dialog modal-dialog-centered">
+                {/* Thông tin */}
+                {
+                    showGroupModalComponent === 'info' ?
+                    <Info objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} /> :
+                        showGroupModalComponent === "update" ?
+                        <Update objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} /> :
+                        <Authorization objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} />
+                }
             </div>
         </div>
     </div>

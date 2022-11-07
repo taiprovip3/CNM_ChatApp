@@ -1,8 +1,6 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { HiUserGroup } from 'react-icons/hi';
-import { FiUserPlus } from 'react-icons/fi';
 import { RiEmotionLaughFill, RiImageAddFill } from 'react-icons/ri';
 import { MdSend, MdWavingHand } from 'react-icons/md';
 import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa';
@@ -14,10 +12,11 @@ import FirebaseGetRoomMessages from '../../service/FirebaseGetRoomMessages';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from 'uuid';
 import { AuthContext } from '../../provider/AuthProvider';
+import '../../css/Common.css';
 
 export default memo(function ChatRoom({ selectedRoom }) {
 //Khởi tạo biến
-  const { currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
+  const { setObjectGroupModal, currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
   const memoIdRoom = useMemo(() => {
@@ -39,7 +38,7 @@ useEffect(() => {
   const onCurrentMessageChange = useCallback((e) => {
       setCurrentMessage(e.target.value);
   }, []);
-  const sendMessage = async (msg) => {
+  const sendMessage = useCallback(async (msg) => {
       if(msg !== "") {
           const objectMessage = {
               idSender: id,
@@ -57,7 +56,7 @@ useEffect(() => {
           });
           setCurrentMessage('');
       }
-  }
+  },[fullName, id, photoURL, selectedRoom.id, socket]);
   const handleSelectedImage = useCallback((e) => {
     const fileUpload = e.target.files[0];
     if(fileUpload == null){
@@ -75,7 +74,7 @@ useEffect(() => {
       .catch(err => {
           console.log(err);
       });
-},[]);
+},[sendMessage]);
 const formatMessageHaveIcon = useCallback((msg) =>{
   const icons = [
       {id: 1, image:`😉`, category: ':)'},
@@ -144,15 +143,12 @@ const formatMessageHaveIcon = useCallback((msg) =>{
 
         <div className='d-flex border align-items-center'>
             <div>
-                <img src={selectedRoom.urlImage} alt="urlImage" width='45' height='45' className='rounded-circle' />
+                <img src={selectedRoom.urlImage} alt="urlImage" width='45' height='45' className='rounded-circle needCursor' data-bs-toggle="modal" data-bs-target="#ManagerGroupModal" onClick={() => setObjectGroupModal(selectedRoom)} />
             </div>
             <div className='mx-1 flex-fill'>
                 <span className='fw-bold'>{selectedRoom.name}</span>
                 <br />
                 <span className='small'><HiUserGroup /> {selectedRoom.listMember.length} thành viên</span>
-            </div>
-            <div>
-                <FiUserPlus className='fs-3' />
             </div>
         </div>
 
@@ -224,19 +220,19 @@ const formatMessageHaveIcon = useCallback((msg) =>{
 
         <div id='chatInput' className='d-flex align-items-center'>
             <div className="dropup">
-                <RiEmotionLaughFill className='text-primary fs-1 dropdown-toggle' id='needCursor' data-bs-toggle="dropdown" />
+                <RiEmotionLaughFill className='text-primary fs-1 dropdown-toggle needCursor' data-bs-toggle="dropdown" />
                 <ul className="dropdown-menu d-flex p-3">
-                    <li className='mx-2 lead' id='needCursor' onClick={handleAddEmotion1}>😉</li>
-                    <li className='mx-2 lead' id='needCursor' onClick={handleAddEmotion2}>😔</li>
-                    <li className='mx-2 lead' id='needCursor' onClick={handleAddEmotion3}>😂</li>
-                    <li className='mx-2 lead' id='needCursor' onClick={handleAddEmotion4}>😵</li>
-                    <li className='mx-2 lead' id='needCursor' onClick={handleAddEmotion5}>😲</li>
-                    <li className='mx-2 lead' id='needCursor' onClick={handleAddEmotion6}>😭</li>
-                    <li className='mx-2 lead' id='needCursor' onClick={handleAddEmotion7}>😡</li>
+                    <li className='mx-2 lead needCursor' onClick={handleAddEmotion1}>😉</li>
+                    <li className='mx-2 lead needCursor' onClick={handleAddEmotion2}>😔</li>
+                    <li className='mx-2 lead needCursor' onClick={handleAddEmotion3}>😂</li>
+                    <li className='mx-2 lead needCursor' onClick={handleAddEmotion4}>😵</li>
+                    <li className='mx-2 lead needCursor' onClick={handleAddEmotion5}>😲</li>
+                    <li className='mx-2 lead needCursor' onClick={handleAddEmotion6}>😭</li>
+                    <li className='mx-2 lead needCursor' onClick={handleAddEmotion7}>😡</li>
                 </ul>
             </div>
             <div>
-                <label htmlFor="selectedImage" id='needCursor'>
+                <label htmlFor="selectedImage" className='needCursor'>
                     <RiImageAddFill className='text-primary fs-1' />
                 </label>
                 <input type="file" name="selectedImage" id="selectedImage" accept='image/png, image/jpeg, video/*' style={{visibility: 'hidden', width:0, height:0}} onChange={(e) => handleSelectedImage(e)} />
@@ -248,7 +244,7 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                 }
               }
             } />
-            <MdSend className='text-primary fs-1' id='needCursor' onClick={() => sendMessage(formatMessageHaveIcon(currentMessage))} />
+            <MdSend className='text-primary fs-1 needCursor' onClick={() => sendMessage(formatMessageHaveIcon(currentMessage))} />
         </div>
 
 

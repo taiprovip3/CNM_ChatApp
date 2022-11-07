@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import React, { useReducer } from 'react';
 import LoginBoxComponent from '../fragment/authentication/LoginBoxComponent';
 import LoginOTPBoxComponent from '../fragment/authentication/LoginOTPBoxComponent';
@@ -13,7 +14,7 @@ export default function WhiteBoxReducerProvider({ children }) {
     }
     const loginOTPBoxComponent = () => {
       return <LoginOTPBoxComponent />;
-  }
+    }
     const registerBoxComponent = () => {
         return <RegisterBoxComponent />;
     }
@@ -30,17 +31,17 @@ export default function WhiteBoxReducerProvider({ children }) {
     const factoryReducer = (state, action) => {
         switch(action){
           case "SHOW_LOGIN_BOX_COMPONENT":
-            return loginBoxComponent();
+            return <LoginBoxComponent />;
           case "SHOW_LOGIN_OTP_BOX_COMPONENT":
-            return loginOTPBoxComponent();
+            return <LoginOTPBoxComponent />;
           case "SHOW_REGISTER_BOX_COMPONENT":
-            return registerBoxComponent();
+            return <RegisterBoxComponent />;
           case "SHOW_REGISTER_OTP_BOX_COMPONENT":
-            return registerOtpBoxComponent();
+            return <RegisterOtpBoxComponent />;
           case "SHOW_VERIFY_OTP_BOX_COMPONENT":
-            return verifyOtpBoxComponent();
+            return <VerifyOtpBoxComponent />;
           case "SHOW_FORGOT_PASSWORD_BOX_COMPONENT":
-            return forgotPasswordBoxComponent();
+            return <ForgotPasswordBoxComponent />;
           default:
             return state;
         }

@@ -3,19 +3,19 @@ import React, { useCallback, useContext, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { WhiteBoxReducerContext } from '../../provider/WhiteBoxReducerProvider';
-import { BsPhoneVibrateFill } from 'react-icons/bs';
-import { TiWarning } from 'react-icons/ti';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../../../firebase';
 import { AuthContext } from '../../provider/AuthProvider';
 
 export default function RegisterOtpBoxComponent() {
 
+    //Biến
     const [regPhoneNumber, setRegPhoneNumber] = useState('');
     const [countryCode, setCountryCode] = useState('+84');
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setResultConfirmation } = useContext(AuthContext);
+    const { setConfirmationToken } = useContext(AuthContext);
 
+    //Hàm
     const onRegPhoneNumberChange = useCallback((e) => {
         setRegPhoneNumber(e.target.value);
     },[]);
@@ -48,7 +48,7 @@ export default function RegisterOtpBoxComponent() {
                 .then(confirmationResult => { //Firebase trả về 1 xác thực có chứa OTP, hết hạn sau 30s
                     toast.info('Mã OTP đã gửi đến `'+ regPhoneNumber + '`');
                     toast.info('Hết hạn sau 30s...');
-                    setResultConfirmation(confirmationResult);
+                    setConfirmationToken(confirmationResult);
                     dispatch("SHOW_VERIFY_OTP_BOX_COMPONENT");
                 })
                 .catch(err => {
@@ -58,8 +58,9 @@ export default function RegisterOtpBoxComponent() {
                 .finally(() => {
                     window.recaptchaVerifier.clear();
                 });
-    }, [countryCode, dispatch, generateCaptcha, regPhoneNumber, setResultConfirmation]);
+    }, [countryCode, dispatch, generateCaptcha, regPhoneNumber, setConfirmationToken]);
 
+    //FontEnd
     return (
         <>
             <ToastContainer theme='colored' />

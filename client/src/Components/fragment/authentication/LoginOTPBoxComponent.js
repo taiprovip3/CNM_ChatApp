@@ -1,24 +1,19 @@
 /* eslint-disable no-unused-vars */
 import { RecaptchaVerifier, signInWithEmailAndPassword, signInWithPhoneNumber } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
 import React, { useCallback, useContext, useState } from 'react';
-import { auth, database } from '../../../firebase';
+import { auth } from '../../../firebase';
 import { AuthContext } from '../../provider/AuthProvider';
 import { WhiteBoxReducerContext } from '../../provider/WhiteBoxReducerProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from 'react-router-dom';
-import { MdEmail } from 'react-icons/md';
-import { IoIosLock } from 'react-icons/io';
 
 export default function LoginOTPBoxComponent() {
 
     const [phoneNumber, setPhoneNumber] = useState('');
     const [countryCode, setCountryCode] = useState('+84');
-    const history = useNavigate();
 
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setUserContext, setResultConfirmation } = useContext(AuthContext);
+    const { setConfirmationToken } = useContext(AuthContext);
 
     const onPhoneNumberChange = useCallback((e) => {
         setPhoneNumber(e.target.value);
@@ -52,7 +47,7 @@ export default function LoginOTPBoxComponent() {
         signInWithPhoneNumber(auth, countryCode + phoneNumber, appVerified)
             .then(confirmationResult => { //Firebase trả về 1 xác thực có chứa OTP, hết hạn sau 30s
                 toast.info('Mã OTP đã gửi đến `'+ phoneNumber + '`');
-                setResultConfirmation(confirmationResult);
+                setConfirmationToken(confirmationResult);
                 dispatch("SHOW_VERIFY_OTP_BOX_COMPONENT");
             })
             .catch(err => {
@@ -62,7 +57,7 @@ export default function LoginOTPBoxComponent() {
             .finally(() => {
                 window.recaptchaVerifier.clear();
             });
-    },[phoneNumber, generateCaptcha, countryCode, setResultConfirmation, dispatch]);
+    },[phoneNumber, generateCaptcha, countryCode, setConfirmationToken, dispatch]);
 
     return (
         <>
