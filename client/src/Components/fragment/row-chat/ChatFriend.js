@@ -17,7 +17,7 @@ import { AuthContext } from '../../provider/AuthProvider';
 
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
-  const { currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
+  const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal } = React.useContext(AuthContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
   const [file, setFile] = useState();
@@ -149,7 +149,7 @@ useEffect(() => {
 
         <div className='d-flex border align-items-center'>
             <div>
-                <img src={selectedFriend.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
+                <img src={selectedFriend.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' data-bs-toggle="modal" data-bs-target="#ManagerUserModal" onClick={() => setObjectUserModal(selectedFriend)} />
             </div>
             <div className='mx-1'>
                 <span className='fw-bold'>{selectedFriend.fullName}</span>

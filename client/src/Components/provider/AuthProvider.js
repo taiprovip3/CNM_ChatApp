@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     const intervalRef = React.useRef(null);
     const myIndex = React.useRef(0);
     const [objectGroupModal, setObjectGroupModal] = useState({createAt: 'November 5th 2022, 04:54:47 pm', description: 'Bắt đầu chia sẽ các câu chuyện thú vị cùng nhau', id: 'mjywna2m2mg', listMember: ['VtfGxK4imFcpK9P2F88YjCD3F7G3', '6EOGMDtuyEbSZ89dTXcAhy0UUE62', 'rGXgMCmbPuaP4FEQ9v087qVw1ZI2'], name: 'Phòng Anh Văn', owner: 'rGXgMCmbPuaP4FEQ9v087qVw1ZI2', type: 'group', urlImage: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg'});
-    const [objectUserModal, setObjectUserModal] = useState(null);
+    const [objectUserModal, setObjectUserModal] = useState(currentUser);
 
     console.log('>> AuthProvider rerender , current user : ', currentUser);
     const listUser = FirebaseGetUsers();
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
     },[currentRowShow, stopSlider]);
 
     return (
-      <AuthContext.Provider value={{ objectGroupModal, setObjectGroupModal, users, myIndex, intervalRef, stopSlider, socket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, listRoom, setListRoom, listFriend, setListFriend, currentRowShow, setCurrentRowShow }}>  
+      <AuthContext.Provider value={{ objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, users, myIndex, intervalRef, stopSlider, socket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, listRoom, setListRoom, listFriend, setListFriend, currentRowShow, setCurrentRowShow }}>  
         {children}
       </AuthContext.Provider>
     )

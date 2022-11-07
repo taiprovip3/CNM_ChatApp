@@ -9,13 +9,13 @@ import "../css/HomepageScreen.css";
 import { BsFillShieldLockFill } from 'react-icons/bs'
 import { MdCameraswitch, MdOutlineEditOff, MdOutlineExitToApp } from 'react-icons/md';
 import { FcSmartphoneTablet } from 'react-icons/fc';
-import { FaUserFriends } from 'react-icons/fa';
+import { FaUserFriends, FaUserMinus } from 'react-icons/fa';
 import { TbPencilOff, TbUpload } from 'react-icons/tb';
 import { TiCamera } from 'react-icons/ti';
 import { IoIosImages } from 'react-icons/io';
 import { CgClose } from 'react-icons/cg';
-import { HiSearch } from 'react-icons/hi';
-import { BiLinkAlt } from 'react-icons/bi';
+import { HiSearch, HiOutlineUserGroup } from 'react-icons/hi';
+import { IoPersonAddSharp } from 'react-icons/io5';
 import FirebaseGetRooms from '../service/FirebaseGetRooms';
 import FirebaseGetFriends from '../service/FirebaseGetFriends';
 import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
@@ -33,7 +33,7 @@ import Authorization from '../fragment/group-modal/authorization';
 export default function HomepageScreen() {
 
 //Khai báo biến
-  var { currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, setIsRunSlidering, currentRowShow, setCurrentRowShow, objectGroupModal, users } = useContext(AuthContext);
+  var { currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, users } = useContext(AuthContext);
   if(!currentUser){
     setTimeout(() => {
         window.location.href = '/auth';
@@ -53,6 +53,7 @@ export default function HomepageScreen() {
   }
   var defaultObjectUser = {id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', email: 'ptt@gmail.com', address: 'undifined', age: 0, fullName: 'Phan Tấn Tài', joinDate: 'October 26th 2022, 3:38:30 pm', phoneNumber: '+84', photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg', role: ['MEMBER', 'ADMIN'], sex: false, slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'};
   const [showGroupModalComponent, setShowGroupModalComponent] = useState('info');
+  const [showUserModalComponent, setShowUserModalComponent] = useState('info');
   const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
   const [listUserStranger, setListUserStranger] = useState([]);
   const [inputNameRoom, setInputNameRoom] = useState('');   //các useState dùng cho tạo room
@@ -568,7 +569,7 @@ useEffect(() => {
                     </div>
                     <div className="modal-body">
                         <div>
-                            <img src="https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg" alt="backgroundURL" id='backgroundURL' />
+                            <img src="https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg" alt="backgroundURL" id='backgroundURL' width='100%' />
                         </div>
                         <div className='text-center' style={{marginTop:'-35px'}}>
                             <img src={photoURL} alt="photoURL" className='border border-dark rounded-circle' width='70' height='70' />
@@ -599,8 +600,64 @@ useEffect(() => {
                     <Info objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} /> :
                         showGroupModalComponent === "update" ?
                         <Update objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} /> :
-                        <Authorization objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} />
+                        <Authorization objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} setObjectUserModal={setObjectUserModal} />
                 }
+            </div>
+        </div>
+        <div className="modal fade" id="ManagerUserModal">
+            <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <p className="modal-title">Thông tin tài khoản</p>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div className="modal-body">
+                        {/* div1 */}
+                        <div className='border text-center'>
+                            <img src="https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg" alt="backgroundURL" id='backgroundURL' width='100%' />
+                            <img src={objectUserModal.photoURL} alt="urlImage" width='80' height='80' className='rounded-circle needCursor border' />
+                            <br />
+                            <span className='fw-bold'>{objectUserModal.fullName}</span>
+                            <br />
+                            <span>{objectUserModal.slogan}</span>
+                        </div>
+                        {/* div2 */}
+                        <div className="border p-3">
+                            <code className='fw-bold'>Thông tin cá nhân</code>
+                            <div className="d-flex">
+                                <div className='text-mured'>Điện thoại/Email:</div>&emsp;
+                                <div>{objectUserModal.phoneNumber === "+84" ? objectUserModal.email : objectUserModal.phoneNumber}</div>
+                            </div>
+                            <div className="d-flex">
+                                <div className='text-mured'>Giới tính:</div>&emsp;
+                                <div>{objectUserModal.sex ? "Nữ" : "Nam"}</div>
+                            </div>
+                            <div className="d-flex">
+                                <div className='text-mured'>Ngày sinh:</div>&emsp;
+                                <div>{objectUserModal.bod}/{objectUserModal.bom}/{objectUserModal.boy}</div>
+                            </div>
+                        </div>
+                        {/* div3 */}
+                        <div className="border p-3">
+                            <div className="d-flex border-bottom p-2 needCursor">
+                                <div className='lead d-flex align-items-center'><HiOutlineUserGroup /></div>
+                                <div className='px-2'>Nhóm chung</div>
+                            </div>
+                            <div className="d-flex border-bottom p-2 needCursor">
+                                <div className='lead d-flex align-items-center'><HiOutlineUserGroup /></div>
+                                <div className='px-2'>Chặn tin nhắn</div>
+                            </div>
+                            <div className="d-flex border-bottom p-2 needCursor">
+                                <div className='lead d-flex align-items-center'><IoPersonAddSharp /></div>
+                                <div className='px-2'>Kết bạn</div>
+                            </div>
+                            <div className="d-flex p-2 needCursor">
+                                <div className='lead d-flex align-items-center'><FaUserMinus /></div>
+                                <div className='px-2'>Hủy kết bạn</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
