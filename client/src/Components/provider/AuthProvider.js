@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     const listUser = FirebaseGetUsers();
     
     useEffect(() => {
-        setSocket(io.connect("http://localhost:4000"));
+        setSocket(io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] }));
     },[]);
     useEffect(() => {
         if(listUser.length > 0)
