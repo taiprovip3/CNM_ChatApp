@@ -6,7 +6,7 @@ import { BiSearchAlt } from 'react-icons/bi';
 import { HiUserAdd, HiOutlineUserGroup } from 'react-icons/hi';
 import { FaSortAlphaDown } from 'react-icons/fa';
 import { AuthContext } from '../../provider/AuthProvider';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { database } from '../../../firebase';
 import introduction1 from '../../assets/introduction1.png';
 import introduction2 from '../../assets/introduction2.png';
@@ -21,16 +21,27 @@ import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
 
 export default memo(function RowChat() {
-
+console.log('---- Row-chat rerender ------');
     //Biến
-    const { myIndex, intervalRef, stopSlider, socket, currentUser: { id, photoURL }, listRoom, listFriend, setCurrentRowShow } = React.useContext(AuthContext);
+    const { myIndex, intervalRef, stopSlider, socket, currentUser: { id, photoURL }, listRoom, listFriend, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
     const [selectedObject, setSelectedObject] = useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = useState('');
 
     //Trợ
-    useEffect(() => {//Khi list room trên firebase đc cập nhật do modal update 1 room
-        setSelectedObject(null);
-    },[listRoom])
+    useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
+        if(selectedObject){ //Nếu rooms trên firebase bị thay đổi thì ai đang selectedObject room
+            //GetRoom mới bằng id room cũ
+            if(selectedObject.type !== undefined || selectedObject.type || null) {
+                    const selectedObjectRoomId = selectedObject.id;
+                    getRoomById(selectedObjectRoomId)
+                        .then((rs) => {
+                            console.log(' d1 = ', selectedObject);
+                            console.log(' d2 = ', rs);
+                            setObjectGroupModal(rs);
+                        });
+            }
+        }
+    },[listRoom, selectedObject, setObjectGroupModal]);
     const intervalSlider = useCallback(() => { //Hàm start slidering
         intervalRef.current = setInterval(() => {
             var i;
@@ -57,6 +68,11 @@ export default memo(function RowChat() {
     },[selectedObject, stopSlider]);
 
     //Hàm
+    const getRoomById = async (idRoom) => {
+        const RoomsDocsRef = doc(database, "Rooms", idRoom);
+        const RoomsDocSnap = await getDoc(RoomsDocsRef);
+        return RoomsDocSnap.data();
+    }
     const onClickOneRoom = useCallback((obj) => {
         socket.emit("join_room", obj.id);
         setSelectedObject(obj);
@@ -160,7 +176,7 @@ export default memo(function RowChat() {
                     </div>
                 :
                 selectedObject.type ?
-                    <ChatRoom selectedRoom={selectedObject} />
+                    <ChatRoom selectedRoom={selectedObject} setSelectedObject={setSelectedObject} />
                     :
                     <ChatFriend selectedFriend={selectedObject} idRoomOfSelectedFriendAndYou={idRoomIfClickChatToOneFriend} />
                 }

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 /* eslint-disable no-unused-vars */
 import React, { memo, useEffect, useState } from 'react';
 import { BiLinkAlt } from 'react-icons/bi';
@@ -9,10 +10,14 @@ import { FaQuestionCircle } from 'react-icons/fa';
 import { GrUserManager } from 'react-icons/gr';
 import { MdVpnKey, MdGroups } from 'react-icons/md';
 import { RiGroup2Fill } from 'react-icons/ri';
-import { BsThreeDotsVertical } from 'react-icons/bs';
+import { BsThreeDots } from 'react-icons/bs';
 import $ from 'jquery';
 
 export default memo(function Authorization({ objectGroupModal, setObjectUserModal, users, currentUser, setCurrentRowShow, setShowGroupModalComponent }) {
+
+    useEffect(() => {
+        console.log('objectGroupModal has been change!');
+    }, [objectGroupModal]);
 
     const getUserById = (idUser) => {
         var userData = null;
@@ -29,6 +34,23 @@ export default memo(function Authorization({ objectGroupModal, setObjectUserModa
     const onClickMember = (idMemberSelected) => {
         $(".btn-close").click();
         setObjectUserModal(getUserById(idMemberSelected));
+    }
+
+    const handleMakeLeader = async (idUser) => {
+        if(confirm("Hành động ngu ngốc này sẽ ko thể rollback?")) {
+            const RoomsDocRef = doc(database, 'Rooms', objectGroupModal.id);
+            await updateDoc(RoomsDocRef, {
+                owner: idUser
+            });
+            toast.success("Bổ nhiệm thành công");
+        }
+    }
+
+    const renderLeaderThreeDot = (id) => {
+        return <>
+            <li className='dropdown-item' onClick={() => handleMakeLeader(id)}>Bổ nhiệm trưởng nhóm</li>
+            <li className='dropdown-item'>Loại bỏ khỏi nhóm</li>
+        </>
     }
 
   return (
@@ -69,8 +91,8 @@ export default memo(function Authorization({ objectGroupModal, setObjectUserModa
             {/* 2div */}
             <div className="border p-3 my-2">
                 <div className="d-flex">
-                    <span className="flex-fill">Trưởng nhóm <MdVpnKey data-bs-toggle="tooltip" title="Xem quyền nhóm trưởng" /></span>
-                    <FaQuestionCircle className="text-success" />
+                    <span className="flex-fill">Trưởng nhóm <MdVpnKey /></span>
+                    <FaQuestionCircle className="text-success needCursor" />
                 </div>
                 <div className="d-flex border rounded p-3 needCursor" style={{ backgroundColor: '#aaeb8d' }} onClick={() => onClickMember(objectGroupModal.owner)} data-bs-toggle="modal" data-bs-target="#ManagerUserModal">
                     <div className='d-flex align-items-center'>
@@ -86,13 +108,13 @@ export default memo(function Authorization({ objectGroupModal, setObjectUserModa
             {/* 3div */}
             <div className="border p-3 my-2 overflow-auto" style={{ maxHeight: '40vh' }}>
                 <div className="d-flex">
-                    <span className="flex-fill" >Thành viên khác <MdGroups data-bs-toggle="tooltip" title="Xem quyền thành viên" /></span>
-                    <FaQuestionCircle className="text-success" />
+                    <span className="flex-fill">Thành viên khác <MdGroups /></span>
+                    <FaQuestionCircle className="text-success needCursor" />
                 </div>
                     {
                         objectGroupModal.listMember.map((id) => {
                             return <div className="d-flex border rounded p-3 my-1" style={{ backgroundColor: '#d3f5c4' }} key={id}>
-                                        <div className='d-flex align-items-center'>
+                                        <div className='d-flex align-items-center needCursor' onClick={() => onClickMember(id)} data-bs-toggle="modal" data-bs-target="#ManagerUserModal">
                                             <img src={getUserById(id).photoURL} alt="photoURL" width='45' height='45' className='rounded-circle border' />
                                             </div>
                                         <div className='px-1 flex-fill'>
@@ -100,8 +122,16 @@ export default memo(function Authorization({ objectGroupModal, setObjectUserModa
                                             <br />
                                             <span>{objectGroupModal.owner === id ? "Nhóm trưởng" : "Thành viên"}</span>
                                         </div>
-                                        <div className='d-flex align-items-center'>
-                                            <BsThreeDotsVertical className="lead needCursor" onClick={() => onClickMember(id)} data-bs-toggle="modal" data-bs-target="#ManagerUserModal" />
+                                        <div className='d-flex align-items-center dropdown dropstart text-end needCursor'>
+                                            <BsThreeDots className='lead' data-bs-toggle="dropdown" />
+                                            <ul className='dropdown-menu'>
+                                                {
+                                                    (currentUser.id === objectGroupModal.owner && id !== objectGroupModal.owner) ?
+                                                    renderLeaderThreeDot(id)
+                                                    :
+                                                    <li className='dropdown-item disabled'>Bạn không đủ quyền hạn</li>
+                                                }
+                                            </ul>
                                         </div>
                                     </div>
                         })

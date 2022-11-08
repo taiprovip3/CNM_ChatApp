@@ -1,26 +1,23 @@
-import React, { memo, useEffect, useState } from 'react';
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-restricted-globals */
+import React, { memo, useContext, useEffect, useState } from 'react';
 import { BiLinkAlt } from 'react-icons/bi';
 import { MdOutlineExitToApp } from 'react-icons/md';
+import { RiDeleteBin6Line } from 'react-icons/ri';
 import { toast } from 'react-toastify';
-import { arrayRemove, doc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore';
 import { database } from '../../../firebase';
 import '../../css/Common.css';
+import moment from 'moment';
+import { AuthContext } from '../../provider/AuthProvider';
 
-export default memo(function Info({ objectGroupModal, users, currentUser, setCurrentRowShow, setShowGroupModalComponent }) {
+export default memo(function Info({ setShowGroupModalComponent }) {
 
     //Biến
     const [listUserInRoom, setListUserInRoom] = useState([]);
+    const { socket, users, objectGroupModal, currentUser } = useContext(AuthContext);
 
-    //Hàm
-    const handleLeaveRoom = async () => {
-        const RoomsDocRef = doc(database, "Rooms", objectGroupModal.id);
-        await updateDoc(RoomsDocRef, {
-            listMember: arrayRemove(currentUser.id)
-        });
-        setCurrentRowShow("row-phone-book")
-        toast.success("Rời nhóm thành công");
-    };
-
+    //Trợ
     useEffect(() => {
         const listUser = [];
         for (let index = 0; index < objectGroupModal.listMember.length; index++) {
@@ -35,6 +32,37 @@ export default memo(function Info({ objectGroupModal, users, currentUser, setCur
         setListUserInRoom(listUser);
     },[objectGroupModal.listMember, users]);
 
+    //Hàm
+    const handleLeaveRoom = async () => {
+        if(objectGroupModal.owner === currentUser.id) {
+            toast.error("Bạn đang là trưởng nhóm, vui lòng bổ nhiệm lại cho người khác trước khi rời đi hoặc chọn giải tán nhóm!");
+        } else{
+            if(confirm("Hành động ngu ngốc này không thể rollback ?")){
+                const RoomsDocRef = doc(database, "Rooms", objectGroupModal.id);
+                await updateDoc(RoomsDocRef, {
+                    listMember: arrayRemove(currentUser.id)
+                });
+                const objectMessage = {
+                    idSender: currentUser.id,
+                    nameSender: "Thông báo",
+                    msg: currentUser.fullName + " đã rời nhóm",
+                    time: moment().format('MMMM Do YYYY, h:mm:ss a'),
+                    photoURL: currentUser.photoURL,
+                    idMessage: (Math.random() + 1).toString(36).substring(2)
+                }
+                socket.emit("send_message", objectMessage, objectGroupModal.id);
+                const RoomMessagesDocRef = doc(database, "RoomMessages", objectGroupModal.id);
+                await updateDoc(RoomMessagesDocRef, {
+                  listObjectMessage: arrayUnion(objectMessage)
+                });
+                toast.success("Rời nhóm thành công");
+            }
+            
+        }
+        
+    };
+
+  //FontEnd
   return (
     <div className="modal-content">
         <div className="modal-header">
@@ -88,7 +116,7 @@ export default memo(function Info({ objectGroupModal, users, currentUser, setCur
             </div>
             {/* 4div */}
             <div className='border p-3 my-2'>
-                <div className='d-flex'>
+                <div className='d-flex border-bottom py-2'>
                     <div className='d-flex justify-content-center align-items-center'><BiLinkAlt className='fs-4 text-primary' /></div>
                     <div className='px-2'>
                         <span>Token tham gia nhóm</span>
@@ -96,11 +124,20 @@ export default memo(function Info({ objectGroupModal, users, currentUser, setCur
                         <span className='text-primary'>{objectGroupModal.id}</span>
                     </div>
                 </div>
-                <hr />
-                <div className="d-flex text-danger">
-                    <div className='d-flex justify-content-center align-items-center'><MdOutlineExitToApp className='fs-4' /></div>
-                    <div className='px-2 needCursor' onClick={() => handleLeaveRoom()} data-bs-dismiss="modal">Rời nhóm</div>
-                </div>
+                
+                {
+                    objectGroupModal.owner === currentUser.id ?
+                    <div className="d-flex text-danger py-2">
+                        <div className='d-flex justify-content-center align-items-center'><RiDeleteBin6Line className='fs-4' /></div>
+                        <div className='px-2 needCursor' onClick={() => handleLeaveRoom()} data-bs-dismiss="modal">Giải tán nhóm</div>
+                    </div>
+                    :
+                    <div className="d-flex text-danger border-bottom py-2">
+                        <div className='d-flex justify-content-center align-items-center'><MdOutlineExitToApp className='fs-4' /></div>
+                        <div className='px-2 needCursor' onClick={() => handleLeaveRoom()} data-bs-dismiss="modal">Rời nhóm</div>
+                    </div>
+                }
+                
             </div>
         </div>
     </div>

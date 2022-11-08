@@ -119,7 +119,7 @@ export default memo(function Update({ objectGroupModal, users, currentUser, setC
                 </div>
                 <div className="input-group">
                     <span className="input-group-text">Ảnh đại diện</span>
-                    <input type="file" className="form-control" name="editRoomUrlImage" onChange={onSelectedNewUrlImage} />
+                    <input type="file" className="form-control" name="editRoomUrlImage" onChange={onSelectedNewUrlImage} accept="image/png, image/jpeg" />
                 </div>
             </div>
             {/* 3div */}

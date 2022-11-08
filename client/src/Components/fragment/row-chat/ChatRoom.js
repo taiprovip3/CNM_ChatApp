@@ -6,7 +6,7 @@ import { MdSend, MdWavingHand } from 'react-icons/md';
 import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa';
 import { GiHand } from 'react-icons/gi';
 import moment from 'moment';
-import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
 import FirebaseGetRoomMessages from '../../service/FirebaseGetRoomMessages';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
@@ -14,17 +14,38 @@ import { v4 } from 'uuid';
 import { AuthContext } from '../../provider/AuthProvider';
 import '../../css/Common.css';
 
-export default memo(function ChatRoom({ selectedRoom }) {
+export default memo(function ChatRoom({ selectedRoom, setSelectedObject }) {
 //Khởi tạo biến
-  const { setObjectGroupModal, currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
+  const { listRoom, setObjectGroupModal, currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
+  const [selectedMyRoom, setSelectedMyRoom] = useState(selectedRoom);
+
   const memoIdRoom = useMemo(() => {
-    return selectedRoom.id;
-  }, [selectedRoom.id]);
+    return selectedMyRoom.id;
+  }, [selectedMyRoom.id]);
   const roomMessages = FirebaseGetRoomMessages(memoIdRoom);
 
 //Khởi tạo useEffect
+useEffect(() => {
+//Mục tiêu UseEffect: lắng nge sk khi listRoom trên firebase thay đổi để rerender component cha RowChat đối với người thực hiện rời phòng. Nếu người rời ko phải là memer khác, component cha là rowchat ko bị rerender
+    const idRoomClicked = selectedRoom.id;
+    getRoomById(idRoomClicked)
+      .then((newRoom) => {
+        console.log(' newest room = ', newRoom);
+          setSelectedMyRoom(newRoom);
+          var test = false;
+          for(var i=0; i<newRoom.listMember.length; i++) {
+            if(newRoom.listMember[i] === id) {
+              test = true;
+              console.log('Ko cần rerender nếu giao diện là member ko rời khỏi phòng');
+              break;
+            }
+          }
+          if(!test)
+            setSelectedObject(null);
+      });
+},[id, listRoom, selectedRoom.id, setSelectedObject]);
 useEffect(() => {
   setListObjectMessage(roomMessages);
 }, [roomMessages]);
@@ -35,6 +56,11 @@ useEffect(() => {
 }, [socket]);
 
 //Khởi tạo hàm
+  const getRoomById = async (idRoom) => {
+    const RoomsDocRef = doc(database, "Rooms", idRoom);
+    const RoomsDocSnap = await getDoc(RoomsDocRef);
+    return RoomsDocSnap.data();
+  }
   const onCurrentMessageChange = useCallback((e) => {
       setCurrentMessage(e.target.value);
   }, []);
@@ -48,15 +74,15 @@ useEffect(() => {
               photoURL: photoURL,
               idMessage: (Math.random() + 1).toString(36).substring(2)
           }
-          socket.emit("send_message", objectMessage, selectedRoom.id);
+          socket.emit("send_message", objectMessage, selectedMyRoom.id);
           setListObjectMessage((list) => [...list, objectMessage]);
-          const RoomMessagesDocRef = doc(database, "RoomMessages", selectedRoom.id);
+          const RoomMessagesDocRef = doc(database, "RoomMessages", selectedMyRoom.id);
           await updateDoc(RoomMessagesDocRef, {
             listObjectMessage: arrayUnion(objectMessage)
           });
           setCurrentMessage('');
       }
-  },[fullName, id, photoURL, selectedRoom.id, socket]);
+  },[fullName, id, photoURL, selectedMyRoom.id, socket]);
   const handleSelectedImage = useCallback((e) => {
     const fileUpload = e.target.files[0];
     if(fileUpload == null){
@@ -143,24 +169,24 @@ const formatMessageHaveIcon = useCallback((msg) =>{
 
         <div className='d-flex border align-items-center'>
             <div>
-                <img src={selectedRoom.urlImage} alt="urlImage" width='45' height='45' className='rounded-circle needCursor' data-bs-toggle="modal" data-bs-target="#ManagerGroupModal" onClick={() => setObjectGroupModal(selectedRoom)} />
+                <img src={selectedMyRoom.urlImage} alt="urlImage" width='45' height='45' className='rounded-circle needCursor' data-bs-toggle="modal" data-bs-target="#ManagerGroupModal" onClick={() => setObjectGroupModal(selectedMyRoom)} />
             </div>
             <div className='mx-1 flex-fill'>
-                <span className='fw-bold'>{selectedRoom.name}</span>
+                <span className='fw-bold'>{selectedMyRoom.name}</span>
                 <br />
-                <span className='small'><HiUserGroup /> {selectedRoom.listMember.length} thành viên</span>
+                <span className='small'><HiUserGroup /> {selectedMyRoom.listMember.length} thành viên</span>
             </div>
         </div>
 
         <div id='chatContent' className='flex-fill bg-secondary' style={{overflow: 'scroll'}}>
             
             <div className='border bg-white w-50 mt-5 mx-auto rounded p-3 text-center'>
-                <span className='fs-2 fw-bold'>{selectedRoom.name}</span>
+                <span className='fs-2 fw-bold'>{selectedMyRoom.name}</span>
                 <br />
-                <span>{selectedRoom.description}</span>
+                <span>{selectedMyRoom.description}</span>
                 <div className='d-flex flex-wrap justify-content-center'>
                 {
-                  selectedRoom.listMember.map((o) => {
+                  selectedMyRoom.listMember.map((o) => {
                     return <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='45' height='45' className='rounded-circle mx-1' key={Math.random()} />;
                   })
                 }

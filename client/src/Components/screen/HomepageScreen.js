@@ -31,9 +31,9 @@ import Update from '../fragment/group-modal/update';
 import Authorization from '../fragment/group-modal/authorization';
 
 export default function HomepageScreen() {
-
+console.log('---- Homepage rerender ------');
 //Khai báo biến
-  var { currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, users } = useContext(AuthContext);
+  var { socket, currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, users } = useContext(AuthContext);
   if(!currentUser){
     setTimeout(() => {
         window.location.href = '/auth';
@@ -302,6 +302,7 @@ useEffect(() => {
         $("#closeUpdateInfoModal").click();
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
     }
+
 
 //Render giao diện
   return(
@@ -597,7 +598,7 @@ useEffect(() => {
                 {/* Thông tin */}
                 {
                     showGroupModalComponent === 'info' ?
-                    <Info objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} /> :
+                    <Info setShowGroupModalComponent={setShowGroupModalComponent} /> :
                         showGroupModalComponent === "update" ?
                         <Update objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} /> :
                         <Authorization objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} setObjectUserModal={setObjectUserModal} />
