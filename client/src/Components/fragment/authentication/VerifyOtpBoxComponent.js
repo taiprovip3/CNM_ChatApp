@@ -9,6 +9,7 @@ import { database } from '../../../firebase';
 import moment from 'moment';
 import { AuthContext } from '../../provider/AuthProvider';
 import { useNavigate } from 'react-router-dom';
+import GenerateKeyWords from '../../service/GenerateKeyWords';
 
 export default function VerifyOtpBoxComponent() {
 
@@ -32,10 +33,11 @@ export default function VerifyOtpBoxComponent() {
         toast.success('Đăng ký tài khoản thành công');
         toast.success('Dịch chuyển bạn đến trang chủ... 👋');
         const { email, uid, phoneNumber } = userObject;
+        const displayName = 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991);
         const user = {
           id: uid,
           email: email,
-          fullName: 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991),
+          fullName: displayName,
           age: -1,
           joinDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
           address: 'Không',
@@ -46,7 +48,8 @@ export default function VerifyOtpBoxComponent() {
           phoneNumber: phoneNumber,
           bod: 1,
           bom: 1,
-          boy: parseInt(new Date().getFullYear()-119)
+          boy: parseInt(new Date().getFullYear()-119),
+          keywords: GenerateKeyWords(displayName)
         }
         setDoc(doc(database, 'Users', uid), user);
         setCurrentUser(user);

@@ -30,7 +30,7 @@ export default memo(function Info({ setShowGroupModalComponent }) {
             }
         }
         setListUserInRoom(listUser);
-    },[objectGroupModal.listMember, users]);
+    },[objectGroupModal, users]);
 
     //Hàm
     const handleLeaveRoom = async () => {

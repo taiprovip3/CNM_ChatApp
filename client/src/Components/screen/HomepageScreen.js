@@ -29,6 +29,24 @@ import RowPhonebook from '../fragment/homepage/RowPhonebook';
 import Info from '../fragment/group-modal/Info';
 import Update from '../fragment/group-modal/update';
 import Authorization from '../fragment/group-modal/authorization';
+import { debounce } from 'lodash';
+// function DebouceSelected({ fetchOptions, debounceTimeout = 300, ...props}) {//Tra ve 1 component
+//     const [fetching, setFetching] = useState(false);
+//     const [options, setOptions] = useState([]);
+
+//     const debounceFetcher = React.useMemo(() => {   //Hàm này gọi đến hàm api truyền từ hàm cha là fetchOptions.
+//         const loadOptions = (value) => {
+//             setOptions([]);
+//             setFetching(true);
+//             fetchOptions(value)
+//                 .then(newOption => {
+//                     setOptions(newOption);
+//                     setFetching(false); 
+//                 });
+//         }
+//         return debounce(loadOptions, debounceTimeout);
+//     },[debounceTimeout, fetchOptions]);
+// }
 
 export default function HomepageScreen() {
 console.log('---- Homepage rerender ------');
@@ -56,10 +74,12 @@ console.log('---- Homepage rerender ------');
   const [showUserModalComponent, setShowUserModalComponent] = useState('info');
   const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
   const [listUserStranger, setListUserStranger] = useState([]);
+  let listUserStrangerToDisplay = listUserStranger;
   const [inputNameRoom, setInputNameRoom] = useState('');   //các useState dùng cho tạo room
   const [listFriendCopy, setListFriendCopy] = useState([]);
   const counter = useRef(0);
   const [counterCheckedUser, setCounterCheckedUser] = useState(0);
+  const [textSearch, setTextSearch] = useState("");
   if(currentUser == null) {
     currentUser = defaultObjectUser;
     defaultObjectUser = null;
@@ -303,6 +323,24 @@ useEffect(() => {
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
     }
 
+    const handleSearchChange = useCallback((e) => {
+        setTextSearch(e.target.value);
+    },[]);
+    if(textSearch !== "") {
+        listUserStrangerToDisplay = listUserStranger.filter((userStranger) => {
+            return userStranger.includes(textSearch);
+        });
+    }
+    const renderListSearch = () => {
+        return listUserStranger.map((oneStranger, index) => {
+            <div className='border d-flex align-items-center my-1' key={oneStranger.id}>
+                <img src={oneStranger.photoURL} alt="photoURL" className='rounded-circle' width='40' height='40' />
+                <span className='mx-2 flex-fill'>{oneStranger.fullName}</span>
+                <button className='btn btn-outline-primary btn-sm' onClick={() => sendAddFriendRequest(id, oneStranger.id, oneStranger.fullName)}>Kết bạn</button>
+            </div>
+        });
+    }
+
 
 //Render giao diện
   return(
@@ -376,12 +414,12 @@ useEffect(() => {
                     <div className="modal-body">
                         <div className="input-group mb-3">
                             <span className="input-group-text" id="basic-addon1"><FcSmartphoneTablet /></span>
-                            <input type="text" className="form-control" placeholder="(+84) Nhập số điện thoại..." />
+                            <input type="text" className="form-control" placeholder="(+84) Nhập số điện thoại..." onChange={handleSearchChange} />
                         </div>
                         <FaUserFriends /> Có thể bạn quen:
                         <div id="FlatListStranger">
                             {
-                                listUserStranger.map(oneStranger => {
+                                listUserStrangerToDisplay.map(oneStranger => {
                                     return <div className='border d-flex align-items-center my-1' key={oneStranger.id}>
                                         <img src={oneStranger.photoURL} alt="photoURL" className='rounded-circle' width='40' height='40' />
                                         <span className='mx-2 flex-fill'>{oneStranger.fullName}</span>

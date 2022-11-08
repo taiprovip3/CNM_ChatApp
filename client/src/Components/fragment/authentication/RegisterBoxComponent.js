@@ -12,6 +12,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { doc, setDoc } from 'firebase/firestore';
 import moment from 'moment';
+import GenerateKeyWords from '../../service/GenerateKeyWords';
 
 export default function RegisterBoxComponent() {
 
@@ -42,10 +43,11 @@ export default function RegisterBoxComponent() {
         toast.success('Đăng ký tài khoản thành công');
         toast.success('Vui lòng kiểm tra hộp thư email... 👋');
         const { email, uid } = userObject;
+        const displayName = fullName === '' ? 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991) : fullName;
         const user = {
           id: uid,
           email: email,
-          fullName: fullName === '' ? 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991) : fullName,
+          fullName: displayName,
           age: -1,
           joinDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
           address: 'Không',
@@ -56,7 +58,8 @@ export default function RegisterBoxComponent() {
           phoneNumber: '+84',
           bod: 1,
           bom: 1,
-          boy: parseInt(new Date().getFullYear()-119)
+          boy: parseInt(new Date().getFullYear()-119),
+          keywords: GenerateKeyWords(displayName)
         }
         setDoc(doc(database, 'Users', uid), user);
         setTimeout(() => {
