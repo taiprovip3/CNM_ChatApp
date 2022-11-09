@@ -21,7 +21,6 @@ import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
 
 export default memo(function RowChat() {
-console.log('---- Row-chat rerender ------');
     //Biến
     const { myIndex, intervalRef, stopSlider, socket, currentUser: { id, photoURL }, listRoom, listFriend, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
     const [selectedObject, setSelectedObject] = useState(null);
@@ -35,8 +34,6 @@ console.log('---- Row-chat rerender ------');
                     const selectedObjectRoomId = selectedObject.id;
                     getRoomById(selectedObjectRoomId)
                         .then((rs) => {
-                            console.log(' d1 = ', selectedObject);
-                            console.log(' d2 = ', rs);
                             setObjectGroupModal(rs);
                         });
             }
@@ -55,7 +52,6 @@ console.log('---- Row-chat rerender ------');
             var rs = myIndex.current-1;
             var obj2 = "#imgSliders" + rs;
             $(obj2).css("display", "block");
-            console.log('slidering is running...');
         }, 2000);
     },[intervalRef, myIndex]);
     useEffect(() => {

@@ -7,7 +7,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import "../css/HomepageScreen.css";
 import { BsFillShieldLockFill } from 'react-icons/bs'
-import { MdCameraswitch, MdOutlineEditOff, MdOutlineExitToApp } from 'react-icons/md';
+import { MdCameraswitch, MdOutlineEditOff } from 'react-icons/md';
 import { FcSmartphoneTablet } from 'react-icons/fc';
 import { FaUserFriends, FaUserMinus } from 'react-icons/fa';
 import { TbPencilOff, TbUpload } from 'react-icons/tb';
@@ -29,27 +29,8 @@ import RowPhonebook from '../fragment/homepage/RowPhonebook';
 import Info from '../fragment/group-modal/Info';
 import Update from '../fragment/group-modal/update';
 import Authorization from '../fragment/group-modal/authorization';
-import { debounce } from 'lodash';
-// function DebouceSelected({ fetchOptions, debounceTimeout = 300, ...props}) {//Tra ve 1 component
-//     const [fetching, setFetching] = useState(false);
-//     const [options, setOptions] = useState([]);
-
-//     const debounceFetcher = React.useMemo(() => {   //Hàm này gọi đến hàm api truyền từ hàm cha là fetchOptions.
-//         const loadOptions = (value) => {
-//             setOptions([]);
-//             setFetching(true);
-//             fetchOptions(value)
-//                 .then(newOption => {
-//                     setOptions(newOption);
-//                     setFetching(false); 
-//                 });
-//         }
-//         return debounce(loadOptions, debounceTimeout);
-//     },[debounceTimeout, fetchOptions]);
-// }
 
 export default function HomepageScreen() {
-console.log('---- Homepage rerender ------');
 //Khai báo biến
   var { socket, currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, users } = useContext(AuthContext);
   if(!currentUser){
@@ -105,7 +86,6 @@ useEffect(() => {
         for(var i=0; i<listFriendCopy.length; i++){
             if(listFriendCopy[i].isChecked){
                 counter.current++;
-                console.log('counter.current now = ', counter.current);
             }
         }
         setCounterCheckedUser(counter.current);
@@ -196,7 +176,6 @@ useEffect(() => {
         );
     },[]);
     const handleCreateRoom = useCallback(() => {
-        console.log('my will = ', listFriendCopy);
         if(inputNameRoom.length < 3 || inputNameRoom === ""){
             toast.error("Tên nhóm rỗng hoặc quá ngắn", {
                 position: toast.POSITION.TOP_CENTER
@@ -246,14 +225,12 @@ useEffect(() => {
         if(fileUpload == null){
             return link = photoURL;
         }
-        console.log(' function convert. img now = ', link);
         const pathStorage = `${idUser + "__" + fileUpload.name}`;
         const imagesRef = ref(storage, 'photoURLs/' + pathStorage);
         await uploadBytes(imagesRef, fileUpload)
           .then(async () => {
               await getDownloadURL(imagesRef)
                 .then((url) => {
-                    console.log(' img after promise = ', link);
                     link = url;
                 });
           })
@@ -273,14 +250,6 @@ useEffect(() => {
         const selectedYobYears = e.target["selectedYobYears"].value;
         var editAddress = e.target["editAddress"].value;
         var editSlogan = e.target["editSlogan"].value;
-        console.log(' e1 = ', e.target["selectedImage"].value);
-        console.log(' e2 = ', e.target["editFullName"].value);
-        console.log(' e3 = ', e.target["editSex"].value);
-        console.log(' e4 = ', e.target["selectedYobDays"].value);
-        console.log(' e5 = ', e.target["selectedYobMonths"].value);
-        console.log(' e6 = ', e.target["selectedYobYears"].value);
-        console.log(' e7 = ', e.target["editAddress"].value);
-        console.log(' e8 = ', e.target["editSlogan"].value);
         if(editFullName === ""){
             toast.error("Tên đại diện rỗng!", {
                 position: toast.POSITION.TOP_CENTER
@@ -322,25 +291,29 @@ useEffect(() => {
         $("#closeUpdateInfoModal").click();
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
     }
-
     const handleSearchChange = useCallback((e) => {
         setTextSearch(e.target.value);
     },[]);
     if(textSearch !== "") {
         listUserStrangerToDisplay = listUserStranger.filter((userStranger) => {
-            return userStranger.includes(textSearch);
+            return userStranger.keywords.includes(textSearch);
         });
     }
-    const renderListSearch = () => {
-        return listUserStranger.map((oneStranger, index) => {
-            <div className='border d-flex align-items-center my-1' key={oneStranger.id}>
-                <img src={oneStranger.photoURL} alt="photoURL" className='rounded-circle' width='40' height='40' />
-                <span className='mx-2 flex-fill'>{oneStranger.fullName}</span>
-                <button className='btn btn-outline-primary btn-sm' onClick={() => sendAddFriendRequest(id, oneStranger.id, oneStranger.fullName)}>Kết bạn</button>
-            </div>
-        });
-    }
-
+    const handleSignOut = useCallback((e) => {
+        e.preventDefault();
+        const selectBackupType = e.target["selectBackupType"].value;
+        if(selectBackupType === "backup") {
+            $("#btnSignOut > span").removeClass("d-none");
+            $("#btnSignOut").text("Saving data...").addClass("disabled");
+            localStorage.setItem("username", currentUser.email);
+            setTimeout(() => {
+                $(".btn-close").click();
+                setCurrentUser(null);
+            }, 1500);
+        } else{
+            setCurrentUser(null);
+        }
+    },[currentUser.email, setCurrentUser]);
 
 //Render giao diện
   return(
@@ -414,17 +387,17 @@ useEffect(() => {
                     <div className="modal-body">
                         <div className="input-group mb-3">
                             <span className="input-group-text" id="basic-addon1"><FcSmartphoneTablet /></span>
-                            <input type="text" className="form-control" placeholder="(+84) Nhập số điện thoại..." onChange={handleSearchChange} />
+                            <input type="text" className="form-control" placeholder="(+84) Nhập số điện thoại, tên hoặc email" onChange={handleSearchChange} />
                         </div>
                         <FaUserFriends /> Có thể bạn quen:
                         <div id="FlatListStranger">
                             {
-                                listUserStrangerToDisplay.map(oneStranger => {
+                                listUserStrangerToDisplay.map((oneStranger, index) => {
                                     return <div className='border d-flex align-items-center my-1' key={oneStranger.id}>
                                         <img src={oneStranger.photoURL} alt="photoURL" className='rounded-circle' width='40' height='40' />
                                         <span className='mx-2 flex-fill'>{oneStranger.fullName}</span>
                                         <button className='btn btn-outline-primary btn-sm' onClick={() => sendAddFriendRequest(id, oneStranger.id, oneStranger.fullName)}>Kết bạn</button>
-                                    </div>
+                                    </div>;
                                 })
                             }
                         </div>
@@ -602,6 +575,7 @@ useEffect(() => {
         <div className="modal fade" id="SignoutModal">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
+                    <form onSubmit={handleSignOut}>
                     <div className="modal-header">
                         <p className="modal-title">Đăng xuất tài khoản</p>
                         <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
@@ -619,15 +593,18 @@ useEffect(() => {
                                 <label className="form-check-label" htmlFor="nonbackup">Đăng xuất tức thị, không lưu vết cho lần đăng nhập sau.</label>
                             </div>
                             <div className="form-check text-start">
-                                <input type="radio" className="form-check-input" id="nonbackup" name="selectBackupType" value="nonbackup" />
-                                <label className="form-check-label" htmlFor="nonbackup">Sao lưu các vết session, cookie cho lần đăng nhập sau (Đăng xuất chậm sao lưu, load nhanh cho lần dùng sau).</label>
+                                <input type="radio" className="form-check-input" id="backup" name="selectBackupType" value="backup" />
+                                <label className="form-check-label" htmlFor="backup">Sao lưu các vết session, cookie cho lần đăng nhập sau (Đăng xuất chậm sao lưu, load nhanh cho lần dùng sau).</label>
                             </div>
                         </div>
                     </div>
                     <div className="modal-footer">
-                        <button className='btn btn-danger text-white w-100'>Đăng xuất tài khoản</button>
+                        <button type='submit' className='btn btn-danger text-white w-100' id='btnSignOut'>
+                        <span className="spinner-grow spinner-grow-sm d-none"></span>
+                            Đăng xuất tài khoản
+                        </button>
                     </div>
-
+                    </form>
                 </div>
             </div>
         </div>
