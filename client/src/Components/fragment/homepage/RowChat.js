@@ -1,4 +1,5 @@
-import React, { memo, useCallback, useEffect, useState } from 'react';
+/* eslint-disable no-unused-vars */
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import '../../css/RowChat.css';
 import { BsFillChatTextFill } from 'react-icons/bs'
 import { RiSettings5Line, RiFolderUserFill } from 'react-icons/ri';
@@ -19,12 +20,14 @@ import introduction8 from '../../assets/introduction8.png';
 import ChatRoom from '../../fragment/row-chat/ChatRoom';
 import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
+import FirebaseGetDocsFriendMessages from '../../service/FirebaseGetDocsFriendMessages';
 
 export default memo(function RowChat() {
     //Biến
     const { myIndex, intervalRef, stopSlider, socket, currentUser: { id, photoURL }, listRoom, listFriend, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
     const [selectedObject, setSelectedObject] = useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = useState('');
+    const [listDocFriendMessages, setListDocFriendMessages] = useState([]);
 
     //Trợ
     useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
@@ -81,6 +84,31 @@ export default memo(function RowChat() {
         setSelectedObject(obj);
         setIdRoomIfClickChatToOneFriend(idRoom);
     }, [id, socket]);
+    const memoIdUser = useMemo(() => {
+        return id;
+      }, [id]);
+    const docs = FirebaseGetDocsFriendMessages(memoIdUser);
+    useEffect(() => {
+        setListDocFriendMessages(docs);
+    },[docs]);
+    const getPartnerLastMessage = useCallback((objectFriend) => {
+        console.log('getPartnerLastMessage was called');
+        let roomMessages = [];
+        for(let i=0; i<listDocFriendMessages.length; i++) { //Mỗi 1 doc
+            const element = listDocFriendMessages[i]
+            if(element.partners.includes(objectFriend.id) && element.partners.includes(id)) {
+                roomMessages = element.listObjectMessage;
+                break;
+            }
+        }
+        if(roomMessages.length <= 0) {
+            return objectFriend.slogan;
+        }
+        const lastObjectMessage = roomMessages[roomMessages.length - 1];
+        const nameSender = lastObjectMessage.nameSender;
+        const msg = lastObjectMessage.msg;
+        return lastObjectMessage.idSender === id ? "Bạn: " + msg : nameSender + ": " + msg;
+    },[id, listDocFriendMessages]);
 
     //FontEnd
     return (
@@ -137,7 +165,7 @@ export default memo(function RowChat() {
                         })
                     }
                     {
-                        listFriend.map( obj => {
+                        listFriend.map(obj => {
                         return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={obj.id} onClick={() => onClickOneFriend(obj)}>
                                     <div className='col-lg-2'>
                                         <img src={obj.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />
@@ -145,7 +173,7 @@ export default memo(function RowChat() {
                                     <div className='col-lg-10 p-1'>
                                         <span className='fw-bold'>{obj.fullName}</span>
                                         <br />
-                                        <small className='text-secondary'>{obj.slogan}</small>
+                                        <small className='text-secondary'>{getPartnerLastMessage(obj)}</small>
                                     </div>
                                 </div>
                     })

@@ -20,7 +20,6 @@ export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriend
   const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal } = React.useContext(AuthContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
-  const [file, setFile] = useState();
   const memoIdFriend = useMemo(() => {
     return selectedFriend.id;
   }, [selectedFriend.id]);

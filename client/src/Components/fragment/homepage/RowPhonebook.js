@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import '../../css/RowPhonebook.css';
 import { AuthContext } from '../../provider/AuthProvider';
 import { BsFillChatTextFill } from 'react-icons/bs'
@@ -10,7 +10,7 @@ import { AiFillQuestionCircle } from 'react-icons/ai';
 import ListFriend from '../row-chat/ListFriend';
 import ListRoom from '../row-chat/ListRoom';
 
-export default function RowPhonebook() {
+export default memo(function RowPhonebook() {
 
     //Biến
     const { currentUser: { photoURL }, listFriend, setCurrentRowShow } = React.useContext(AuthContext);
@@ -60,7 +60,7 @@ export default function RowPhonebook() {
                     </div>
                     {
                         listFriend.map(obj => {
-                            return <div className={selectedObject === obj ? 'd-flex border border-primary border-3 align-items-center p-1 needCursor' : 'd-flex align-items-center p-1 needCursor'} key={obj.id}>
+                            return <div className={selectedObject === obj ? 'd-flex border border-primary border-3 align-items-center p-1 needCursor' : 'd-flex align-items-center p-1 needCursor'} key={Math.random()}>
                                         <img src={obj.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                                         <span className='px-1'>{obj.fullName}</span>
                                     </div>;
@@ -78,4 +78,4 @@ export default function RowPhonebook() {
             </div>
         </div>
     );
-}
+});

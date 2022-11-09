@@ -10,7 +10,7 @@ const FirebaseGetFriends = (owner) => {
         const arrTemp = [];
         const unsubcribe = onSnapshot(doc(database, "UserFriends", owner), (document) => {
             if(document.data() !== undefined){
-                const dataTemp = document.data().listFriend;
+                const dataTemp = document.data().listFriend;    //Mảng id bạn bè
                 dataTemp.map(async (obj) => {
                     
                     const docRef = doc(database, "Users", obj.idFriend);
@@ -18,7 +18,6 @@ const FirebaseGetFriends = (owner) => {
                     arrTemp.push(docSnap.data());
 
                 });
-                console.log('Getting datas   from firebase!');
                 setFriends(arrTemp);
             }
         });

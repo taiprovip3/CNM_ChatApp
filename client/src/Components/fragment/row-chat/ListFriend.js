@@ -10,6 +10,7 @@ import { database } from '../../../firebase';
 import "../../css/ListFriend.css";
 import { IoArrowRedoSharp, IoArrowUndoSharp } from 'react-icons/io5';
 import { AuthContext } from '../../provider/AuthProvider';
+import moment from 'moment';
 
 export default memo(function ListFriend() {
 
@@ -65,12 +66,13 @@ export default memo(function ListFriend() {
                 listFriend: [{idFriend: id}]
             });
         }
-        //Sử lý FriendMessages kiến tạo
+        //Sử lý kiến tạo FriendMessages
         const idRoom = (Math.random() + 1).toString(36).substring(2);
         await setDoc(doc(database, "FriendMessages", idRoom), {
             idRoom: idRoom,
             listObjectMessage: [],
-            listeners: request.idRequester + "__" + id
+            listeners: request.idRequester + "__" + id, //request.idReqester là thằng bạn, id là mình
+            partners: [request.idRequester, id]
         });
     },[id]);
     const handleCancelRequest = useCallback(async (request) => {

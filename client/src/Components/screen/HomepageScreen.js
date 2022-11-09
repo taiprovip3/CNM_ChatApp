@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
@@ -32,7 +33,7 @@ import Authorization from '../fragment/group-modal/authorization';
 
 export default function HomepageScreen() {
 //Khai báo biến
-  var { socket, currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, users } = useContext(AuthContext);
+  var { currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, users } = useContext(AuthContext);
   if(!currentUser){
     setTimeout(() => {
         window.location.href = '/auth';
@@ -55,12 +56,12 @@ export default function HomepageScreen() {
   const [showUserModalComponent, setShowUserModalComponent] = useState('info');
   const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
   const [listUserStranger, setListUserStranger] = useState([]);
-  let listUserStrangerToDisplay = listUserStranger;
   const [inputNameRoom, setInputNameRoom] = useState('');   //các useState dùng cho tạo room
   const [listFriendCopy, setListFriendCopy] = useState([]);
   const counter = useRef(0);
   const [counterCheckedUser, setCounterCheckedUser] = useState(0);
-  const [textSearch, setTextSearch] = useState("");
+  const [textSearchStranger, setTextSearchStranger] = useState("");
+  const [textSearchFriend, setTextSearchFriend] = useState("");
   if(currentUser == null) {
     currentUser = defaultObjectUser;
     defaultObjectUser = null;
@@ -291,13 +292,26 @@ useEffect(() => {
         $("#closeUpdateInfoModal").click();
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
     }
-    const handleSearchChange = useCallback((e) => {
-        setTextSearch(e.target.value);
+    const handleSearchStranger = useCallback((e) => {
+        setTextSearchStranger(e.target.value);
     },[]);
-    if(textSearch !== "") {
-        listUserStrangerToDisplay = listUserStranger.filter((userStranger) => {
-            return userStranger.keywords.includes(textSearch);
-        });
+    let listUserStrangerToDisplay = listUserStranger;
+    if(textSearchStranger.length >= 9) {
+        if(textSearchStranger.match(/\d/g)) { //nếu là sđt
+            listUserStrangerToDisplay = listUserStranger.filter((val) => {
+                if( val.phoneNumber.includes(textSearchStranger) ) {
+                    return val;
+                }
+            });
+        }
+    } else{
+        if(textSearchStranger !== "") {
+            listUserStrangerToDisplay = listUserStranger.filter((val) => {
+                if( val.fullName.toLowerCase().includes(textSearchStranger.toLowerCase()) ) {
+                    return val;
+                }
+            });
+        }
     }
     const handleSignOut = useCallback((e) => {
         e.preventDefault();
@@ -314,6 +328,27 @@ useEffect(() => {
             setCurrentUser(null);
         }
     },[currentUser.email, setCurrentUser]);
+    const handleSearchFriend = useCallback((e) => {
+        setTextSearchFriend(e.target.value);
+    },[]);
+    let listFriendCopyToDisplay = listFriendCopy;
+    if(textSearchFriend.length >= 9) {
+        if(textSearchFriend.match(/\d/g)) { //nếu là sđt
+            listFriendCopyToDisplay = listFriendCopy.filter((val) => {
+                if( val.phoneNumber.includes(textSearchFriend) ) {
+                    return val;
+                }
+            });
+        }
+    } else{
+        if(textSearchFriend !== "") {
+            listFriendCopyToDisplay = listFriendCopy.filter((val) => {
+                if( val.fullName.toLowerCase().includes(textSearchStranger.toLowerCase()) ) {
+                    return val;
+                }
+            });
+        }
+    }
 
 //Render giao diện
   return(
@@ -346,14 +381,14 @@ useEffect(() => {
                         Thêm bạn vào nhóm
                         <div className='input-group'>
                             <span className='input-group-text'><HiSearch /></span>
-                            <input type="text" className='form-control' placeholder='Nhập tên bạn bè...' />
+                            <input type="text" className='form-control' placeholder='Nhập tên bạn bè, số điện thoại, email...' onChange={handleSearchFriend} />
                         </div>
                         <br />
                         <span className='badge bg-primary p-2 fw-normal'>Tất cả</span>
                         <hr />
                         <div id='FlatListFriend' className='border'>
                         {
-                            listFriendCopy.map( obj => {
+                            listFriendCopyToDisplay.map( obj => {
                                 return <div id='OneBoxUser' className='d-flex align-items-center my-1' key={Math.random()}>
                                             {
                                                 obj.isChecked
@@ -387,7 +422,7 @@ useEffect(() => {
                     <div className="modal-body">
                         <div className="input-group mb-3">
                             <span className="input-group-text" id="basic-addon1"><FcSmartphoneTablet /></span>
-                            <input type="text" className="form-control" placeholder="(+84) Nhập số điện thoại, tên hoặc email" onChange={handleSearchChange} />
+                            <input type="text" className="form-control" placeholder="(+84) Nhập số điện thoại, tên hoặc email" onChange={handleSearchStranger} />
                         </div>
                         <FaUserFriends /> Có thể bạn quen:
                         <div id="FlatListStranger">
