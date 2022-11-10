@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
     const [objectGroupModal, setObjectGroupModal] = useState({createAt: 'November 5th 2022, 04:54:47 pm', description: 'Bắt đầu chia sẽ các câu chuyện thú vị cùng nhau', id: 'mjywna2m2mg', listMember: [], name: 'Phòng Anh Văn', owner: 'rGXgMCmbPuaP4FEQ9v087qVw1ZI2', type: 'group', urlImage: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg'});
     const [objectUserModal, setObjectUserModal] = useState({bod:1,bom:1,boy:1903,email:'taito1doraemon@gmail.com',fullName:'Phan Tấn Tài',id:'rGXgMCmbPuaP4FEQ9v087qVw1ZI2',joinDate:'November 5th 2022, 1:51:39 pm',phoneNumber:"+84",photoURL:"https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg",role:["MEMBER"],sex:false,slogan:'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!'});
 
-    console.log('>> AuthProvider rerender , current user : ', currentUser);
     const listUser = FirebaseGetUsers();
     
     useEffect(() => {
@@ -28,7 +27,6 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         if(listUser.length > 0)
             setUsers(listUser);
-        console.log(' usersse = ', listUser);
     },[listUser]);
 
     const stopSlider = useCallback(() => {

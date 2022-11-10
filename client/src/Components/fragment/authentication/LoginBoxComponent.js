@@ -39,7 +39,7 @@ export default function LoginBoxComponent() {
                     setCurrentUser(UsersDocSnap.data());
                     toast.success('Đăng nhập thành công');
                     setTimeout(() => {
-                        history('/');
+                        history('/load');
                     }, 1500);
                 } else{
                     toast.error("Tài khoản này chưa được xác thực");

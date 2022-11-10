@@ -26,7 +26,7 @@ export default function VerifyOtpBoxComponent() {
         toast.success('Dịch chuyển bạn đến trang chủ... 👋');
         setCurrentUser(userData);
         setTimeout(() => {
-            history('/');
+            history('/load');
         }, 2500);
     },[history, setCurrentUser]);
     const registerAccountUser = useCallback((userObject) => {
@@ -54,7 +54,7 @@ export default function VerifyOtpBoxComponent() {
         setDoc(doc(database, 'Users', uid), user);
         setCurrentUser(user);
         setTimeout(() => {
-            history('/');
+            history('/load');
         }, 2500);
     }, [history, setCurrentUser]);
     const handleConfirmOTP = useCallback((e) => {
