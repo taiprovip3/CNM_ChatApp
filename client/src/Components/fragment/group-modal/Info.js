@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-restricted-globals */
-import React, { memo, useContext, useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { BiLinkAlt } from 'react-icons/bi';
 import { MdOutlineExitToApp } from 'react-icons/md';
 import { RiDeleteBin6Line } from 'react-icons/ri';
@@ -10,12 +10,14 @@ import { database } from '../../../firebase';
 import '../../css/Common.css';
 import moment from 'moment';
 import { AuthContext } from '../../provider/AuthProvider';
+import { AppContext } from '../../provider/AppProvider';
 
 export default memo(function Info({ setShowGroupModalComponent }) {
 
     //Biến
     const [listUserInRoom, setListUserInRoom] = useState([]);
-    const { socket, users, objectGroupModal, currentUser } = useContext(AuthContext);
+    const { socket, objectGroupModal, currentUser } = React.useContext(AuthContext);
+    const { users } = React.useContext(AppContext);
 
     //Trợ
     useEffect(() => {

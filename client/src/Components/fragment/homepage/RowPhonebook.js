@@ -9,11 +9,13 @@ import { TbUsers } from 'react-icons/tb';
 import { AiFillQuestionCircle } from 'react-icons/ai';
 import ListFriend from '../row-chat/ListFriend';
 import ListRoom from '../row-chat/ListRoom';
+import { AppContext } from '../../provider/AppProvider';
 
 export default memo(function RowPhonebook() {
 
     //Biến
-    const { currentUser: { photoURL }, listFriend, setCurrentRowShow } = React.useContext(AuthContext);
+    const { currentUser: { photoURL }, setCurrentRowShow } = React.useContext(AuthContext);
+    const { friends } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = useState('DanhSachKetBan');
 
     //Hàm
@@ -55,11 +57,11 @@ export default memo(function RowPhonebook() {
                     </div>
                     <hr />
                     <div className="d-flex align-items-center">
-                        <span className='text-primary flex-fill'><TbUsers /> Bạn bè ({listFriend.length})</span>
+                        <span className='text-primary flex-fill'><TbUsers /> Bạn bè ({friends.length})</span>
                         <AiFillQuestionCircle className='text-primary lead' data-bs-toggle="tooltip" title="Nhấp giải thích" />
                     </div>
                     {
-                        listFriend.map(obj => {
+                        friends.map(obj => {
                             return <div className={selectedObject === obj ? 'd-flex border border-primary border-3 align-items-center p-1 needCursor' : 'd-flex align-items-center p-1 needCursor'} key={Math.random()}>
                                         <img src={obj.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                                         <span className='px-1'>{obj.fullName}</span>

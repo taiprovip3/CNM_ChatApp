@@ -10,9 +10,6 @@ export const AuthProvider = ({ children }) => {
     const [confirmationToken, setConfirmationToken] = useState(null);
     // const [currentUser, setCurrentUser] = useState({bod:1,bom:1,boy:1903,email:'taito1doraemon@gmail.com',fullName:'Phan Tấn Tài',id:'rGXgMCmbPuaP4FEQ9v087qVw1ZI2',joinDate:'November 5th 2022, 1:51:39 pm',phoneNumber:"+84",photoURL:"https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg",role:["MEMBER"],sex:false,slogan:'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!'});
     const [currentUser, setCurrentUser] = useState(null);
-    const [users, setUsers] = useState([]);
-    const [listRoom, setListRoom] = useState([]);
-    const [listFriend, setListFriend] = useState([]);
     const [currentRowShow, setCurrentRowShow] = useState('row-chat'); //[row-chat, row-phonebook]
     const intervalRef = React.useRef(null);
     const myIndex = React.useRef(0);
@@ -24,10 +21,6 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         setSocket(io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] }));
     },[]);
-    useEffect(() => {
-        if(listUser.length > 0)
-            setUsers(listUser);
-    },[listUser]);
 
     const stopSlider = useCallback(() => {
         clearInterval(intervalRef.current);
@@ -41,7 +34,7 @@ export const AuthProvider = ({ children }) => {
     },[currentRowShow, stopSlider]);
 
     return (
-      <AuthContext.Provider value={{ objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, users, myIndex, intervalRef, stopSlider, socket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, listRoom, setListRoom, listFriend, setListFriend, currentRowShow, setCurrentRowShow }}>  
+      <AuthContext.Provider value={{ objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow }}>  
         {children}
       </AuthContext.Provider>
     )

@@ -2,8 +2,9 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthContext } from '../provider/AuthProvider';
+import { AppContext } from '../provider/AppProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import "../css/HomepageScreen.css";
@@ -30,10 +31,12 @@ import RowPhonebook from '../fragment/homepage/RowPhonebook';
 import Info from '../fragment/group-modal/Info';
 import Update from '../fragment/group-modal/update';
 import Authorization from '../fragment/group-modal/authorization';
+import { renderYobDays, renderYobMonths, renderYobYears } from '../service/RenderYOB';
 
 export default function HomepageScreen() {
 //Khai báo biến
-  var { currentUser, setCurrentUser, setListRoom, setListFriend, listFriend, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, users } = useContext(AuthContext);
+  var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
+  const { users, friends, strangers } = React.useContext(AppContext);
   if(!currentUser){
     setTimeout(() => {
         window.location.href = '/auth';
@@ -51,36 +54,27 @@ export default function HomepageScreen() {
                 </div>
             </div>;
   }
-  var defaultObjectUser = {id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', email: 'ptt@gmail.com', address: 'undifined', age: 0, fullName: 'Phan Tấn Tài', joinDate: 'October 26th 2022, 3:38:30 pm', phoneNumber: '+84', photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg', role: ['MEMBER', 'ADMIN'], sex: false, slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'};
   const [showGroupModalComponent, setShowGroupModalComponent] = useState('info');
-  const [showUserModalComponent, setShowUserModalComponent] = useState('info');
   const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
-  const [listUserStranger, setListUserStranger] = useState([]);
-  const [inputNameRoom, setInputNameRoom] = useState('');   //các useState dùng cho tạo room
+  const [inputNameRoom, setInputNameRoom] = useState('');
   const [listFriendCopy, setListFriendCopy] = useState([]);
   const counter = useRef(0);
   const [counterCheckedUser, setCounterCheckedUser] = useState(0);
   const [textSearchStranger, setTextSearchStranger] = useState("");
   const [textSearchFriend, setTextSearchFriend] = useState("");
-  if(currentUser == null) {
-    currentUser = defaultObjectUser;
-    defaultObjectUser = null;
-  }
-  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
-  const memoIdUser = useMemo(() => {
-    return id;
-  },[id]);
 
-//Tạo hàm & useEffect[]
+  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
+
+//useEffect[ listFriendCopy tạo phòng ]
 useEffect(() => {
-    if(listFriend.length > 0){
+    if(friends.length > 0){
         const data = [];
-        listFriend.forEach(e => {
+        friends.forEach(e => {
             data.push({...e, isChecked: false});
         });
         setListFriendCopy(data);
     }
-},[listFriend]);
+},[friends]);
 useEffect(() => {
     if(listFriendCopy.length > 0){
         counter.current = 0;
@@ -93,54 +87,13 @@ useEffect(() => {
     }
 },[listFriendCopy]);
 
+const onInputNameRoomChange = useCallback((e) => {
+    setInputNameRoom(e.target.value);
+},[]);
+const handleSearchFriend = useCallback((e) => {
+    setTextSearchFriend(e.target.value);
+},[]);
 
-    //Lấy listRoom từ Firebase 1 lần duy nhất
-    const rooms = FirebaseGetRooms(memoIdUser);
-    useEffect(() => {
-        rooms.sort(function(x, y){
-            return x.createAt - y.createAt;
-        });
-        setListRoom(rooms);
-    }, [rooms, setListRoom]);
-    //Lấy listFriend từ Firebase 1 lần duy nhất
-    const friends = FirebaseGetFriends(memoIdUser);
-    useEffect(() => {
-        setTimeout(() => {
-            setListFriend(friends);
-        }, 500);
-    }, [friends, setListFriend]);
-    //Lấy listStrangers từ Firebase 1 lần duy nhất
-    const strangers = FirebaseGetStrangers(memoIdUser);
-    useEffect(() => {
-        setTimeout(() => {
-            setListUserStranger(strangers);
-        }, 500);
-    },[strangers]);
-    const handleSelectedImage = useCallback((e) => {
-        alert('You have just selected a image from your computer!');
-    },[]);
-    const renderYobDays = () => {
-        const arr = [];
-        for(var i=1;i<32;i++){
-            arr.push(i);
-        }
-        return arr;
-    };
-    const renderYobMonths = () => {
-        const arr = [];
-        for(var i=1;i<13;i++){
-            arr.push(i);
-        }
-        return arr;
-    };
-    const renderYobYears = () => {
-        const currentYear = new Date().getFullYear();
-        const arr = [];
-        for(var i=currentYear-119;i<=currentYear;i++){
-            arr.push(i);
-        }
-        return arr;
-    };
     const sendAddFriendRequest = useCallback(async (fromId, toId, toName) => {
         // 1. Cập nhật toRequest cho bản thân
         const currentTimeRequest = moment().format("MMMM Do YYYY, hh:mm:ss a");
@@ -166,9 +119,7 @@ useEffect(() => {
             await setDoc(FromDocRef, {fromRequest:[fromRequestObject]});
         }
     },[fullName]);
-    const onInputNameRoomChange = useCallback((e) => {
-        setInputNameRoom(e.target.value);
-    },[]);
+
     const onSelectedChkUserChange = useCallback((obj) => {
         setListFriendCopy(
             (prevList) => prevList.map (
@@ -217,10 +168,10 @@ useEffect(() => {
         });
         $("#btnCancelCreateRoomModal").click();
         setInputNameRoom('');
-        setListFriendCopy(listFriend);
+        setListFriendCopy(friends);
         setCounterCheckedUser(0);
 
-    },[counterCheckedUser, id, inputNameRoom, listFriend, listFriendCopy]);
+    },[counterCheckedUser, id, inputNameRoom, friends, listFriendCopy]);
     const awaitHandleUploadPhotoURL = async (idUser, fileUpload) => {
         let link;
         if(fileUpload == null){
@@ -295,10 +246,10 @@ useEffect(() => {
     const handleSearchStranger = useCallback((e) => {
         setTextSearchStranger(e.target.value);
     },[]);
-    let listUserStrangerToDisplay = listUserStranger;
+    let listUserStrangerToDisplay = strangers;
     if(textSearchStranger.length >= 9) {
         if(textSearchStranger.match(/\d/g)) { //nếu là sđt
-            listUserStrangerToDisplay = listUserStranger.filter((val) => {
+            listUserStrangerToDisplay = strangers.filter((val) => {
                 if( val.phoneNumber.includes(textSearchStranger) ) {
                     return val;
                 }
@@ -306,7 +257,7 @@ useEffect(() => {
         }
     } else{
         if(textSearchStranger !== "") {
-            listUserStrangerToDisplay = listUserStranger.filter((val) => {
+            listUserStrangerToDisplay = strangers.filter((val) => {
                 if( val.fullName.toLowerCase().includes(textSearchStranger.toLowerCase()) ) {
                     return val;
                 }
@@ -328,9 +279,7 @@ useEffect(() => {
             setCurrentUser(null);
         }
     },[currentUser.email, setCurrentUser]);
-    const handleSearchFriend = useCallback((e) => {
-        setTextSearchFriend(e.target.value);
-    },[]);
+    
     let listFriendCopyToDisplay = listFriendCopy;
     if(textSearchFriend.length >= 9) {
         if(textSearchFriend.match(/\d/g)) { //nếu là sđt
@@ -428,7 +377,7 @@ useEffect(() => {
                         <div id="FlatListStranger">
                             {
                                 listUserStrangerToDisplay.map((oneStranger, index) => {
-                                    return <div className='border d-flex align-items-center my-1' key={oneStranger.id}>
+                                    return <div className='border d-flex align-items-center my-1' key={Math.random()}>
                                         <img src={oneStranger.photoURL} alt="photoURL" className='rounded-circle' width='40' height='40' />
                                         <span className='mx-2 flex-fill'>{oneStranger.fullName}</span>
                                         <button className='btn btn-outline-primary btn-sm' onClick={() => sendAddFriendRequest(id, oneStranger.id, oneStranger.fullName)}>Kết bạn</button>
@@ -510,7 +459,7 @@ useEffect(() => {
                                             <label htmlFor="selectedImage" style={{position:'absolute',bottom:0,right:0}}>
                                                 <IoIosImages />
                                             </label>
-                                            <input type="file" name="selectedImage" id="selectedImage" accept='image/png, image/jpeg' style={{visibility: 'hidden', width:0, height:0}} onChange={(e) => handleSelectedImage(e)} />
+                                            <input type="file" name="selectedImage" id="selectedImage" accept='image/png, image/jpeg' style={{visibility: 'hidden', width:0, height:0}} />
                                             <TbUpload style={{position:'absolute',bottom:0,left:0}}/>
                                         </div>
                                         <input className='form-control' type="text" placeholder='Nhập tên đại điện muốn thay đổi' defaultValue={fullName} style={{textAlign:'center'}} name="editFullName" />

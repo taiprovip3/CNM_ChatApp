@@ -21,10 +21,12 @@ import ChatRoom from '../../fragment/row-chat/ChatRoom';
 import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
 import FirebaseGetDocsFriendMessages from '../../service/FirebaseGetDocsFriendMessages';
+import { AppContext } from '../../provider/AppProvider';
 
 export default memo(function RowChat() {
     //Biến
-    const { myIndex, intervalRef, stopSlider, socket, currentUser: { id, photoURL }, listRoom, listFriend, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
+    const { myIndex, intervalRef, stopSlider, socket, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
+    const { rooms, friends } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = useState('');
     const [listDocFriendMessages, setListDocFriendMessages] = useState([]);
@@ -41,7 +43,7 @@ export default memo(function RowChat() {
                         });
             }
         }
-    },[listRoom, selectedObject, setObjectGroupModal]);
+    },[rooms, selectedObject, setObjectGroupModal]);
     const intervalSlider = useCallback(() => { //Hàm start slidering
         intervalRef.current = setInterval(() => {
             var i;
@@ -151,7 +153,7 @@ export default memo(function RowChat() {
 
                 <div id="FlatListOneBoxItem" className='border'>
                     {
-                        listRoom.map( obj => {
+                        rooms.map( obj => {
                             return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={obj.id} onClick={() => onClickOneRoom(obj)}>
                             <div className='col-lg-2'>
                             <img src={obj.urlImage} alt="photoURL" className='rounded-circle' width='45' height='45' />
@@ -165,7 +167,7 @@ export default memo(function RowChat() {
                         })
                     }
                     {
-                        listFriend.map(obj => {
+                        friends.map(obj => {
                         return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={obj.id} onClick={() => onClickOneFriend(obj)}>
                                     <div className='col-lg-2'>
                                         <img src={obj.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />

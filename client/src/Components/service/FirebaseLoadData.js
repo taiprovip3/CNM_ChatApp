@@ -1,16 +1,37 @@
 /* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/rules-of-hooks */
 import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { database } from '../../firebase';
 import { AppContext } from '../provider/AppProvider';
+import { BsFillShieldLockFill } from 'react-icons/bs'
 
 export default function FirebaseLoadData() {
 
-    const { currentUser: { id }, progress, setProgress, users, setUsers, setRooms, setFriends, setStrangers, docsFriendMessages, setDocsFriendMessages } = React.useContext(AppContext);
+    const { currentUser, progress, setProgress, users, setUsers, setRooms, setFriends, setStrangers, docsFriendMessages, setDocsFriendMessages } = React.useContext(AppContext);
+    const { id } = currentUser;
     const memoIdUser = useMemo(() => {
         return id;
     },[id]);
+    if(!currentUser){
+        setTimeout(() => {
+            window.location.href = '/auth';
+        }, 1500);
+        return <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <div className='border text-center p-3 rounded' style={{ backgroundImage: 'linear-gradient(to right, #4facfe 0%, #00f2fe 100%)', boxShadow: 'rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px' }}>
+                    <BsFillShieldLockFill className='text-white display-6' />
+                    <br />
+                    Bạn chưa đăng nhập tài khoản.
+                    <br />
+                    Chúng tôi sẽ chuyển bạn đi trong phút chốc
+                    <br />
+                    ...(sau 2s)...
+                    </div>
+                </div>;
+      }
+
+    
     
 
     const [isLoadUsers, setIsLoadUsers] = useState(false);
@@ -61,6 +82,9 @@ export default function FirebaseLoadData() {
                     listRoom.push(document.data());
                 });
                 console.log('rs2: ', listRoom);
+                listRoom.sort(function(x, y){
+                    return x.createAt - y.createAt;
+                });
                 setRooms(listRoom);
                 setProgress(prev => prev + 20);
             });
@@ -101,6 +125,7 @@ export default function FirebaseLoadData() {
     useEffect(() => {
         if(isLoadUserFriends) {
             const unsubcriber = onSnapshot(doc(database, "FriendRequests", memoIdUser), (doc) => {
+                console.log('listener FriendRequest');
                 if(doc.exists()) {//TH FriendRequest của user có bạn trước đó
                     const listIdRequester = [memoIdUser];     // => Lấy dc listId cần loại bỏ
                     const fromRequests = doc.data().fromRequest;
@@ -143,7 +168,7 @@ export default function FirebaseLoadData() {
             setTimeout(() => {
                 setIsLoadUserStrangers(true);
             }, 500);
-        return unsubcriber;
+            return unsubcriber;
         }
     },[memoIdUser, isLoadUserFriends, setProgress, setStrangers, users]);
 
