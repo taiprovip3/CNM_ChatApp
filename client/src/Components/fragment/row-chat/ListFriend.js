@@ -23,52 +23,16 @@ export default memo(function ListFriend() {
 
     //Hàm
     const handleAcceptRequest = useCallback(async (request) => {//1 from request chứa id NVA
-        delete request.photoURL;
-        const requestUpdated = {...request, isAccept: true};
-        const FriendRequestsDocRef1 = doc(database, "FriendRequests", id);
-        await updateDoc(FriendRequestsDocRef1, {
-            fromRequest: arrayRemove(request)
-        });
-        await updateDoc(FriendRequestsDocRef1, {
-            fromRequest: arrayUnion(requestUpdated)
-        });
-        const idFrom = request.idRequester;
-        const newRequest = {...requestUpdated, idRequester: id}
-        const FriendRequestsDocRef2 = doc(database, "FriendRequests", idFrom);
-        await updateDoc(FriendRequestsDocRef2, {
-            toRequest: arrayRemove({...request, idRequester: id})
-        });
-        await updateDoc(FriendRequestsDocRef2, {
-            toRequest: arrayUnion(newRequest)
-        });
 
-        //Sử lý UserFriend cho mình
-        const UserFriendsDocRef1 = doc(database, "UserFriends", id);
-        const UserFriendsDocSnap1 = await getDoc(UserFriendsDocRef1);
-        if(UserFriendsDocSnap1.exists()){
-            await updateDoc(UserFriendsDocRef1, {
-                listFriend: arrayUnion({idFriend: request.idRequester})
-            });
-        } else {//Nếu là newbiew mới tạo acc
-            await setDoc(UserFriendsDocRef1, {
-                idUser: id,
-                listFriend: [{idFriend: request.idRequester}]
-            });
-        }
-        //Sử lý UserFriend cho thằng bạn
-        const UserFriendDocRef2 = doc(database, "UserFriends", request.idRequester);
-        const USerFriendsDocSnap2 = await getDoc(UserFriendDocRef2);
-        if(USerFriendsDocSnap2.exists()){
-            await updateDoc(UserFriendDocRef2, {
-                listFriend: arrayUnion({idFriend: id})
-            });
-        } else{
-            await setDoc(UserFriendDocRef2, {
-                idUser: request.idRequester,
-                listFriend: [{idFriend: id}]
-            });
-        }
-        //Sử lý kiến tạo FriendMessages
+        //1. Cap nhat lai fromRequest cua currentUser
+        let newListFromRequest = listFromRequest;
+        await setDoc(doc(database, "FriendRequests", id), {fromRequest: newListFromRequest.map(r => r.idRequester === request.idRequester ? { ...r, isAccept: true } : r)});
+        //2. Cap nhat lai toRequest cua nguoi gui
+        const docSnap = await getDoc(doc(database, "FriendRequests", request.idRequester));
+        let listToRequestOfSender = docSnap.data().toRequest;
+        await setDoc(doc(database, "FriendRequests", request.idRequester), {toRequest: listToRequestOfSender.map(r => r.idRequester === id ? { ...r, isAccept: true } : r)});
+
+        //3. Sử lý kiến tạo FriendMessages
         const idRoom = (Math.random() + 1).toString(36).substring(2);
         await setDoc(doc(database, "FriendMessages", idRoom), {
             idRoom: idRoom,
@@ -76,7 +40,38 @@ export default memo(function ListFriend() {
             listeners: request.idRequester + "__" + id, //request.idReqester là thằng bạn, id là mình
             partners: [request.idRequester, id]
         });
-    },[id]);
+        //4. Su ly kien tao UserFriends
+            const UserFriendsDocRef_forSelf = doc(database, "UserFriends", id);
+            const UserFriendsDocSnap_forSelf = await getDoc(UserFriendsDocRef_forSelf);
+            if(UserFriendsDocSnap_forSelf.exists()){
+                await updateDoc(UserFriendsDocRef_forSelf, {
+                    listFriend: arrayUnion({idFriend: request.idRequester})
+                });
+                console.log('TH1');
+            } else {//Nếu là newbiew mới tạo acc
+                await setDoc(UserFriendsDocRef_forSelf, {
+                    idUser: id,
+                    listFriend: [{idFriend: request.idRequester}]
+                });
+                console.log('TH2');
+            }
+            
+            const UserFriendDocRef_forHim = doc(database, "UserFriends", request.idRequester);
+            const USerFriendsDocSnap_forHim = await getDoc(UserFriendDocRef_forHim);
+            if(USerFriendsDocSnap_forHim.exists()){
+                await updateDoc(UserFriendDocRef_forHim, {
+                    listFriend: arrayUnion({idFriend: id})
+                });
+                console.log('TH3');
+            } else{
+                await setDoc(UserFriendDocRef_forHim, {
+                    idUser: request.idRequester,
+                    listFriend: [{idFriend: id}]
+                });
+                console.log('TH4');
+            }
+    },[id, listFromRequest]);
+
     const handleCancelRequest = useCallback(async (request) => {
         delete request.photoURL;
         const FriendRequestsDocRef1 = doc(database, "FriendRequests", id);

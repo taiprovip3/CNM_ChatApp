@@ -32,12 +32,18 @@ import Info from '../fragment/group-modal/Info';
 import Update from '../fragment/group-modal/update';
 import Authorization from '../fragment/group-modal/authorization';
 import { renderYobDays, renderYobMonths, renderYobYears } from '../service/RenderYOB';
+import GetUsers from '../service/firebase/GetUsers';
+import GetRooms from '../service/firebase/GetRooms';
+import GetFriends from '../service/firebase/GetFriends';
+import GetDocFriendRequests from '../service/firebase/GetDocFriendRequests';
+import GetDocsFriendMessages from '../service/firebase/GetDocsFriendMessages';
+import LoadingScreen from './LoadingScreen';
 
 export default function HomepageScreen() {
-    console.log('HomepageScreen rerender');
 //Khai báo biến
   var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
-  const { users, friends, docFriendRequests } = React.useContext(AppContext);
+  const { isLoadDocsFriendMessages, setProgress, setIsLoadUsers, setIsLoadRooms, isLoadUsers, setIsLoadUserFriends, isLoadRooms, setIsLoadFriendRequest, isLoadUserFriends, setIsLoadDocsFriendMessages, isLoadFriendRequest,    setUsers,setRooms,setFriends,setDocFriendRequests,setDocsFriendMessages,     users, friends, docFriendRequests } = React.useContext(AppContext);
+
   if(!currentUser){
     setTimeout(() => {
         window.location.href = '/';
@@ -55,6 +61,50 @@ export default function HomepageScreen() {
                 </div>
             </div>;
   }
+
+    const arraysUsers = GetUsers(setProgress, setIsLoadUsers); 
+    const arraysRooms = GetRooms(setProgress, setIsLoadRooms, isLoadUsers); 
+    const arraysFriends = GetFriends(setProgress, setIsLoadUserFriends, isLoadRooms, arraysUsers);
+    const arraysFriendRequests = GetDocFriendRequests(setProgress, setIsLoadFriendRequest, isLoadUserFriends);
+    const arraysDocsFriendMessages = GetDocsFriendMessages(setProgress, setIsLoadDocsFriendMessages, isLoadFriendRequest);
+
+    React.useEffect(() => {
+      setUsers(arraysUsers);
+    },[arraysUsers, setUsers]);
+
+    React.useEffect(() => {
+      setRooms(arraysRooms);
+    },[arraysRooms, setRooms]);
+
+    React.useEffect(() => {
+      setFriends(arraysFriends);
+    },[arraysFriends, setFriends]);
+
+    React.useEffect(() => {
+      setDocFriendRequests(arraysFriendRequests);
+    },[arraysFriendRequests, setDocFriendRequests]);
+
+    React.useEffect(() => {
+      setDocsFriendMessages(arraysDocsFriendMessages);
+    },[arraysDocsFriendMessages, setDocsFriendMessages]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   const [showGroupModalComponent, setShowGroupModalComponent] = useState('info');
   const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
   const [inputNameRoom, setInputNameRoom] = useState('');
@@ -246,7 +296,6 @@ const handleSearchFriend = useCallback((e) => {
     }
     const getUserStrangers = useCallback(() => {
         let strangers = [];
-        console.log(' dfm = ', docFriendRequests);
         if(docFriendRequests) {
             const listIdRequester = [id];     // => Lấy dc listId cần loại bỏ
             const fromRequests = docFriendRequests.fromRequest;
@@ -281,7 +330,6 @@ const handleSearchFriend = useCallback((e) => {
                     break;
                 }
             }
-            console.log('rs4.2: ', copyArraysUsers);
             strangers = copyArraysUsers;
         }
         return strangers;
@@ -343,19 +391,21 @@ const handleSearchFriend = useCallback((e) => {
 
 //Render giao diện
   return(
-    <div className='container-fluid bg-white' id='outer'>
-    <ToastContainer theme='colored' />
-        {
-        currentRowShow === 'row-chat'
-        ?
-        <RowChat />
-        :
-        <RowPhonebook /> 
-        }
-
-
-
-
+    <>
+    {
+        isLoadDocsFriendMessages ?
+        <div className='container-fluid bg-white' id='outer'>
+            <ToastContainer theme='colored' />
+            {
+                currentRowShow === 'row-chat'
+                ?
+                <RowChat />
+                :
+                <RowPhonebook />
+            }
+        </div>
+        : <LoadingScreen />
+    }
         <div className="modal fade" id="CreateRoomModal">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
@@ -702,6 +752,6 @@ const handleSearchFriend = useCallback((e) => {
                 </div>
             </div>
         </div>
-    </div>
+    </>
   );
 }

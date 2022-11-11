@@ -1,8 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { io } from 'socket.io-client';
-import FirebaseGetUsers from '../service/FirebaseGetUsers';
 
 export const AuthContext = React.createContext();
 export const AuthProvider = ({ children }) => {

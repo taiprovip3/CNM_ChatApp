@@ -25,35 +25,8 @@ export const AppProvider = ({ children }) => {
     const [isLoadDocsFriendMessages, setIsLoadDocsFriendMessages] = React.useState(false);
     const [progressPercent, setProgressPercent] = React.useState("0%");
 
-    const arraysUsers = GetUsers(setProgress, setIsLoadUsers);
-    React.useEffect(() => {
-      setUsers(arraysUsers);
-    },[arraysUsers]);
-
-    const arraysRooms = GetRooms(setProgress, setIsLoadRooms, isLoadUsers);
-    React.useEffect(() => {
-      setRooms(arraysRooms);
-    },[arraysRooms]);
-
-    const arraysFriends = GetFriends(setProgress, setIsLoadUserFriends, isLoadRooms, arraysUsers);
-    React.useEffect(() => {
-      setFriends(arraysFriends);
-    },[arraysFriends]);
-
-    const arraysFriendRequests = GetDocFriendRequests(setProgress, setIsLoadFriendRequest, isLoadUserFriends);
-    React.useEffect(() => {
-      setDocFriendRequests(arraysFriendRequests);
-    },[arraysFriendRequests]);
-
-    const arraysDocsFriendMessages = GetDocsFriendMessages(setProgress, setIsLoadDocsFriendMessages, isLoadFriendRequest);
-    React.useEffect(() => {
-      setDocsFriendMessages(arraysDocsFriendMessages);
-    },[arraysDocsFriendMessages]);
-
-
-
     return (
-      <AppContext.Provider value={{ progress, users, rooms, friends, docFriendRequests, docsFriendMessages, isLoadDocsFriendMessages, progressPercent, setProgressPercent }}>  
+      <AppContext.Provider value={{ progress,setProgress, users,setUsers, rooms,setRooms, friends,setFriends, docFriendRequests,setDocFriendRequests, docsFriendMessages,setDocsFriendMessages, isLoadUsers,setIsLoadUsers, isLoadRooms,setIsLoadRooms, isLoadUserFriends,setIsLoadUserFriends, isLoadFriendRequest,setIsLoadFriendRequest, isLoadDocsFriendMessages,setIsLoadDocsFriendMessages, progressPercent, setProgressPercent }}>  
         {children}
       </AppContext.Provider>
     )

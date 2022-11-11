@@ -2,16 +2,12 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import { collection, doc, getDoc, onSnapshot, query, where } from 'firebase/firestore';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { database } from '../../firebase';
 import { AppContext } from '../provider/AppProvider';
-import { AuthContext } from '../provider/AuthProvider';
 
 export default function FirebaseLoadData() {
 
-    const { progress, isLoadDocsFriendMessages } = React.useContext(AppContext);
+    const { progress } = React.useContext(AppContext);
     const [progressPercent, setProgressPercent] = React.useState("0%");
-    const history = useNavigate();
 
     React.useEffect(() => {
         if(progress <= 100) {
@@ -19,11 +15,6 @@ export default function FirebaseLoadData() {
             console.log('progress now: ', progress);
         }
     },[progress]);
-    React.useEffect(() => {
-        if(isLoadDocsFriendMessages) {
-            return history("/home");
-        }
-    },[history, isLoadDocsFriendMessages]);
 
     return (
         <div className="progress">

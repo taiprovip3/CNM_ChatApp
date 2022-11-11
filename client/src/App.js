@@ -18,7 +18,6 @@ export default function App() {
           <Router>
             <Routes>
               <Route exact path="/" element={<AuthenticationScreen />} />
-              <Route exact path="/load" element={<LoadingScreen />} />
               <Route exact path="/home" element={<HomepageScreen />} />
             </Routes>
           </Router>
