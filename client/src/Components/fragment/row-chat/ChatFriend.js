@@ -1,37 +1,40 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { HiUserGroup } from 'react-icons/hi';
-import { FiUserPlus } from 'react-icons/fi';
+import { BiDotsVertical } from 'react-icons/bi';
 import { RiEmotionLaughFill, RiImageAddFill } from 'react-icons/ri';
 import { MdSend, MdWavingHand } from 'react-icons/md';
 import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa';
 import { GiHand } from 'react-icons/gi';
 import moment from 'moment';
-import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
 import FirebaseGetFriendMessages from '../../service/FirebaseGetFriendMessages';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from 'uuid';
 import { AuthContext } from '../../provider/AuthProvider';
-
+import $ from 'jquery';
+import { AppContext } from '../../provider/AppProvider';
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
   const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal } = React.useContext(AuthContext);
+  const { docsFriendMessages } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
-  const memoIdFriend = useMemo(() => {
-    return selectedFriend.id;
-  }, [selectedFriend.id]);
-  const memoIdUser = useMemo(() => {
-    return id;
-  }, [id]);
-  const roomMessages = FirebaseGetFriendMessages(memoIdFriend, memoIdUser);
+
 
 //Khởi tạo useEffect
+const GetRoomMessagesByIdRoom = useCallback(() => {
+  for(let i=0; i<docsFriendMessages.length; i++) {
+    if(docsFriendMessages[i].idRoom === idRoomOfSelectedFriendAndYou) {
+      return docsFriendMessages[i].listObjectMessage;
+    }
+  }
+  return [];
+},[docsFriendMessages, idRoomOfSelectedFriendAndYou]);
 useEffect(() => {
-  setListObjectMessage(roomMessages);
-}, [roomMessages]);
+    setListObjectMessage(GetRoomMessagesByIdRoom());
+}, [GetRoomMessagesByIdRoom]);
 useEffect(() => {
   socket.on("receive_message", (objectMessage) => {
       setListObjectMessage((list) => [...list, objectMessage]);
@@ -42,8 +45,7 @@ useEffect(() => {
   const onCurrentMessageChange = useCallback((e) => {
       setCurrentMessage(e.target.value);
   }, []);
-  const sendMessage = async (msg) => {
-    console.log('msg = ', msg);
+  const sendMessage = useCallback(async (msg) => {
       if(msg !== "") {
           const objectMessage = {
               idSender: id,
@@ -61,7 +63,7 @@ useEffect(() => {
           });
           setCurrentMessage('');
       }
-  }
+  },[fullName, id, idRoomOfSelectedFriendAndYou, photoURL, socket]);
   const handleSelectedImage = useCallback((e) => {
       const fileUpload = e.target.files[0];
       if(fileUpload == null){
@@ -79,7 +81,7 @@ useEffect(() => {
         .catch(err => {
             console.log(err);
         });
-  },[]);
+  },[sendMessage]);
   const formatMessageHaveIcon = useCallback((msg) =>{
     const icons = [
       {id: 1, image:`😉`, category: ':)'},
@@ -140,6 +142,29 @@ useEffect(() => {
   const handleAddEmotion7 = () => {
     setCurrentMessage(currentMessage + "😡");
   }
+  const handleDeleteMessage = useCallback(async (objMsg) => {
+    await updateDoc(doc(database, "FriendMessages", idRoomOfSelectedFriendAndYou), {
+      listObjectMessage: arrayRemove(objMsg)
+    });
+  },[idRoomOfSelectedFriendAndYou]);
+  const handleRecallMessage = useCallback(async (objMsg) => {
+    let roomMessage = null;
+    for(let i=0; i<docsFriendMessages.length; i++) {
+      if(docsFriendMessages[i].idRoom === idRoomOfSelectedFriendAndYou) {
+        roomMessage = docsFriendMessages[i];  //Giờ đây roomMessage là 1 document
+        break;
+      }
+    }
+    console.log('OP = ', roomMessage);
+        let newListObjectMessage = roomMessage.listObjectMessage.map(m => m.idMessage === objMsg.idMessage ? { ...m,isRecall: true } : m );
+        await setDoc(doc(database, "FriendMessages", idRoomOfSelectedFriendAndYou), {...roomMessage, listObjectMessage: newListObjectMessage});
+  },[docsFriendMessages, idRoomOfSelectedFriendAndYou]);
+  const handleShareMessage = useCallback(() => {
+
+  },[]);
+  const handleDetailMessage = useCallback(() => {
+
+  },[]);
 
 //Render component
   return (
@@ -167,51 +192,68 @@ useEffect(() => {
                 </div>
                 <hr />
                 <div className="d-flex flex-wrap justify-content-around">
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Hi bạn, <FaHandSparkles /></button>
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Xin chào, <FaHandsWash /></button>
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Chào bạn nha, <GiHand /></button>
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Yo wash up, <FaRegHandPointRight /></button>
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Hi bạn, mình là newbie, <MdWavingHand /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Hi bạn, 👋")}>Hi bạn, <FaHandSparkles /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Xin chào, 👋")}>Xin chào, <FaHandsWash /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Chào bạn nhà, 👋")}>Chào bạn nha, <GiHand /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Yo wash up, 👉")}>Yo wash up, <FaRegHandPointRight /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Hi bạn, mình là newbie, 👋")}>Hi bạn, mình là newbie, <MdWavingHand /></button>
                 </div>
             </div>
             <br />
             {
               listObjectMessage.map((objectMessage) => {
                 if(objectMessage.idSender === id)
-                  return <div className='d-flex my-2 mx-3' style={{direction: 'rtl'}} key={objectMessage.idMessage}>
+                  return <div className='d-flex my-2 mx-3 dropdown dropstart' style={{direction: 'rtl'}} key={Math.random()}>
                             <div>
                                 <img src={objectMessage.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                             </div>
-                            <div className='bg-info rounded p-2 mx-1'>
-                                <span className='text-white small'>{objectMessage.nameSender}</span>
-                                <br />
-                                {
-                                  objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
-                                  <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
-                                  :
-                                  <span className='text-white fw-bold'>{objectMessage.msg}</span>
-                                }
-                                <br />
-                                <span className='text-white small'>{objectMessage.time}</span>
-                            </div>
+                            {
+                              objectMessage.isRecall ?
+                              <div className='bg-info rounded p-2 mx-1 text-white'>Đã thu hồi tin nhắn</div> :
+                              <div className='bg-info rounded p-2 mx-1'>
+                                  <div className="d-flex">
+                                    <span className='text-white small flex-fill'>{objectMessage.nameSender}</span>
+                                    <BiDotsVertical className='text-white dropdown-toggle needCursor' data-bs-toggle="dropdown" />
+                                    <ul className="dropdown-menu">
+                                        <li className="dropdown-item needCursor" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn</li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi</li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleShareMessage(objectMessage)}>Chia sẽ</li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết</li>
+                                    </ul>
+                                  </div>
+                                  {
+                                    objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
+                                    <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
+                                    :
+                                    <span className='text-white fw-bold'>{objectMessage.msg}</span>
+                                  }
+                                  <br />
+                                  <span className='text-white small'>{objectMessage.time}</span>
+                              </div>
+                            }
+
                         </div>;
                 else
-                  return <div className='d-flex my-2 mx-3' key={objectMessage.idMessage}>
+                  return <div className='d-flex my-2 mx-3' key={Math.random()}>
                             <div>
                                 <img src={objectMessage.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                             </div>
-                            <div className='bg-white rounded p-2 mx-1'>
-                                <span className='text-muted small'>{objectMessage.nameSender}</span>
-                                <br />
-                                {
-                                  objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
-                                  <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
-                                  :
-                                  <span className='fw-bold'>{objectMessage.msg}</span>
-                                }
-                                <br />
-                                <span className='text-muted small'>{objectMessage.time}</span>
-                            </div>
+                            {
+                              objectMessage.isRecall ?
+                              <div className='bg-white rounded p-2 mx-1'>Đã thu hồi tin nhắn</div> :
+                              <div className='bg-white rounded p-2 mx-1'>
+                                  <span className='text-muted small'>{objectMessage.nameSender}</span>
+                                  <br />
+                                  {
+                                    objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
+                                    <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
+                                    :
+                                    <span className='fw-bold'>{objectMessage.msg}</span>
+                                  }
+                                  <br />
+                                  <span className='text-muted small'>{objectMessage.time}</span>
+                              </div>
+                            }
                         </div>;
               })
             }

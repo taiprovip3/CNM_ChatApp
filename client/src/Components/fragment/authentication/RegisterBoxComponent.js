@@ -67,7 +67,6 @@ export default function RegisterBoxComponent() {
         }, 2000);
       }, [dispatch, fullName]);
       const sendVerifyEmail = useCallback((userCredential) => {
-            console.log('auth.currentUser now = ', auth.currentUser);
             sendEmailVerification(auth.currentUser)
                 .then(() => {
                     registerAccount(userCredential.user);

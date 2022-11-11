@@ -193,11 +193,11 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                 </div>
                 <hr />
                 <div className="d-flex flex-wrap justify-content-around">
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Hi cả nhà, <FaHandSparkles /></button>
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Xin chào, <FaHandsWash /></button>
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Chào mọi người, <GiHand /></button>
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Yo wash up, <FaRegHandPointRight /></button>
-                    <button className='btn btn-outline-secondary btn-sm text-warning'>Hi all, mình là newbie, <MdWavingHand /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Hi cả nhà, ✋")}>Hi cả nhà, <FaHandSparkles /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Xin chào, ✋")}>Xin chào, <FaHandsWash /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Chào mọi người, ✋")}>Chào mọi người, <GiHand /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Yo wash up, 👏")}>Yo wash up, <FaRegHandPointRight /></button>
+                    <button className='btn btn-outline-secondary btn-sm text-warning' onClick={() => sendMessage("Hi all, mình là newbie, 👏")}>Hi all, mình là newbie, <MdWavingHand /></button>
                 </div>
             </div>
             <br />

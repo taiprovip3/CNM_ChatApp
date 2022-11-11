@@ -15,14 +15,14 @@ function GetFriends(setProgress, setIsLoadUserFriends, isLoadRooms, arraysUsers)
 
     React.useEffect(() => {
         if(isLoadRooms) {
-            const unsubcriber = onSnapshot(doc(database, "UserFriends", id), (document) => {
+            const unsubcriber = onSnapshot(doc(database, "Friends", id), (document) => {
                 const listFriendFactoryed = [];
                 if(document.data() !== undefined){
                     const listIdFriend = document.data().listFriend;    //Mảng id bạn bè
                     for(let i=0; i<listIdFriend.length;i++) {
-                        for(let j=0; j<arraysUsers.length; i++) {
-                            if(listIdFriend[i] === arraysUsers[j]) {
-                                listFriendFactoryed.push(arraysUsers[i]);
+                        for(let j=0; j<arraysUsers.length; j++) {
+                            if(listIdFriend[i] === arraysUsers[j].id) {
+                                listFriendFactoryed.push(arraysUsers[j]);
                             }
                         }
                     }

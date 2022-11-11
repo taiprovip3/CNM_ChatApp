@@ -88,6 +88,12 @@ export default function HomepageScreen() {
       setDocsFriendMessages(arraysDocsFriendMessages);
     },[arraysDocsFriendMessages, setDocsFriendMessages]);
 
+    React.useEffect(() => {
+        const ago = moment("November 9th 2022, 7:55:54 am", "MMMM Do YYYY, h:mm:ss a").fromNow();
+        console.log(' lastOneline: ' + ago + " ago");
+        // // Sun Jan 22 2017 17:12:18 GMT+0200 ...
+        // var olderDate = moment(now).subtract(3, 'minutes').toDate();
+    },[]);
 
 
 
@@ -310,6 +316,7 @@ const handleSearchFriend = useCallback((e) => {
                     listIdRequester.push(toRequests[i].idRequester);
                 }
             }
+            
             let copyArraysUsers = [];
             Object.assign(copyArraysUsers, users);
             for(let i=0; i<listIdRequester.length; i++) {
@@ -355,6 +362,24 @@ const handleSearchFriend = useCallback((e) => {
             });
         }
     }
+    let listFriendCopyToDisplay = listFriendCopy;
+    if(textSearchFriend.length >= 9) {
+        if(textSearchFriend.match(/\d/g)) { //nếu là sđt
+            listFriendCopyToDisplay = listFriendCopy.filter((val) => {
+                if( val.phoneNumber.includes(textSearchFriend) ) {
+                    return val;
+                }
+            });
+        }
+    } else{
+        if(textSearchFriend !== "") {
+            listFriendCopyToDisplay = listFriendCopy.filter((val) => {
+                if( val.fullName.toLowerCase().includes(textSearchFriend.toLowerCase()) ) {
+                    return val;
+                }
+            });
+        }
+    }
     const handleSignOut = useCallback((e) => {
         e.preventDefault();
         const selectBackupType = e.target["selectBackupType"].value;
@@ -369,25 +394,6 @@ const handleSearchFriend = useCallback((e) => {
             window.location.href = '/';
         }
     },[currentUser.email]);
-    
-    let listFriendCopyToDisplay = listFriendCopy;
-    if(textSearchFriend.length >= 9) {
-        if(textSearchFriend.match(/\d/g)) { //nếu là sđt
-            listFriendCopyToDisplay = listFriendCopy.filter((val) => {
-                if( val.phoneNumber.includes(textSearchFriend) ) {
-                    return val;
-                }
-            });
-        }
-    } else{
-        if(textSearchFriend !== "") {
-            listFriendCopyToDisplay = listFriendCopy.filter((val) => {
-                if( val.fullName.toLowerCase().includes(textSearchStranger.toLowerCase()) ) {
-                    return val;
-                }
-            });
-        }
-    }
 
 //Render giao diện
   return(

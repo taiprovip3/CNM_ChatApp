@@ -25,7 +25,7 @@ import { AppContext } from '../../provider/AppProvider';
 
 export default memo(function RowChat() {
     //Biến
-    const { myIndex, intervalRef, stopSlider, socket, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
+    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
     const { rooms, friends } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = useState('');
@@ -35,7 +35,7 @@ export default memo(function RowChat() {
     useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
         if(selectedObject){ //Nếu rooms trên firebase bị thay đổi thì ai đang selectedObject room
             //GetRoom mới bằng id room cũ
-            if(selectedObject.type !== undefined || selectedObject.type || null) {
+            if(selectedObject.type !== undefined || selectedObject.type) {
                     const selectedObjectRoomId = selectedObject.id;
                     getRoomById(selectedObjectRoomId)
                         .then((rs) => {
@@ -43,7 +43,7 @@ export default memo(function RowChat() {
                         });
             }
         }
-    },[rooms, selectedObject, setObjectGroupModal]);
+    },[rooms, selectedObject, setObjectGroupModal, currentUser]);
     const intervalSlider = useCallback(() => { //Hàm start slidering
         intervalRef.current = setInterval(() => {
             var i;
