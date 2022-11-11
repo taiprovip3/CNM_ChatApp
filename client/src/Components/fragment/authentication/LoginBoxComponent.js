@@ -37,10 +37,7 @@ export default function LoginBoxComponent() {
                     const UsersDocSnap = await getDoc(UsersDocRef);
                     console.log(UsersDocSnap.data());
                     setCurrentUser(UsersDocSnap.data());
-                    toast.success('Đăng nhập thành công');
-                    setTimeout(() => {
-                        history('/load');
-                    }, 1500);
+                    history('/load');
                 } else{
                     toast.error("Tài khoản này chưa được xác thực");
                     toast.error("Vui lòng chọn mục `Quên mật khẩu` để tái xác thực");

@@ -11,11 +11,13 @@ import "../../css/ListFriend.css";
 import { IoArrowRedoSharp, IoArrowUndoSharp } from 'react-icons/io5';
 import { AuthContext } from '../../provider/AuthProvider';
 import moment from 'moment';
+import { AppContext } from '../../provider/AppProvider';
 
 export default memo(function ListFriend() {
 
     //Biến
     const { currentUser: { id } } = React.useContext(AuthContext);
+    const { docFriendRequests } = React.useContext(AppContext);
     const [listFromRequest, setListFromRequest] = useState([]);
     const [listToRequest, setListToRequest] = useState([]);
 
@@ -164,28 +166,25 @@ export default memo(function ListFriend() {
 
     //Effect
     useEffect(() => {
-        const unsub = onSnapshot(doc(database, "FriendRequests", id), (document) => {
-            if(document.exists()){
-                let fromRequests = document.data().fromRequest;
-                let toRequests = document.data().toRequest;
-                if(fromRequests !== undefined){
-                    factoryTransformRequests(fromRequests)//Hàm trả về 1 promise chứa rs là mảng
-                        .then((array) => {
-                            setListFromRequest(array);
-                        });
-                }
-                if(toRequests !== undefined){
-                    factoryTransformRequests(toRequests)//Hàm trả về 1 promise chứa rs là mảng
-                        .then((array) => {
-                            setListToRequest(array);
-                        });
-                }
-            } else{
-            console.log('Bạn chắc là newbie, no document existed!');
+        if(docFriendRequests){
+            const fromRequests = docFriendRequests.fromRequest;
+            const toRequests = docFriendRequests.toRequest;
+            if(fromRequests !== undefined) {
+                factoryTransformRequests(fromRequests)//Hàm trả về 1 promise chứa rs là mảng
+                .then((array) => {
+                    setListFromRequest(array);
+                });
             }
-        });
-        return unsub;
-    },[id]);
+            if(toRequests !== undefined) {
+                factoryTransformRequests(toRequests)//Hàm trả về 1 promise chứa rs là mảng
+                .then((array) => {
+                    setListToRequest(array);
+                });
+            }
+        } else{
+            console.log('Bạn chắc là newbie, no document existed!');
+        }
+    },[docFriendRequests]);
 
     //FontEnd
     return (

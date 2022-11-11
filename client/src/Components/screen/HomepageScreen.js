@@ -34,12 +34,13 @@ import Authorization from '../fragment/group-modal/authorization';
 import { renderYobDays, renderYobMonths, renderYobYears } from '../service/RenderYOB';
 
 export default function HomepageScreen() {
+    console.log('HomepageScreen rerender');
 //Khai báo biến
   var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
-  const { users, friends, strangers } = React.useContext(AppContext);
+  const { users, friends, docFriendRequests } = React.useContext(AppContext);
   if(!currentUser){
     setTimeout(() => {
-        window.location.href = '/auth';
+        window.location.href = '/';
     }, 1500);
     return <div id='none-log'>
                 <div className='border text-center p-3 rounded' id='none-log-child'>
@@ -243,13 +244,55 @@ const handleSearchFriend = useCallback((e) => {
         $("#closeUpdateInfoModal").click();
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
     }
+    const getUserStrangers = useCallback(() => {
+        let strangers = [];
+        console.log(' dfm = ', docFriendRequests);
+        if(docFriendRequests) {
+            const listIdRequester = [id];     // => Lấy dc listId cần loại bỏ
+            const fromRequests = docFriendRequests.fromRequest;
+            if(fromRequests !== undefined){
+                for(let i=0; i<fromRequests.length; i++) {
+                    listIdRequester.push(fromRequests[i].idRequester);
+                }
+            }
+            const toRequests = docFriendRequests.toRequest;
+            if(toRequests !== undefined){
+                for(let i=0; i<toRequests.length; i++) {
+                    listIdRequester.push(toRequests[i].idRequester);
+                }
+            }
+            let copyArraysUsers = [];
+            Object.assign(copyArraysUsers, users);
+            for(let i=0; i<listIdRequester.length; i++) {
+                for(let j=0; j<copyArraysUsers.length; j++) {
+                    if(listIdRequester[i] === copyArraysUsers[j].id) {
+                        copyArraysUsers.splice(j,1);
+                        break;
+                    }
+                }
+            }
+            strangers = copyArraysUsers;
+        } else{
+            let copyArraysUsers = [];
+            Object.assign(copyArraysUsers,users);
+            for(let i=0; i<copyArraysUsers.length; i++) {
+                if(copyArraysUsers[i].id === id) {
+                    copyArraysUsers.splice(i,1);
+                    break;
+                }
+            }
+            console.log('rs4.2: ', copyArraysUsers);
+            strangers = copyArraysUsers;
+        }
+        return strangers;
+    },[docFriendRequests, id, users]);
     const handleSearchStranger = useCallback((e) => {
         setTextSearchStranger(e.target.value);
     },[]);
-    let listUserStrangerToDisplay = strangers;
+    let listUserStrangerToDisplay = getUserStrangers();
     if(textSearchStranger.length >= 9) {
         if(textSearchStranger.match(/\d/g)) { //nếu là sđt
-            listUserStrangerToDisplay = strangers.filter((val) => {
+            listUserStrangerToDisplay = getUserStrangers().filter((val) => {
                 if( val.phoneNumber.includes(textSearchStranger) ) {
                     return val;
                 }
@@ -257,7 +300,7 @@ const handleSearchFriend = useCallback((e) => {
         }
     } else{
         if(textSearchStranger !== "") {
-            listUserStrangerToDisplay = strangers.filter((val) => {
+            listUserStrangerToDisplay = getUserStrangers().filter((val) => {
                 if( val.fullName.toLowerCase().includes(textSearchStranger.toLowerCase()) ) {
                     return val;
                 }
@@ -272,13 +315,12 @@ const handleSearchFriend = useCallback((e) => {
             $("#btnSignOut").text("Saving data...").addClass("disabled");
             localStorage.setItem("username", currentUser.email);
             setTimeout(() => {
-                $(".btn-close").click();
-                setCurrentUser(null);
+                window.location.href = '/';
             }, 1500);
         } else{
-            setCurrentUser(null);
+            window.location.href = '/';
         }
-    },[currentUser.email, setCurrentUser]);
+    },[currentUser.email]);
     
     let listFriendCopyToDisplay = listFriendCopy;
     if(textSearchFriend.length >= 9) {

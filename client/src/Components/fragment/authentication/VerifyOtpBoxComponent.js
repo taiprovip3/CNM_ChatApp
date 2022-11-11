@@ -83,7 +83,7 @@ export default function VerifyOtpBoxComponent() {
 
     return (
         <>
-            <ToastContainer />
+            <ToastContainer theme='colored' />
             <div className='border bg-white rounded' id='confirmOTPBox'>
                 <div id="headerFrameBox" className='d-flex'>
                     <div className='flex-fill border p-3' onClick={() => dispatch("SHOW_LOGIN_BOX_COMPONENT")}>ĐĂNG NHẬP</div>
