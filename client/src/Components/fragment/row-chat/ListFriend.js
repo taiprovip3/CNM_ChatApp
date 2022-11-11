@@ -28,7 +28,7 @@ export default memo(function ListFriend() {
         let newListFromRequest = listFromRequest;
         await setDoc(doc(database, "FriendRequests", id), {fromRequest: newListFromRequest.map(r => r.idRequester === request.idRequester ? { ...r, isAccept: true } : r)});
         //2. Cap nhat lai toRequest cua nguoi gui
-        const docSnap = await getDoc(doc(database, "FriendRequests", request.idRequester));
+        let docSnap = await getDoc(doc(database, "FriendRequests", request.idRequester));
         let listToRequestOfSender = docSnap.data().toRequest;
         await setDoc(doc(database, "FriendRequests", request.idRequester), {toRequest: listToRequestOfSender.map(r => r.idRequester === id ? { ...r, isAccept: true } : r)});
 
@@ -41,34 +41,28 @@ export default memo(function ListFriend() {
             partners: [request.idRequester, id]
         });
         //4. Su ly kien tao UserFriends
-            const UserFriendsDocRef_forSelf = doc(database, "UserFriends", id);
-            const UserFriendsDocSnap_forSelf = await getDoc(UserFriendsDocRef_forSelf);
-            if(UserFriendsDocSnap_forSelf.exists()){
-                await updateDoc(UserFriendsDocRef_forSelf, {
-                    listFriend: arrayUnion({idFriend: request.idRequester})
+            let docRef = doc(database, "Friends", id);
+            docSnap = await getDoc(docRef);
+            if(docSnap.exists()){
+                await updateDoc(docRef, {
+                    listFriend: arrayUnion(request.idRequester)
                 });
-                console.log('TH1');
             } else {//Nếu là newbiew mới tạo acc
-                await setDoc(UserFriendsDocRef_forSelf, {
-                    idUser: id,
-                    listFriend: [{idFriend: request.idRequester}]
+                await setDoc(docRef, {
+                    listFriend: [request.idRequester]
                 });
-                console.log('TH2');
             }
             
-            const UserFriendDocRef_forHim = doc(database, "UserFriends", request.idRequester);
-            const USerFriendsDocSnap_forHim = await getDoc(UserFriendDocRef_forHim);
-            if(USerFriendsDocSnap_forHim.exists()){
-                await updateDoc(UserFriendDocRef_forHim, {
-                    listFriend: arrayUnion({idFriend: id})
+            docRef = doc(database, "Friends", request.idRequester);
+            docSnap = await getDoc(docRef);
+            if(docSnap.exists()){
+                await updateDoc(docRef, {
+                    listFriend: arrayUnion(id)
                 });
-                console.log('TH3');
             } else{
-                await setDoc(UserFriendDocRef_forHim, {
-                    idUser: request.idRequester,
-                    listFriend: [{idFriend: id}]
+                await setDoc(docRef, {
+                    listFriend: [id]
                 });
-                console.log('TH4');
             }
     },[id, listFromRequest]);
 
