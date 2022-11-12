@@ -18,12 +18,9 @@ import { IoIosImages } from 'react-icons/io';
 import { CgClose } from 'react-icons/cg';
 import { HiSearch, HiOutlineUserGroup } from 'react-icons/hi';
 import { IoPersonAddSharp } from 'react-icons/io5';
-import FirebaseGetRooms from '../service/FirebaseGetRooms';
-import FirebaseGetFriends from '../service/FirebaseGetFriends';
 import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../firebase';
 import moment from 'moment';
-import FirebaseGetStrangers from '../service/FirebaseGetStrangers';
 import $ from 'jquery';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import RowChat from '../fragment/homepage/RowChat';
@@ -38,10 +35,11 @@ import GetFriends from '../service/firebase/GetFriends';
 import GetDocFriendRequests from '../service/firebase/GetDocFriendRequests';
 import GetDocsFriendMessages from '../service/firebase/GetDocsFriendMessages';
 import LoadingScreen from './LoadingScreen';
+import GetStrangers from '../service/GetStrangers';
 
 export default function HomepageScreen() {
 //Khai báo biến
-  var { socket, setSocket, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
+  var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
   const { isLoadDocsFriendMessages, setProgress, setIsLoadUsers, setIsLoadRooms, isLoadUsers, setIsLoadUserFriends, isLoadRooms, setIsLoadFriendRequest, isLoadUserFriends, setIsLoadDocsFriendMessages, isLoadFriendRequest,    setUsers,setRooms,setFriends,setDocFriendRequests,setDocsFriendMessages,     users, friends, docFriendRequests } = React.useContext(AppContext);
 
   if(!currentUser){
@@ -62,7 +60,6 @@ export default function HomepageScreen() {
             </div>;
   }
     
-
     const arraysUsers = GetUsers(setProgress, setIsLoadUsers); 
     const arraysRooms = GetRooms(setProgress, setIsLoadRooms, isLoadUsers); 
     const arraysFriends = GetFriends(setProgress, setIsLoadUserFriends, isLoadRooms, arraysUsers);
@@ -88,14 +85,6 @@ export default function HomepageScreen() {
     React.useEffect(() => {
       setDocsFriendMessages(arraysDocsFriendMessages);
     },[arraysDocsFriendMessages, setDocsFriendMessages]);
-
-    React.useEffect(() => {
-        const ago = moment("November 9th 2022, 7:55:54 am", "MMMM Do YYYY, h:mm:ss a").fromNow();
-        console.log(' lastOneline: ' + ago + " ago");
-        // // Sun Jan 22 2017 17:12:18 GMT+0200 ...
-        // var olderDate = moment(now).subtract(3, 'minutes').toDate();
-    },[]);
-
 
 
 
@@ -145,12 +134,27 @@ useEffect(() => {
     }
 },[listFriendCopy]);
 
-const onInputNameRoomChange = useCallback((e) => {
-    setInputNameRoom(e.target.value);
-},[]);
 const handleSearchFriend = useCallback((e) => {
     setTextSearchFriend(e.target.value);
 },[]);
+let listUserStrangerToDisplay = GetStrangers(id);
+if(textSearchStranger.length >= 9) {
+    if(textSearchStranger.match(/\d/g)) { //nếu là sđt
+        listUserStrangerToDisplay = GetStrangers().filter((val) => {
+            if( val.phoneNumber.includes(textSearchStranger) ) {
+                return val;
+            }
+        });
+    }
+} else{
+    if(textSearchStranger !== "") {
+        listUserStrangerToDisplay = GetStrangers().filter((val) => {
+            if( val.fullName.toLowerCase().includes(textSearchStranger.toLowerCase()) ) {
+                return val;
+            }
+        });
+    }
+}
 
     const sendAddFriendRequest = useCallback(async (fromId, toId, toName) => {
         // 1. Cập nhật toRequest cho bản thân
@@ -184,6 +188,9 @@ const handleSearchFriend = useCallback((e) => {
                 (userFriend) => userFriend.id === obj.id ? {...userFriend, isChecked: !obj.isChecked} : userFriend
             )
         );
+    },[]);
+    const onInputNameRoomChange = useCallback((e) => {
+        setInputNameRoom(e.target.value);
     },[]);
     const handleCreateRoom = useCallback(() => {
         if(inputNameRoom.length < 3 || inputNameRoom === ""){
@@ -298,68 +305,9 @@ const handleSearchFriend = useCallback((e) => {
         $("#closeUpdateInfoModal").click();
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
     }
-    const getUserStrangers = useCallback(() => {
-        let strangers = [];
-        if(docFriendRequests) {
-            const listIdRequester = [id];     // => Lấy dc listId cần loại bỏ
-            const fromRequests = docFriendRequests.fromRequest;
-            if(fromRequests !== undefined){
-                for(let i=0; i<fromRequests.length; i++) {
-                    listIdRequester.push(fromRequests[i].idRequester);
-                }
-            }
-            const toRequests = docFriendRequests.toRequest;
-            if(toRequests !== undefined){
-                for(let i=0; i<toRequests.length; i++) {
-                    listIdRequester.push(toRequests[i].idRequester);
-                }
-            }
-            
-            let copyArraysUsers = [];
-            Object.assign(copyArraysUsers, users);
-            for(let i=0; i<listIdRequester.length; i++) {
-                for(let j=0; j<copyArraysUsers.length; j++) {
-                    if(listIdRequester[i] === copyArraysUsers[j].id) {
-                        copyArraysUsers.splice(j,1);
-                        break;
-                    }
-                }
-            }
-            strangers = copyArraysUsers;
-        } else{
-            let copyArraysUsers = [];
-            Object.assign(copyArraysUsers,users);
-            for(let i=0; i<copyArraysUsers.length; i++) {
-                if(copyArraysUsers[i].id === id) {
-                    copyArraysUsers.splice(i,1);
-                    break;
-                }
-            }
-            strangers = copyArraysUsers;
-        }
-        return strangers;
-    },[docFriendRequests, id, users]);
     const handleSearchStranger = useCallback((e) => {
         setTextSearchStranger(e.target.value);
     },[]);
-    let listUserStrangerToDisplay = getUserStrangers();
-    if(textSearchStranger.length >= 9) {
-        if(textSearchStranger.match(/\d/g)) { //nếu là sđt
-            listUserStrangerToDisplay = getUserStrangers().filter((val) => {
-                if( val.phoneNumber.includes(textSearchStranger) ) {
-                    return val;
-                }
-            });
-        }
-    } else{
-        if(textSearchStranger !== "") {
-            listUserStrangerToDisplay = getUserStrangers().filter((val) => {
-                if( val.fullName.toLowerCase().includes(textSearchStranger.toLowerCase()) ) {
-                    return val;
-                }
-            });
-        }
-    }
     let listFriendCopyToDisplay = listFriendCopy;
     if(textSearchFriend.length >= 9) {
         if(textSearchFriend.match(/\d/g)) { //nếu là sđt
@@ -400,13 +348,7 @@ const handleSearchFriend = useCallback((e) => {
         isLoadDocsFriendMessages ?
         <div className='container-fluid bg-white' id='outer'>
             <ToastContainer theme='colored' />
-            {
-                currentRowShow === 'row-chat'
-                ?
-                <RowChat />
-                :
-                <RowPhonebook />
-            }
+            { currentRowShow === 'row-chat' ? <RowChat /> : <RowPhonebook /> }
         </div>
         : <LoadingScreen />
     }

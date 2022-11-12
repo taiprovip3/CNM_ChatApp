@@ -1,10 +1,5 @@
 /* eslint-disable no-unused-vars */
 import React from 'react';
-import GetDocFriendRequests from '../service/firebase/GetDocFriendRequests';
-import GetDocsFriendMessages from '../service/firebase/GetDocsFriendMessages';
-import GetFriends from '../service/firebase/GetFriends';
-import GetRooms from '../service/firebase/GetRooms';
-import GetUsers from '../service/firebase/GetUsers';
 
 export const AppContext = React.createContext();
 export const AppProvider = ({ children }) => {

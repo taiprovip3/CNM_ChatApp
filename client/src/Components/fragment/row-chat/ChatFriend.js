@@ -9,11 +9,9 @@ import { GiHand } from 'react-icons/gi';
 import moment from 'moment';
 import { arrayRemove, arrayUnion, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
-import FirebaseGetFriendMessages from '../../service/FirebaseGetFriendMessages';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from 'uuid';
 import { AuthContext } from '../../provider/AuthProvider';
-import $ from 'jquery';
 import { AppContext } from '../../provider/AppProvider';
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến

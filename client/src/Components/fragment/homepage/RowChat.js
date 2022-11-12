@@ -20,16 +20,15 @@ import introduction8 from '../../assets/introduction8.png';
 import ChatRoom from '../../fragment/row-chat/ChatRoom';
 import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
-import FirebaseGetDocsFriendMessages from '../../service/FirebaseGetDocsFriendMessages';
 import { AppContext } from '../../provider/AppProvider';
+import GetDocsFriendMessages from '../../service/firebase/GetDocsFriendMessages';
 
 export default memo(function RowChat() {
     //Biến
     const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
-    const { rooms, friends } = React.useContext(AppContext);
+    const { rooms, friends, docsFriendMessages } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = useState('');
-    const [listDocFriendMessages, setListDocFriendMessages] = useState([]);
 
     //Trợ
     useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
@@ -99,15 +98,11 @@ export default memo(function RowChat() {
     const memoIdUser = useMemo(() => {
         return id;
       }, [id]);
-    const docs = FirebaseGetDocsFriendMessages(memoIdUser);
-    useEffect(() => {
-        setListDocFriendMessages(docs);
-    },[docs]);
     const getPartnerLastMessage = useCallback((objectFriend) => {
         console.log('getPartnerLastMessage was called');
         let roomMessages = [];
-        for(let i=0; i<listDocFriendMessages.length; i++) { //Mỗi 1 doc
-            const element = listDocFriendMessages[i]
+        for(let i=0; i<docsFriendMessages.length; i++) { //Mỗi 1 doc
+            const element = docsFriendMessages[i]
             if(element.partners.includes(objectFriend.id) && element.partners.includes(id)) {
                 roomMessages = element.listObjectMessage;
                 break;
@@ -120,7 +115,7 @@ export default memo(function RowChat() {
         const nameSender = lastObjectMessage.nameSender;
         const msg = lastObjectMessage.msg;
         return lastObjectMessage.idSender === id ? "Bạn: " + msg : nameSender + ": " + msg;
-    },[id, listDocFriendMessages]);
+    },[id, docsFriendMessages]);
 
     //FontEnd
     return (
