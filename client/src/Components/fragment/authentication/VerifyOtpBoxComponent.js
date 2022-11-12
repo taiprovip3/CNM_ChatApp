@@ -34,12 +34,13 @@ export default function VerifyOtpBoxComponent() {
         toast.success('Dịch chuyển bạn đến trang chủ... 👋');
         const { email, uid, phoneNumber } = userObject;
         const displayName = 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991);
+        const currentTime = moment().format('MMMM Do YYYY, h:mm:ss a');
         const user = {
           id: uid,
           email: email,
           fullName: displayName,
           age: -1,
-          joinDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
+          joinDate: currentTime,
           address: 'Không',
           roles: ['MEMBER'],
           sex: false,
@@ -49,7 +50,10 @@ export default function VerifyOtpBoxComponent() {
           bod: 1,
           bom: 1,
           boy: parseInt(new Date().getFullYear()-119),
-          keywords: GenerateKeyWords(displayName)
+          keywords: GenerateKeyWords(displayName),
+          theme: "light",
+          status: false,
+          lastOnline: currentTime
         }
         setDoc(doc(database, 'Users', uid), user);
         setCurrentUser(user);

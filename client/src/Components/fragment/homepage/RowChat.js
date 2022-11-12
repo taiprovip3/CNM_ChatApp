@@ -35,11 +35,17 @@ export default memo(function RowChat() {
     useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
         if(selectedObject){ //Nếu rooms trên firebase bị thay đổi thì ai đang selectedObject room
             //GetRoom mới bằng id room cũ
+            console.log(' sL: ', selectedObject);
             if(selectedObject.type !== undefined || selectedObject.type) {
                     const selectedObjectRoomId = selectedObject.id;
                     getRoomById(selectedObjectRoomId)
                         .then((rs) => {
-                            setObjectGroupModal(rs);
+                            console.log('rsss = ', rs);
+                            if(rs) {
+                                setObjectGroupModal(rs);
+                            } else { //TH room đã bị giải tán
+                                setSelectedObject(null);
+                            }
                         });
             }
         }
@@ -70,9 +76,13 @@ export default memo(function RowChat() {
 
     //Hàm
     const getRoomById = async (idRoom) => {
+        let room = null;
         const RoomsDocsRef = doc(database, "Rooms", idRoom);
         const RoomsDocSnap = await getDoc(RoomsDocsRef);
-        return RoomsDocSnap.data();
+        if(RoomsDocSnap.exists()) {
+            return RoomsDocSnap.data();
+        }
+        return room;
     }
     const onClickOneRoom = useCallback((obj) => {
         socket.emit("join_room", obj.id);

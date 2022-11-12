@@ -1,46 +1,54 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-restricted-globals */
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { BiLinkAlt } from 'react-icons/bi';
 import { MdOutlineExitToApp } from 'react-icons/md';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { toast } from 'react-toastify';
-import { arrayRemove, arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { database } from '../../../firebase';
 import '../../css/Common.css';
 import moment from 'moment';
 import { AuthContext } from '../../provider/AuthProvider';
 import { AppContext } from '../../provider/AppProvider';
+import $ from 'jquery';
 
 export default memo(function Info({ setShowGroupModalComponent }) {
 
     //Biến
     const [listUserInRoom, setListUserInRoom] = useState([]);
-    const { socket, objectGroupModal, currentUser } = React.useContext(AuthContext);
+    const { socket, objectGroupModal, setObjectGroupModal, currentUser } = React.useContext(AuthContext);
     const { users } = React.useContext(AppContext);
+
+    let tempObjectGroupModal = useMemo(() => {
+        return {createAt: 'November 5th 2022, 04:54:47 pm', description: 'Bắt đầu chia sẽ các câu chuyện thú vị cùng nhau', id: 'mjywna2m2mg', listMember: [], name: 'Phòng Anh Văn', owner: 'rGXgMCmbPuaP4FEQ9v087qVw1ZI2', type: 'group', urlImage: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg'}
+    },[]);
 
     //Trợ
     useEffect(() => {
-        const listUser = [];
-        for (let index = 0; index < objectGroupModal.listMember.length; index++) {
-            const element = objectGroupModal.listMember[index];
-            for (let index2 = 0; index2 < users.length; index2++) {
-                const element2 = users[index];
-                if(element === element2.id){
-                    listUser.push(element2);
+        if(objectGroupModal) {
+            Object.assign(tempObjectGroupModal, objectGroupModal);
+            const listUser = [];
+            for (let index = 0; index < objectGroupModal.listMember.length; index++) {
+                const element = objectGroupModal.listMember[index];
+                for (let index2 = 0; index2 < users.length; index2++) {
+                    const element2 = users[index];
+                    if(element === element2.id){
+                        listUser.push(element2);
+                    }
                 }
             }
+            setListUserInRoom(listUser);
         }
-        setListUserInRoom(listUser);
-    },[objectGroupModal, users]);
+    },[objectGroupModal, tempObjectGroupModal, users]);
 
     //Hàm
     const handleLeaveRoom = async () => {
-        if(objectGroupModal.owner === currentUser.id) {
+        if(tempObjectGroupModal.owner === currentUser.id) {
             toast.error("Bạn đang là trưởng nhóm, vui lòng bổ nhiệm lại cho người khác trước khi rời đi hoặc chọn giải tán nhóm!");
         } else{
             if(confirm("Hành động ngu ngốc này không thể rollback ?")){
-                const RoomsDocRef = doc(database, "Rooms", objectGroupModal.id);
+                const RoomsDocRef = doc(database, "Rooms", tempObjectGroupModal.id);
                 await updateDoc(RoomsDocRef, {
                     listMember: arrayRemove(currentUser.id)
                 });
@@ -52,8 +60,8 @@ export default memo(function Info({ setShowGroupModalComponent }) {
                     photoURL: currentUser.photoURL,
                     idMessage: (Math.random() + 1).toString(36).substring(2)
                 }
-                socket.emit("send_message", objectMessage, objectGroupModal.id);
-                const RoomMessagesDocRef = doc(database, "RoomMessages", objectGroupModal.id);
+                socket.emit("send_message", objectMessage, tempObjectGroupModal.id);
+                const RoomMessagesDocRef = doc(database, "RoomMessages", tempObjectGroupModal.id);
                 await updateDoc(RoomMessagesDocRef, {
                   listObjectMessage: arrayUnion(objectMessage)
                 });
@@ -61,8 +69,15 @@ export default memo(function Info({ setShowGroupModalComponent }) {
             }
             
         }
-        
     };
+    const handleDeleteRoom = useCallback(async () => {
+        if(confirm("Hành động ngu ngốc này ko thể rollback ?")) {
+            const idRoom = tempObjectGroupModal.id;
+            await deleteDoc(doc(database, "Rooms", idRoom));
+            await deleteDoc(doc(database, "RoomMessages", idRoom));
+            toast.success("Xoá nhóm chat thành công");
+        }
+    },[tempObjectGroupModal]);
 
   //FontEnd
   return (
@@ -88,15 +103,15 @@ export default memo(function Info({ setShowGroupModalComponent }) {
             </div>
             {/* 1div */}
             <div className='border p-3 text-center'>
-                <img src={objectGroupModal.urlImage} alt="urlImage" width='80' height='80' className='rounded-circle needCursor border' />
+                <img src={tempObjectGroupModal.urlImage} alt="urlImage" width='80' height='80' className='rounded-circle needCursor border' />
                 <br />
-                <span className='fw-bold'>{objectGroupModal.name}</span>
+                <span className='fw-bold'>{tempObjectGroupModal.name}</span>
                 <br />
-                <span className='small'>{objectGroupModal.description}</span>
+                <span className='small'>{tempObjectGroupModal.description}</span>
             </div>
             {/* 2div */}
             <div className='border p-3 my-2'>
-                <span>Thành viên ({objectGroupModal.listMember.length})</span>
+                <span>Thành viên ({tempObjectGroupModal.listMember.length})</span>
                 <br />
                 <div className='d-flex overflow-auto'>
                     {
@@ -123,15 +138,15 @@ export default memo(function Info({ setShowGroupModalComponent }) {
                     <div className='px-2'>
                         <span>Token tham gia nhóm</span>
                         <br />
-                        <span className='text-primary'>{objectGroupModal.id}</span>
+                        <span className='text-primary'>{tempObjectGroupModal.id}</span>
                     </div>
                 </div>
                 
                 {
-                    objectGroupModal.owner === currentUser.id ?
+                    tempObjectGroupModal.owner === currentUser.id ?
                     <div className="d-flex text-danger py-2">
                         <div className='d-flex justify-content-center align-items-center'><RiDeleteBin6Line className='fs-4' /></div>
-                        <div className='px-2 needCursor' onClick={() => handleLeaveRoom()} data-bs-dismiss="modal">Giải tán nhóm</div>
+                        <div className='px-2 needCursor' onClick={() => handleDeleteRoom()} data-bs-dismiss="modal">Giải tán nhóm</div>
                     </div>
                     :
                     <div className="d-flex text-danger border-bottom py-2">

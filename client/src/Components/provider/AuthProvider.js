@@ -19,6 +19,12 @@ export const AuthProvider = ({ children }) => {
         setSocket(io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] }));
     },[]);
 
+    useEffect(() => {
+        if(currentUser) {
+            socket.emit("signIn", currentUser);
+        }
+    },[currentUser, socket]);
+
     const stopSlider = useCallback(() => {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -31,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     },[currentRowShow, stopSlider]);
 
     return (
-      <AuthContext.Provider value={{ objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow }}>  
+      <AuthContext.Provider value={{ objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, setSocket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow }}>  
         {children}
       </AuthContext.Provider>
     )

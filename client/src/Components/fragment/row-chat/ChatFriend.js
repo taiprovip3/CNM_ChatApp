@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { HiUserGroup } from 'react-icons/hi';
+import { HiStatusOnline } from 'react-icons/hi';
 import { BiDotsVertical } from 'react-icons/bi';
 import { RiEmotionLaughFill, RiImageAddFill } from 'react-icons/ri';
 import { MdSend, MdWavingHand } from 'react-icons/md';
@@ -176,9 +176,13 @@ useEffect(() => {
                 <img src={selectedFriend.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' data-bs-toggle="modal" data-bs-target="#ManagerUserModal" onClick={() => setObjectUserModal(selectedFriend)} />
             </div>
             <div className='mx-1'>
-                <span className='fw-bold'>{selectedFriend.fullName}</span>
-                <br />
-                <span className='small'>Truy cập 1 phút trước</span>
+                <span className='fw-bold d-block'>{selectedFriend.fullName}</span>
+                {
+                  selectedFriend.status ?
+                  <span className='small text-success'><HiStatusOnline /> Đang online</span>
+                  :
+                  <span className="small">Truy cập {moment(selectedFriend.lastOnline, "MMMM Do YYYY, h:mm:ss a").fromNow()}</span>
+                }
             </div>
         </div>
 

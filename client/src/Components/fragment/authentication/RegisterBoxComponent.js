@@ -39,17 +39,17 @@ export default function RegisterBoxComponent() {
       }, []);
 
       const registerAccount = useCallback((userObject) => {
-        console.log('user object = ', userObject);
         toast.success('Đăng ký tài khoản thành công');
         toast.success('Vui lòng kiểm tra hộp thư email... 👋');
         const { email, uid } = userObject;
         const displayName = fullName === '' ? 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991) : fullName;
+        const currentTime = moment().format('MMMM Do YYYY, h:mm:ss a');
         const user = {
           id: uid,
           email: email,
           fullName: displayName,
           age: -1,
-          joinDate: moment().format('MMMM Do YYYY, h:mm:ss a'),
+          joinDate: currentTime,
           address: 'Không',
           roles: ['MEMBER'],
           sex: false,
@@ -59,7 +59,10 @@ export default function RegisterBoxComponent() {
           bod: 1,
           bom: 1,
           boy: parseInt(new Date().getFullYear()-119),
-          keywords: GenerateKeyWords(displayName)
+          keywords: GenerateKeyWords(displayName),
+          theme: "light",
+          status: false,
+          lastOnline: currentTime
         }
         setDoc(doc(database, 'Users', uid), user);
         setTimeout(() => {

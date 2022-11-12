@@ -35,15 +35,13 @@ export default function LoginBoxComponent() {
                     const { user: { uid } } = userCredential;
                     const UsersDocRef = doc(database, "Users", uid);
                     const UsersDocSnap = await getDoc(UsersDocRef);
-                    console.log(UsersDocSnap.data());
-                    setCurrentUser(UsersDocSnap.data());
+                    setCurrentUser({...UsersDocSnap.data(), status: true});
                     history('/home');
                 } else{
                     toast.error("Tài khoản này chưa được xác thực");
                     toast.error("Vui lòng chọn mục `Quên mật khẩu` để tái xác thực");
                     return;
                 }
-
             })
             .catch( (error) => {
                 const errorCode = error.code;

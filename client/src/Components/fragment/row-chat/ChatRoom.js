@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { HiUserGroup } from 'react-icons/hi';
 import { RiEmotionLaughFill, RiImageAddFill } from 'react-icons/ri';
 import { MdSend, MdWavingHand } from 'react-icons/md';
@@ -13,10 +13,12 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from 'uuid';
 import { AuthContext } from '../../provider/AuthProvider';
 import '../../css/Common.css';
+import { AppContext } from '../../provider/AppProvider';
 
 export default memo(function ChatRoom({ selectedRoom, setSelectedObject }) {
 //Khởi tạo biến
-  const { listRoom, setObjectGroupModal, currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
+  const { setObjectGroupModal, currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
+  const { rooms } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
   const [selectedMyRoom, setSelectedMyRoom] = useState(selectedRoom);
@@ -27,12 +29,13 @@ export default memo(function ChatRoom({ selectedRoom, setSelectedObject }) {
   const roomMessages = FirebaseGetRoomMessages(memoIdRoom);
 
 //Khởi tạo useEffect
-useEffect(() => {
-//Mục tiêu UseEffect: lắng nge sk khi listRoom trên firebase thay đổi để rerender component cha RowChat đối với người thực hiện rời phòng. Nếu người rời ko phải là memer khác, component cha là rowchat ko bị rerender
+useEffect(() => {//Có 1 useEffect y chang như này bên RowChat.js nó thực hiện setSelectedObject = null
+//Mục tiêu UseEffect: lắng nge sk khi rooms trên firebase thay đổi để rerender component cha RowChat đối với người thực hiện rời phòng. Nếu người rời ko phải là member khác thì useEff làm component cha là rowchat ko bị rerender
     const idRoomClicked = selectedRoom.id;
     getRoomById(idRoomClicked)
       .then((newRoom) => {
-        console.log(' newest room = ', newRoom);
+        if(newRoom) {
+          console.log(' newest room = ', newRoom);
           setSelectedMyRoom(newRoom);
           var test = false;
           for(var i=0; i<newRoom.listMember.length; i++) {
@@ -44,8 +47,9 @@ useEffect(() => {
           }
           if(!test)
             setSelectedObject(null);
+        }
       });
-},[id, listRoom, selectedRoom.id, setSelectedObject]);
+},[id, rooms, selectedRoom.id, setSelectedObject]);
 useEffect(() => {
   setListObjectMessage(roomMessages);
 }, [roomMessages]);
@@ -57,6 +61,7 @@ useEffect(() => {
 
 //Khởi tạo hàm
   const getRoomById = async (idRoom) => {
+    const room = null;
     const RoomsDocRef = doc(database, "Rooms", idRoom);
     const RoomsDocSnap = await getDoc(RoomsDocRef);
     return RoomsDocSnap.data();

@@ -41,7 +41,7 @@ import LoadingScreen from './LoadingScreen';
 
 export default function HomepageScreen() {
 //Khai báo biến
-  var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
+  var { socket, setSocket, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
   const { isLoadDocsFriendMessages, setProgress, setIsLoadUsers, setIsLoadRooms, isLoadUsers, setIsLoadUserFriends, isLoadRooms, setIsLoadFriendRequest, isLoadUserFriends, setIsLoadDocsFriendMessages, isLoadFriendRequest,    setUsers,setRooms,setFriends,setDocFriendRequests,setDocsFriendMessages,     users, friends, docFriendRequests } = React.useContext(AppContext);
 
   if(!currentUser){
@@ -61,6 +61,7 @@ export default function HomepageScreen() {
                 </div>
             </div>;
   }
+    
 
     const arraysUsers = GetUsers(setProgress, setIsLoadUsers); 
     const arraysRooms = GetRooms(setProgress, setIsLoadRooms, isLoadUsers); 
@@ -274,14 +275,11 @@ const handleSearchFriend = useCallback((e) => {
         const newPhotoURL = await awaitHandleUploadPhotoURL(id, selectedImageBinary);
         const ageCalc = parseInt(new Date().getFullYear() - selectedYobYears);
         const newCurrentUser = {
+            ...currentUser,
             address: editAddress,
             age: ageCalc,
-            email: email,
             fullName: editFullName,
-            id: id,
-            joinDate: joinDate,
             phoneNumber: phoneNumber,
-            roles: ["MEMBER"],
             sex: editSex,
             slogan: editSlogan,
             photoURL: newPhotoURL,
@@ -394,7 +392,7 @@ const handleSearchFriend = useCallback((e) => {
             window.location.href = '/';
         }
     },[currentUser.email]);
-
+  
 //Render giao diện
   return(
     <>
