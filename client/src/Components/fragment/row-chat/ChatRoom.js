@@ -5,6 +5,7 @@ import { RiEmotionLaughFill, RiImageAddFill } from 'react-icons/ri';
 import { MdSend, MdWavingHand } from 'react-icons/md';
 import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa';
 import { GiHand } from 'react-icons/gi';
+import { BiDotsVertical } from 'react-icons/bi';
 import moment from 'moment';
 import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
@@ -166,6 +167,18 @@ const formatMessageHaveIcon = useCallback((msg) =>{
   const handleAddEmotion7 = () => {
     setCurrentMessage(currentMessage + "😡");
   }
+  const handleDeleteMessage = useCallback(async (objMsg) => {
+    
+  },[]);
+  const handleRecallMessage = useCallback(async (objMsg) => {
+ 
+  },[]);
+  const handleShareMessage = useCallback(() => {
+
+  },[]);
+  const handleDetailMessage = useCallback(() => {
+
+  },[]);
 
 //Render component
   return (
@@ -214,8 +227,16 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                                 <img src={objectMessage.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                             </div>
                             <div className='bg-info rounded p-2 mx-1'>
-                                <span className='text-white small'>{objectMessage.nameSender}</span>
-                                <br />
+                                <div className="d-flex">
+                                  <span className='text-white small flex-fill'>{objectMessage.nameSender}</span>
+                                  <BiDotsVertical className='text-white dropdown-toggle needCursor' data-bs-toggle="dropdown" />
+                                  <ul className="dropdown-menu">
+                                      <li className="dropdown-item needCursor" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn</li>
+                                      <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi</li>
+                                      <li className="dropdown-item needCursor" onClick={() => handleShareMessage(objectMessage)}>Chia sẽ</li>
+                                      <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết</li>
+                                  </ul>
+                                </div>
                                 {
                                   objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
                                   <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />

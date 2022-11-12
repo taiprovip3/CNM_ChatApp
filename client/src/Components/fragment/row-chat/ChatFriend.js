@@ -13,6 +13,7 @@ import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from 'uuid';
 import { AuthContext } from '../../provider/AuthProvider';
 import { AppContext } from '../../provider/AppProvider';
+import $, { get } from 'jquery';
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
   const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal } = React.useContext(AuthContext);
@@ -22,6 +23,11 @@ export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriend
 
 
 //Khởi tạo useEffect
+useEffect(() => {
+    setTimeout(() => {
+      $("#chatContent").scrollTop($("#chatContent")[0].scrollHeight);
+    }, 0);
+},[listObjectMessage]);
 const GetRoomMessagesByIdRoom = useCallback(() => {
   for(let i=0; i<docsFriendMessages.length; i++) {
     if(docsFriendMessages[i].idRoom === idRoomOfSelectedFriendAndYou) {

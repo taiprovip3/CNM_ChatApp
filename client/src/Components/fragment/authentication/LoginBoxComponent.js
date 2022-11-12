@@ -28,10 +28,8 @@ export default function LoginBoxComponent() {
     const handleLoginAccountByUsernameAndPassword = useCallback((e) => {
         signInWithEmailAndPassword(auth, logEmail, logPassword)
             .then(async (userCredential) => {
-                console.log('userCredential = ', userCredential);
                 const { emailVerified } = userCredential.user;
                 if(emailVerified){
-                    console.log('User signed in: ', userCredential);
                     const { user: { uid } } = userCredential;
                     const UsersDocRef = doc(database, "Users", uid);
                     const UsersDocSnap = await getDoc(UsersDocRef);
