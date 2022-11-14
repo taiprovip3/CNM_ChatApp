@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable array-callback-return */
 import React, { memo, useCallback } from 'react';
-import $, { data } from 'jquery';
+import $ from 'jquery';
 import { AuthContext } from '../../provider/AuthProvider';
 import { FcSearch } from 'react-icons/fc';
 import { AppContext } from '../../provider/AppProvider';

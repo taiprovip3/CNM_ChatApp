@@ -2,10 +2,12 @@
 import { collection, onSnapshot } from 'firebase/firestore';
 import React from 'react';
 import { database } from '../../../firebase';
+import { AppContext } from '../../provider/AppProvider';
 
-function GetRooms(setProgress, setIsLoadRooms, isLoadUsers) {
+function GetRooms() {
 
     const [rooms, setRooms] = React.useState([]);
+    const { setProgress, setIsLoadRooms, isLoadUsers } = React.useContext(AppContext);
 
     React.useEffect(() => {
         if(isLoadUsers) {
@@ -14,7 +16,6 @@ function GetRooms(setProgress, setIsLoadRooms, isLoadUsers) {
                 querySnapShot.forEach((document) => {
                     listRoom.push(document.data());
                 });
-                console.log('rs2: ', listRoom);
                 listRoom.sort(function(x, y){
                     return x.createAt - y.createAt;
                 });
@@ -22,8 +23,8 @@ function GetRooms(setProgress, setIsLoadRooms, isLoadUsers) {
             });
             setTimeout(() => {
                 setIsLoadRooms(true);
-                setProgress(prev => prev + 20);
-            }, 500);
+                setProgress(prev => prev + 14);
+            }, 250);
             return unsubcriber;
         }
     }, [isLoadUsers, setIsLoadRooms, setProgress]);

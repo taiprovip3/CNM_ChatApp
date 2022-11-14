@@ -2,10 +2,14 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { HiStatusOnline } from 'react-icons/hi';
 import { BiDotsVertical } from 'react-icons/bi';
-import { RiEmotionLaughFill, RiImageAddFill } from 'react-icons/ri';
+import { RiEmotionLaughFill, RiImageAddFill, RiInformationFill } from 'react-icons/ri';
 import { MdSend, MdWavingHand } from 'react-icons/md';
 import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa';
 import { GiHand } from 'react-icons/gi';
+import { BsFillTrash2Fill } from 'react-icons/bs';
+import { TfiSharethisAlt } from 'react-icons/tfi';
+import { IoCopy } from 'react-icons/io5';
+import { TiDelete } from 'react-icons/ti';
 import moment from 'moment';
 import { arrayRemove, arrayUnion, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
@@ -19,7 +23,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
-  const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal, setBundleShareMessageModal } = React.useContext(AuthContext);
+  const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal, setBundleShareMessageModal, setBundleDetailMessageModal } = React.useContext(AuthContext);
   const { docsFriendMessages } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
@@ -73,7 +77,7 @@ useEffect(() => {
   },[fullName, id, idRoomOfSelectedFriendAndYou, photoURL, socket]);
   const handleSelectedImage = useCallback((e) => {
       const fileUpload = e.target.files[0];
-      console.log('This file size is: ' + fileUpload.size / 1024 / 1024 + "MiB");
+      console.log('This file size is: ' + fileUpload.size / 1024 / 1024 + " MiB");
       if(fileUpload.size > 1048576) {
         console.log('File size is too big!');
         toast.error("File size is too big, max is 1MB!");
@@ -186,12 +190,15 @@ useEffect(() => {
         let newListObjectMessage = roomMessage.listObjectMessage.map(m => m.idMessage === objMsg.idMessage ? { ...m,isRecall: true } : m );
         await setDoc(doc(database, "FriendMessages", idRoomOfSelectedFriendAndYou), {...roomMessage, listObjectMessage: newListObjectMessage});
   },[docsFriendMessages, idRoomOfSelectedFriendAndYou]);
-  const handleShareMessage = useCallback((e, objectMessage) => {
-    e.preventDefault();
+  const handleShareMessage = useCallback((objectMessage) => {
     setBundleShareMessageModal(objectMessage);
   },[setBundleShareMessageModal]);
-  const handleDetailMessage = useCallback(() => {
-
+  const handleDetailMessage = useCallback((objectMessage) => {
+    setBundleDetailMessageModal(objectMessage)
+  },[setBundleDetailMessageModal]);
+  const handleCopyMessage = useCallback((msg) => {
+    navigator.clipboard.writeText(msg);
+    toast.success("Copied message ✔️");
   },[]);
 
 //Render component
@@ -214,7 +221,7 @@ useEffect(() => {
             </div>
         </div>
 
-        <div id='chatContent' className='flex-fill bg-secondary' style={{overflow: 'scroll'}}>
+        <div id='chatContent' className='flex-fill' style={{overflow: 'scroll'}}>
             
             <div className='border bg-white w-50 mt-5 mx-auto rounded p-3 text-center'>
                 <span className='fs-2 fw-bold'>{selectedFriend.fullName}</span>
@@ -247,10 +254,11 @@ useEffect(() => {
                                     <span className='text-white small flex-fill'>{objectMessage.nameSender}</span>
                                     <BiDotsVertical className='text-white dropdown-toggle needCursor' data-bs-toggle="dropdown" />
                                     <ul className="dropdown-menu">
-                                        <li className="dropdown-item needCursor" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn</li>
-                                        <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi</li>
-                                        <li className="dropdown-item needCursor" onClick={(e) => handleShareMessage(e, objectMessage)}>Chia sẽ</li>
-                                        <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết</li>
+                                    <li className="dropdown-item needCursor bg-light" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn <BsFillTrash2Fill className='text-info' /></li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi <TiDelete className='text-info' /></li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleShareMessage(objectMessage)}>Chia sẽ <TfiSharethisAlt className='text-info' /></li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết <RiInformationFill className='text-info' /></li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleCopyMessage(objectMessage.msg)}>Copy tin nhắn <IoCopy className='text-info' /></li>
                                     </ul>
                                   </div>
                                   {

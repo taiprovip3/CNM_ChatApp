@@ -2,11 +2,13 @@
 import { collection, onSnapshot } from 'firebase/firestore';
 import React from 'react';
 import { database } from '../../../firebase';
+import { AppContext } from '../../provider/AppProvider';
 import { AuthContext } from '../../provider/AuthProvider';
 
-function GetUsers(setProgress, setIsLoadUsers) {
+function GetUsers() {
 
     const { currentUser } = React.useContext(AuthContext);
+    const { setProgress, setIsLoadUsers } = React.useContext(AppContext);
     const [users, setUsers] = React.useState([]);
 
     React.useEffect(() => {
@@ -16,13 +18,12 @@ function GetUsers(setProgress, setIsLoadUsers) {
                 querySnapShot.forEach((document) => {
                     listUser.push(document.data());
                 });
-                console.log('rs1: ', listUser);
                 setUsers(listUser);
             });
             setTimeout(() => {
                 setIsLoadUsers(true);
-                setProgress(prev => prev + 20);
-            }, 500);
+                setProgress(prev => prev + 14);
+            }, 250);
             return unsubcriber;
         }
     },[currentUser, setIsLoadUsers, setProgress]);

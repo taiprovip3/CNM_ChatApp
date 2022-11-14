@@ -1,11 +1,15 @@
 /* eslint-disable no-unused-vars */
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { HiUserGroup } from 'react-icons/hi';
-import { RiEmotionLaughFill, RiImageAddFill } from 'react-icons/ri';
+import { RiEmotionLaughFill, RiImageAddFill, RiInformationFill } from 'react-icons/ri';
 import { MdSend, MdWavingHand } from 'react-icons/md';
 import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa';
 import { GiHand } from 'react-icons/gi';
 import { BiDotsVertical } from 'react-icons/bi';
+import { TiDelete } from 'react-icons/ti';
+import { BsFillTrash2Fill } from 'react-icons/bs';
+import { TfiSharethisAlt } from 'react-icons/tfi';
+import { IoCopy } from 'react-icons/io5';
 import moment from 'moment';
 import { arrayRemove, arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
@@ -17,10 +21,11 @@ import '../../css/Common.css';
 import { AppContext } from '../../provider/AppProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
+import $ from 'jquery';
 
 export default memo(function ChatRoom({ selectedRoom, setSelectedObject }) {
 //Khởi tạo biến
-  const { setObjectGroupModal, currentUser: { fullName, id, photoURL }, socket } = React.useContext(AuthContext);
+  const { setObjectGroupModal, currentUser: { fullName, id, photoURL }, socket, setBundleShareMessageModal, setBundleDetailMessageModal } = React.useContext(AuthContext);
   const { rooms } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
@@ -51,9 +56,12 @@ useEffect(() => {//Có 1 useEffect y chang như này bên RowChat.js nó thực 
             setSelectedObject(null);
         }
       });
-},[id, rooms, selectedRoom.id, setSelectedObject]);
+},[id, rooms, selectedRoom, setSelectedObject]);
 useEffect(() => {
   setListObjectMessage(roomMessages);
+  setTimeout(() => {
+    $("#chatContent").scrollTop($("#chatContent")[0].scrollHeight);
+  }, 0);
 }, [roomMessages]);
 useEffect(() => {
   socket.on("receive_message", (objectMessage) => {
@@ -201,11 +209,15 @@ const formatMessageHaveIcon = useCallback((msg) =>{
     let newListObjectMessage = roomMessage.listObjectMessage.map(m => m.idMessage === objMsg.idMessage ? { ...m,isRecall: true } : m );
     await setDoc(doc(database, "RoomMessages", memoIdRoom), {...roomMessage, listObjectMessage: newListObjectMessage});
   },[memoIdRoom]);
-  const handleShareMessage = useCallback(() => {
-
-  },[]);
-  const handleDetailMessage = useCallback(() => {
-
+  const handleShareMessage = useCallback((objectMessage) => {
+    setBundleShareMessageModal(objectMessage);
+  },[setBundleShareMessageModal]);
+  const handleDetailMessage = useCallback((objectMessage) => {
+    setBundleDetailMessageModal(objectMessage)
+  },[setBundleDetailMessageModal]);
+  const handleCopyMessage = useCallback((msg) => {
+    navigator.clipboard.writeText(msg);
+    toast.success("Copied message ✔️");
   },[]);
 
 //Render component
@@ -225,7 +237,7 @@ const formatMessageHaveIcon = useCallback((msg) =>{
             </div>
         </div>
 
-        <div id='chatContent' className='flex-fill bg-secondary' style={{overflow: 'scroll'}}>
+        <div id='chatContent' className='flex-fill' style={{overflow: 'scroll'}}>
             
             <div className='border bg-white w-50 mt-5 mx-auto rounded p-3 text-center'>
                 <span className='fs-2 fw-bold'>{selectedMyRoom.name}</span>
@@ -263,10 +275,11 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                                     <span className='text-white small flex-fill'>{objectMessage.nameSender}</span>
                                     <BiDotsVertical className='text-white dropdown-toggle needCursor' data-bs-toggle="dropdown" />
                                     <ul className="dropdown-menu">
-                                        <li className="dropdown-item needCursor" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn</li>
-                                        <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi</li>
-                                        <li className="dropdown-item needCursor" onClick={() => handleShareMessage(objectMessage)}>Chia sẽ</li>
-                                        <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết</li>
+                                        <li className="dropdown-item needCursor bg-light" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn <BsFillTrash2Fill className='text-info' /></li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi <TiDelete className='text-info' /></li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleShareMessage(objectMessage)}>Chia sẽ <TfiSharethisAlt className='text-info' /></li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết <RiInformationFill className='text-info' /></li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleCopyMessage(objectMessage.msg)}>Copy tin nhắn <IoCopy className='text-info' /></li>
                                     </ul>
                                   </div>
                                   {

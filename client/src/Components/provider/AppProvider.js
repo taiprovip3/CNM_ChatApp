@@ -12,16 +12,23 @@ export const AppProvider = ({ children }) => {
     const [friends, setFriends] = React.useState([]);
     const [docFriendRequests, setDocFriendRequests] = React.useState(null);
     const [docsFriendMessages, setDocsFriendMessages] = React.useState([]);
+    const [roomsUser, setRoomsUser] = React.useState([]);//list ids room user joined
+    const [docsRoomMessages, setDocsRoomMessages] = React.useState([]);
     
     const [isLoadUsers, setIsLoadUsers] = React.useState(false);
     const [isLoadRooms, setIsLoadRooms] = React.useState(false);
     const [isLoadUserFriends, setIsLoadUserFriends] = React.useState(false);
     const [isLoadFriendRequest, setIsLoadFriendRequest] = React.useState(false);
     const [isLoadDocsFriendMessages, setIsLoadDocsFriendMessages] = React.useState(false);
+    const [isLoadRoomsUser, setIsLoadRoomsUser] = React.useState(false);
+    const [isLoadDocsRoomMessages, setIsLoadDocsRoomMessages] = React.useState(false);
+
     const [progressPercent, setProgressPercent] = React.useState("0%");
 
+
+
     return (
-      <AppContext.Provider value={{ progress,setProgress, users,setUsers, rooms,setRooms, friends,setFriends, docFriendRequests,setDocFriendRequests, docsFriendMessages,setDocsFriendMessages, isLoadUsers,setIsLoadUsers, isLoadRooms,setIsLoadRooms, isLoadUserFriends,setIsLoadUserFriends, isLoadFriendRequest,setIsLoadFriendRequest, isLoadDocsFriendMessages,setIsLoadDocsFriendMessages, progressPercent, setProgressPercent }}>  
+      <AppContext.Provider value={{ progress,setProgress, users,setUsers, rooms,setRooms, friends,setFriends, docFriendRequests,setDocFriendRequests, docsFriendMessages,setDocsFriendMessages, roomsUser,setRoomsUser, docsRoomMessages,setDocsRoomMessages, isLoadUsers,setIsLoadUsers, isLoadRooms,setIsLoadRooms, isLoadUserFriends,setIsLoadUserFriends, isLoadFriendRequest,setIsLoadFriendRequest, isLoadDocsFriendMessages,setIsLoadDocsFriendMessages, isLoadRoomsUser,setIsLoadRoomsUser, isLoadDocsRoomMessages,setIsLoadDocsRoomMessages, progressPercent, setProgressPercent }}>  
         {children}
       </AppContext.Provider>
     )

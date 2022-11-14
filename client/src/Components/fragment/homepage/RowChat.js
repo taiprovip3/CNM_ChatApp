@@ -6,7 +6,6 @@ import { BsFillChatTextFill } from 'react-icons/bs'
 import { RiSettings5Line, RiFolderUserFill } from 'react-icons/ri';
 import { BiSearchAlt } from 'react-icons/bi';
 import { HiUserAdd, HiOutlineUserGroup } from 'react-icons/hi';
-import { FaSortAlphaDown } from 'react-icons/fa';
 import { AuthContext } from '../../provider/AuthProvider';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { database } from '../../../firebase';
@@ -22,10 +21,11 @@ import ChatRoom from '../../fragment/row-chat/ChatRoom';
 import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
 import { AppContext } from '../../provider/AppProvider';
+import { async } from '@firebase/util';
 
 export default memo(function RowChat() {
     const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
-    const { rooms, friends, docsFriendMessages } = React.useContext(AppContext);
+    const { rooms, friends, docsFriendMessages, docsRoomMessages } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = React.useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = React.useState('');
     const [selectedCategory, setSelectedCategory] = React.useState("ALL");
@@ -77,12 +77,10 @@ export default memo(function RowChat() {
     React.useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
         if(selectedObject){ //Nếu rooms trên firebase bị thay đổi thì ai đang selectedObject room
             //GetRoom mới bằng id room cũ
-            console.log(' sL: ', selectedObject);
             if(selectedObject.type !== undefined || selectedObject.type) {
                     const selectedObjectRoomId = selectedObject.id;
                     getRoomById(selectedObjectRoomId)
                         .then((rs) => {
-                            console.log('rsss = ', rs);
                             if(rs) {
                                 setObjectGroupModal(rs);
                             } else { //TH room đã bị giải tán
@@ -138,7 +136,6 @@ export default memo(function RowChat() {
         setIdRoomIfClickChatToOneFriend(idRoom);
     }, [id, socket]);
     const getPartnerLastMessage = useCallback((objectFriend) => {
-        console.log('getPartnerLastMessage was called');
         let roomMessages = [];
         for(let i=0; i<docsFriendMessages.length; i++) { //Mỗi 1 doc
             const element = docsFriendMessages[i]
@@ -152,15 +149,33 @@ export default memo(function RowChat() {
         }
         const lastObjectMessage = roomMessages[roomMessages.length - 1];
         const nameSender = lastObjectMessage.nameSender;
-        const msg = lastObjectMessage.msg;
+        const msg = lastObjectMessage.msg.includes("https://firebasestorage.googleapis.com/") ? "🎥 Hình ảnh" : lastObjectMessage.msg;
         return lastObjectMessage.idSender === id ? "Bạn: " + msg : nameSender + ": " + msg;
     },[id, docsFriendMessages]);
+    const getRoomLastMessage = useCallback((objectRoom) => {
+        console.log(objectRoom);
+        let roomMessages = [];
+        for(let i=0; i<docsRoomMessages.length; i++) {
+            const element = docsRoomMessages[i];
+            if(element.idRoom === objectRoom.id) {
+                roomMessages = element.listObjectMessage;
+                break;
+            }
+        }
+        if(roomMessages.length <= 0) {
+            return objectRoom.description;
+        }
+        const lastObjectMessage = roomMessages[roomMessages.length - 1];
+        const nameSender = lastObjectMessage.nameSender;
+        const msg = lastObjectMessage.msg.includes("https://firebasestorage.googleapis.com/") ? "🎥 Hình ảnh" : lastObjectMessage.msg;
+        return lastObjectMessage.idSender === id ? "Bạn: " + msg : nameSender + ": " + msg;
+    },[docsRoomMessages, id]);
 
     return (
         <div className="row" id="row-chat">
 
 
-            <div className='col-lg-1 bg-primary border' id='divA'>
+            <div className='col-lg-1 border bg-primary' id='divA'>
                 <div data-bs-toggle="modal" data-bs-target="#SignoutModal">
                     <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3 needCursor' width="45" height="45" />
                 </div>
@@ -205,7 +220,7 @@ export default memo(function RowChat() {
                                 <div className='col-lg-10 p-1'>
                                 <span className='fw-bold'>{obj.name}</span>
                                 <br />
-                                <small className='text-secondary'>{obj.description}</small>
+                                <small className='text-secondary'>{getRoomLastMessage(obj)}</small>
                                 </div>
                             </div>
                             } else {

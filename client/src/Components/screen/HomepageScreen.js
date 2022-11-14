@@ -37,11 +37,14 @@ import GetDocsFriendMessages from '../service/firebase/GetDocsFriendMessages';
 import LoadingScreen from './LoadingScreen';
 import GetStrangers from '../service/GetStrangers';
 import ShareMessageModal from '../fragment/modal/ShareMessageModal';
+import DetailMessageModal from '../fragment/modal/DetailMessageModal';
+import GetRoomsUser from '../service/firebase/GetRoomsUser';
+import GetDocsRoomMessages from '../service/firebase/GetDocsRoomMessages';
 
 export default function HomepageScreen() {
 //Khai báo biến
   var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
-  const { isLoadDocsFriendMessages, setProgress, setIsLoadUsers, setIsLoadRooms, isLoadUsers, setIsLoadUserFriends, isLoadRooms, setIsLoadFriendRequest, isLoadUserFriends, setIsLoadDocsFriendMessages, isLoadFriendRequest,    setUsers,setRooms,setFriends,setDocFriendRequests,setDocsFriendMessages,     users, friends, docFriendRequests } = React.useContext(AppContext);
+  const { progress,setProgress, users,setUsers, rooms,setRooms, friends,setFriends, docFriendRequests,setDocFriendRequests, docsFriendMessages,setDocsFriendMessages, roomsUser,setRoomsUser, docsRoomMessages,setDocsRoomMessages, isLoadUsers,setIsLoadUsers, isLoadRooms,setIsLoadRooms, isLoadUserFriends,setIsLoadUserFriends, isLoadFriendRequest,setIsLoadFriendRequest, isLoadDocsFriendMessages,setIsLoadDocsFriendMessages, isLoadRoomsUser,setIsLoadRoomsUser, isLoadDocsRoomMessages,setIsLoadDocsRoomMessages, progressPercent, setProgressPercent } = React.useContext(AppContext);
 
   if(!currentUser){
     setTimeout(() => {
@@ -61,11 +64,13 @@ export default function HomepageScreen() {
             </div>;
   }
     
-    const arraysUsers = GetUsers(setProgress, setIsLoadUsers); 
-    const arraysRooms = GetRooms(setProgress, setIsLoadRooms, isLoadUsers); 
-    const arraysFriends = GetFriends(setProgress, setIsLoadUserFriends, isLoadRooms, arraysUsers);
-    const arraysFriendRequests = GetDocFriendRequests(setProgress, setIsLoadFriendRequest, isLoadUserFriends);
-    const arraysDocsFriendMessages = GetDocsFriendMessages(setProgress, setIsLoadDocsFriendMessages, isLoadFriendRequest);
+    const arraysUsers = GetUsers(); 
+    const arraysRooms = GetRooms(); 
+    const arraysFriends = GetFriends();
+    const arraysFriendRequests = GetDocFriendRequests();
+    const arraysDocsFriendMessages = GetDocsFriendMessages();
+    const arraysRoomsUser = GetRoomsUser();
+    const arraysDocsRoomMessages = GetDocsRoomMessages();
 
     React.useEffect(() => {
       setUsers(arraysUsers);
@@ -86,6 +91,14 @@ export default function HomepageScreen() {
     React.useEffect(() => {
       setDocsFriendMessages(arraysDocsFriendMessages);
     },[arraysDocsFriendMessages, setDocsFriendMessages]);
+
+    React.useEffect(() => {
+        setRoomsUser(arraysRoomsUser);
+    },[arraysRoomsUser, setRoomsUser]);
+
+    React.useEffect(() => {
+        setDocsRoomMessages(arraysDocsRoomMessages);
+    },[arraysDocsRoomMessages, setDocsRoomMessages]);
 
 
 
@@ -559,6 +572,13 @@ if(textSearchStranger.length >= 9) {
                                             <input className='form-control' type="text" placeholder='Nhập câu nói thương hiệu của bạn' defaultValue={slogan} name="editSlogan" />
                                         </div>
                                     </div>
+                                    <div className="d-flex">
+                                        <div className='text-muted w-100'>Màu nền</div>
+                                        <div className="form-check form-switch px-3 w-100">
+                                            <input className="form-check-input" type="checkbox" id="mySwitch" name="darkmode" value="yes" />
+                                            <label className="form-check-label" htmlFor="mySwitch">Dark Mode</label>
+                                        </div>
+                                    </div>
                             </div>
                         </div>
                         <div className="modal-footer">
@@ -701,6 +721,7 @@ if(textSearchStranger.length >= 9) {
         </div>
 
         <ShareMessageModal />
+        <DetailMessageModal />
     </>
   );
 }
