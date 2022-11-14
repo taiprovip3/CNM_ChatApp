@@ -7,14 +7,16 @@ import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa
 import { GiHand } from 'react-icons/gi';
 import { BiDotsVertical } from 'react-icons/bi';
 import moment from 'moment';
-import { arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
 import FirebaseGetRoomMessages from '../../service/FirebaseGetRoomMessages';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from 'uuid';
 import { AuthContext } from '../../provider/AuthProvider';
 import '../../css/Common.css';
 import { AppContext } from '../../provider/AppProvider';
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 export default memo(function ChatRoom({ selectedRoom, setSelectedObject }) {
 //Khởi tạo biến
@@ -36,7 +38,6 @@ useEffect(() => {//Có 1 useEffect y chang như này bên RowChat.js nó thực 
     getRoomById(idRoomClicked)
       .then((newRoom) => {
         if(newRoom) {
-          console.log(' newest room = ', newRoom);
           setSelectedMyRoom(newRoom);
           var test = false;
           for(var i=0; i<newRoom.listMember.length; i++) {
@@ -91,6 +92,12 @@ useEffect(() => {
   },[fullName, id, photoURL, selectedMyRoom.id, socket]);
   const handleSelectedImage = useCallback((e) => {
     const fileUpload = e.target.files[0];
+    console.log('This file size is: ' + fileUpload.size / 1024 / 1024 + "MiB");
+      if(fileUpload.size > 1048576) {
+        console.log('File size is too big!');
+        toast.error("File size is too big, max is 1MB!");
+        return;
+      }
     if(fileUpload == null){
       return;
     }
@@ -168,11 +175,32 @@ const formatMessageHaveIcon = useCallback((msg) =>{
     setCurrentMessage(currentMessage + "😡");
   }
   const handleDeleteMessage = useCallback(async (objMsg) => {
-    
-  },[]);
+    await updateDoc(doc(database, "RoomMessages", memoIdRoom), {
+      listObjectMessage: arrayRemove(objMsg)
+    });
+    if(objMsg.msg.includes("https://firebasestorage.googleapis.com/")){
+      const head = objMsg.msg.substring(86);
+      const tail = head.substr(-53,999);
+      const mystring = head.replace(tail, '');
+
+      const imagesRef = ref(storage, "images/"+mystring);
+      deleteObject(imagesRef)
+      .then(() => {
+        console.log('Xoa hinh anh thanh cong');
+      }).catch(err => {
+        console.log(err);
+        toast.error(err);
+      });
+    }
+  },[memoIdRoom]);
   const handleRecallMessage = useCallback(async (objMsg) => {
- 
-  },[]);
+    const RoomMessagesDocRef = doc(database, "RoomMessages", memoIdRoom);
+    const RoomMessagesDocSnap = await getDoc(RoomMessagesDocRef);
+    let roomMessage = RoomMessagesDocSnap.data();
+
+    let newListObjectMessage = roomMessage.listObjectMessage.map(m => m.idMessage === objMsg.idMessage ? { ...m,isRecall: true } : m );
+    await setDoc(doc(database, "RoomMessages", memoIdRoom), {...roomMessage, listObjectMessage: newListObjectMessage});
+  },[memoIdRoom]);
   const handleShareMessage = useCallback(() => {
 
   },[]);
@@ -183,6 +211,7 @@ const formatMessageHaveIcon = useCallback((msg) =>{
 //Render component
   return (
     <div className='h-100 d-flex flex-column' style={{overflow:'hidden'}}>
+        <ToastContainer theme='colored' />
 
 
         <div className='d-flex border align-items-center'>
@@ -226,26 +255,30 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                             <div>
                                 <img src={objectMessage.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                             </div>
-                            <div className='bg-info rounded p-2 mx-1'>
-                                <div className="d-flex">
-                                  <span className='text-white small flex-fill'>{objectMessage.nameSender}</span>
-                                  <BiDotsVertical className='text-white dropdown-toggle needCursor' data-bs-toggle="dropdown" />
-                                  <ul className="dropdown-menu">
-                                      <li className="dropdown-item needCursor" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn</li>
-                                      <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi</li>
-                                      <li className="dropdown-item needCursor" onClick={() => handleShareMessage(objectMessage)}>Chia sẽ</li>
-                                      <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết</li>
-                                  </ul>
-                                </div>
-                                {
-                                  objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
-                                  <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
-                                  :
-                                  <span className='text-white fw-bold'>{objectMessage.msg}</span>
-                                }
-                                <br />
-                                <span className='text-white small'>{objectMessage.time}</span>
-                            </div>
+                            {
+                              objectMessage.isRecall ? 
+                              <div className='bg-info rounded p-2 mx-1 text-white'>Đã thu hồi tin nhắn</div> :
+                              <div className='bg-info rounded p-2 mx-1'>
+                                  <div className="d-flex">
+                                    <span className='text-white small flex-fill'>{objectMessage.nameSender}</span>
+                                    <BiDotsVertical className='text-white dropdown-toggle needCursor' data-bs-toggle="dropdown" />
+                                    <ul className="dropdown-menu">
+                                        <li className="dropdown-item needCursor" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn</li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi</li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleShareMessage(objectMessage)}>Chia sẽ</li>
+                                        <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết</li>
+                                    </ul>
+                                  </div>
+                                  {
+                                    objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
+                                    <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
+                                    :
+                                    <span className='text-white fw-bold'>{objectMessage.msg}</span>
+                                  }
+                                  <br />
+                                  <span className='text-white small'>{objectMessage.time}</span>
+                              </div>
+                            }
                         </div>;
                 else
                   return <div className='d-flex my-2 mx-3' key={objectMessage.idMessage}>

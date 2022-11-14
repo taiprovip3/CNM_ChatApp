@@ -9,11 +9,14 @@ import { GiHand } from 'react-icons/gi';
 import moment from 'moment';
 import { arrayRemove, arrayUnion, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 } from 'uuid';
 import { AuthContext } from '../../provider/AuthProvider';
 import { AppContext } from '../../provider/AppProvider';
-import $, { get } from 'jquery';
+import $ from 'jquery';
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
   const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal, setBundleShareMessageModal } = React.useContext(AuthContext);
@@ -70,6 +73,12 @@ useEffect(() => {
   },[fullName, id, idRoomOfSelectedFriendAndYou, photoURL, socket]);
   const handleSelectedImage = useCallback((e) => {
       const fileUpload = e.target.files[0];
+      console.log('This file size is: ' + fileUpload.size / 1024 / 1024 + "MiB");
+      if(fileUpload.size > 1048576) {
+        console.log('File size is too big!');
+        toast.error("File size is too big, max is 1MB!");
+        return;
+      }
       if(fileUpload == null){
         return;
       }
@@ -85,6 +94,7 @@ useEffect(() => {
         .catch(err => {
             console.log(err);
         });
+      $("#selectedImage").val("");
   },[sendMessage]);
   const formatMessageHaveIcon = useCallback((msg) =>{
     const icons = [
@@ -150,6 +160,20 @@ useEffect(() => {
     await updateDoc(doc(database, "FriendMessages", idRoomOfSelectedFriendAndYou), {
       listObjectMessage: arrayRemove(objMsg)
     });
+    if(objMsg.msg.includes("https://firebasestorage.googleapis.com/")){
+       const head = objMsg.msg.substring(86);
+       const tail = head.substr(-53,999);
+       const mystring = head.replace(tail, '');
+
+       const imagesRef = ref(storage, "images/"+mystring);
+       deleteObject(imagesRef)
+        .then(() => {
+          console.log('Xoa hinh anh thanh cong');
+        }).catch(err => {
+          console.log(err);
+          toast.error(err);
+        });
+    }
   },[idRoomOfSelectedFriendAndYou]);
   const handleRecallMessage = useCallback(async (objMsg) => {
     let roomMessage = null;
@@ -173,7 +197,7 @@ useEffect(() => {
 //Render component
   return (
     <div className='h-100 d-flex flex-column' style={{overflow:'hidden'}}>
-
+        <ToastContainer theme='colored' />
 
         <div className='d-flex border align-items-center'>
             <div>
