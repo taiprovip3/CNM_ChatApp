@@ -16,7 +16,7 @@ import { AppContext } from '../../provider/AppProvider';
 import $, { get } from 'jquery';
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
-  const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal } = React.useContext(AuthContext);
+  const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal, setBundleShareMessageModal } = React.useContext(AuthContext);
   const { docsFriendMessages } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
@@ -159,13 +159,13 @@ useEffect(() => {
         break;
       }
     }
-    console.log('OP = ', roomMessage);
         let newListObjectMessage = roomMessage.listObjectMessage.map(m => m.idMessage === objMsg.idMessage ? { ...m,isRecall: true } : m );
         await setDoc(doc(database, "FriendMessages", idRoomOfSelectedFriendAndYou), {...roomMessage, listObjectMessage: newListObjectMessage});
   },[docsFriendMessages, idRoomOfSelectedFriendAndYou]);
-  const handleShareMessage = useCallback(() => {
-
-  },[]);
+  const handleShareMessage = useCallback((e, objectMessage) => {
+    e.preventDefault();
+    setBundleShareMessageModal(objectMessage);
+  },[setBundleShareMessageModal]);
   const handleDetailMessage = useCallback(() => {
 
   },[]);
@@ -225,7 +225,7 @@ useEffect(() => {
                                     <ul className="dropdown-menu">
                                         <li className="dropdown-item needCursor" onClick={() => handleDeleteMessage(objectMessage)}>Xoá tin nhắn</li>
                                         <li className="dropdown-item needCursor" onClick={() => handleRecallMessage(objectMessage)}>Thu hồi</li>
-                                        <li className="dropdown-item needCursor" onClick={() => handleShareMessage(objectMessage)}>Chia sẽ</li>
+                                        <li className="dropdown-item needCursor" onClick={(e) => handleShareMessage(e, objectMessage)}>Chia sẽ</li>
                                         <li className="dropdown-item needCursor" onClick={() => handleDetailMessage(objectMessage)}>Xem chi tiết</li>
                                     </ul>
                                   </div>

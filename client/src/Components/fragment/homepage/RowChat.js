@@ -1,5 +1,6 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import '../../css/RowChat.css';
 import { BsFillChatTextFill } from 'react-icons/bs'
 import { RiSettings5Line, RiFolderUserFill } from 'react-icons/ri';
@@ -21,17 +22,59 @@ import ChatRoom from '../../fragment/row-chat/ChatRoom';
 import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
 import { AppContext } from '../../provider/AppProvider';
-import GetDocsFriendMessages from '../../service/firebase/GetDocsFriendMessages';
 
 export default memo(function RowChat() {
-    //Biến
     const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
     const { rooms, friends, docsFriendMessages } = React.useContext(AppContext);
-    const [selectedObject, setSelectedObject] = useState(null);
-    const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = useState('');
+    const [selectedObject, setSelectedObject] = React.useState(null);
+    const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = React.useState('');
+    const [selectedCategory, setSelectedCategory] = React.useState("ALL");
+    const [roomsAndfriends, setRoomsAndFriends] = React.useState([]);
+    const [textSearch, setTextSearch] = React.useState("");
 
-    //Trợ
-    useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
+    React.useEffect(() => {//vừa lắng nge data rooms hoặc friends trên firebase thay đổi vừa lắng nge category
+        if(rooms.length >0 || friends.length >0 ) {
+            if(selectedCategory === "ALL") {
+                let tempArray = [];
+                rooms.forEach((o) => { tempArray.push(o); })
+                friends.forEach((o) => { tempArray.push(o); });
+                setRoomsAndFriends(tempArray);
+            } else {
+                if(selectedCategory === "ROOM")
+                    setRoomsAndFriends(rooms);
+                else
+                    setRoomsAndFriends(friends);
+            }
+        }
+    },[rooms, friends, selectedCategory]);
+    let roomAndFriendToDisplay = roomsAndfriends;
+    const handleTextSearch = useCallback((e) => {
+        setTextSearch(e.target.value);
+    },[]);
+    if(textSearch.length >= 9) {//nếu tìm bạn và là tìm sdt
+        if(textSearch.match(/\d/g)) {//và match toàn số
+            roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
+                if( !val.type )
+                    if(val.phoneNumber.includes(textSearch))
+                        return val;
+            });
+        }
+    } else{
+        if(textSearch !== "") {
+            roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
+                if( val.type ) {//nếu obj là phòng thì lọc textSearch theo name room
+                    if(val.name.toLowerCase().includes(textSearch.toLowerCase())) {
+                        return val;
+                    }
+                } else {//nếu obj là friend thì lọc textSearch theo fullName user
+                    if(val.fullName.toLowerCase().includes(textSearch.toLowerCase())) {
+                        return val;
+                    }
+                }
+            });
+        }
+    }
+    React.useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
         if(selectedObject){ //Nếu rooms trên firebase bị thay đổi thì ai đang selectedObject room
             //GetRoom mới bằng id room cũ
             console.log(' sL: ', selectedObject);
@@ -64,16 +107,15 @@ export default memo(function RowChat() {
             $(obj2).css("display", "block");
         }, 2000);
     },[intervalRef, myIndex]);
-    useEffect(() => {
+    React.useEffect(() => {
         if(!selectedObject)
             intervalSlider();
     },[intervalSlider, selectedObject]);
-    useEffect(() => {
+    React.useEffect(() => {
         if(selectedObject)
             stopSlider();
     },[selectedObject, stopSlider]);
 
-    //Hàm
     const getRoomById = async (idRoom) => {
         let room = null;
         const RoomsDocsRef = doc(database, "Rooms", idRoom);
@@ -95,9 +137,6 @@ export default memo(function RowChat() {
         setSelectedObject(obj);
         setIdRoomIfClickChatToOneFriend(idRoom);
     }, [id, socket]);
-    const memoIdUser = useMemo(() => {
-        return id;
-      }, [id]);
     const getPartnerLastMessage = useCallback((objectFriend) => {
         console.log('getPartnerLastMessage was called');
         let roomMessages = [];
@@ -117,7 +156,6 @@ export default memo(function RowChat() {
         return lastObjectMessage.idSender === id ? "Bạn: " + msg : nameSender + ": " + msg;
     },[id, docsFriendMessages]);
 
-    //FontEnd
     return (
         <div className="row" id="row-chat">
 
@@ -141,7 +179,7 @@ export default memo(function RowChat() {
                 <div className='d-flex align-items-center'>
                     <div className="input-group">
                     <span className="input-group-text"><BiSearchAlt /></span>
-                    <input type="text" className="form-control" placeholder="Tìm kiếm" />
+                    <input type="text" className="form-control" placeholder="Tìm kiếm" onChange={handleTextSearch} />
                     </div>
                     <HiUserAdd className='h3 m-2 needCursor' data-bs-toggle="modal" data-bs-target="#AddFriendModal" />
                     <HiOutlineUserGroup className='h3 m-1 needCursor' data-bs-toggle="modal" data-bs-target="#CreateRoomModal" />
@@ -150,40 +188,39 @@ export default memo(function RowChat() {
                 <div className="dropdown p-1" id='categoryDiv'>
                     <a className="dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" href='.'>Phân loại</a>
                     <ul className="dropdown-menu">
-                    <li><a className="dropdown-item active" href=".">Tất cả <FaSortAlphaDown /></a></li>
-                    <li><a className="dropdown-item" href=".">Nhóm</a></li>
-                    <li><a className="dropdown-item" href=".">Bạn bè</a></li>
+                        <li className={selectedCategory === "ALL" ? "dropdown-item active" : "dropdown-item"} onClick={() => setSelectedCategory("ALL")}>Tất cả</li>
+                        <li className={selectedCategory === "ROOM" ? "dropdown-item active" : "dropdown-item"} onClick={() => setSelectedCategory("ROOM")}>Nhóm chat</li>
+                        <li className={selectedCategory === "FRIEND" ? "dropdown-item active" : "dropdown-item"} onClick={() => setSelectedCategory("FRIEND")}>Bạn bè</li>
                     </ul>
                 </div>
 
                 <div id="FlatListOneBoxItem" className='border'>
                     {
-                        rooms.map( obj => {
-                            return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={obj.id} onClick={() => onClickOneRoom(obj)}>
-                            <div className='col-lg-2'>
-                            <img src={obj.urlImage} alt="photoURL" className='rounded-circle' width='45' height='45' />
-                            </div>
-                            <div className='col-lg-10 p-1'>
-                            <span className='fw-bold'>{obj.name}</span>
-                            <br />
-                            <small className='text-secondary'>{obj.description}</small>
-                            </div>
-                        </div>
-                        })
-                    }
-                    {
-                        friends.map(obj => {
-                        return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={obj.id} onClick={() => onClickOneFriend(obj)}>
-                                    <div className='col-lg-2'>
-                                        <img src={obj.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />
-                                    </div>
-                                    <div className='col-lg-10 p-1'>
-                                        <span className='fw-bold'>{obj.fullName}</span>
-                                        <br />
-                                        <small className='text-secondary'>{getPartnerLastMessage(obj)}</small>
-                                    </div>
+                        roomAndFriendToDisplay.map(obj => {
+                            if(obj.type) {
+                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={Math.random()} onClick={() => onClickOneRoom(obj)}>
+                                <div className='col-lg-2'>
+                                <img src={obj.urlImage} alt="photoURL" className='rounded-circle' width='45' height='45' />
                                 </div>
-                    })
+                                <div className='col-lg-10 p-1'>
+                                <span className='fw-bold'>{obj.name}</span>
+                                <br />
+                                <small className='text-secondary'>{obj.description}</small>
+                                </div>
+                            </div>
+                            } else {
+                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={Math.random()} onClick={() => onClickOneFriend(obj)}>
+                                <div className='col-lg-2'>
+                                    <img src={obj.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />
+                                </div>
+                                <div className='col-lg-10 p-1'>
+                                    <span className='fw-bold'>{obj.fullName}</span>
+                                    <br />
+                                    <small className='text-secondary'>{getPartnerLastMessage(obj)}</small>
+                                </div>
+                            </div>
+                            }
+                        })
                     }
                 </div>
 

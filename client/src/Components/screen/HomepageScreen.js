@@ -36,6 +36,7 @@ import GetDocFriendRequests from '../service/firebase/GetDocFriendRequests';
 import GetDocsFriendMessages from '../service/firebase/GetDocsFriendMessages';
 import LoadingScreen from './LoadingScreen';
 import GetStrangers from '../service/GetStrangers';
+import ShareMessageModal from '../fragment/modal/ShareMessageModal';
 
 export default function HomepageScreen() {
 //Khai báo biến
@@ -698,6 +699,8 @@ if(textSearchStranger.length >= 9) {
                 </div>
             </div>
         </div>
+
+        <ShareMessageModal />
     </>
   );
 }

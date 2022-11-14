@@ -78,7 +78,7 @@ io.on("connection", (socket) => {   //lắng nge ai: io.connect("http://localhos
 
     //Socket nge ai đã đăng nhập
     socket.on("signIn", (currentUser) => {
-        online.push({...currentUser, socket_id: socket.id});s
+        online.push({...currentUser, socket_id: socket.id});
         setUserSocketId(currentUser.id, socket.id);
         console.log(`User: ${currentUser.id}; ${socket.id} online (${online.length}/10000😉) ✅`);
     });
