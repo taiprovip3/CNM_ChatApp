@@ -23,16 +23,49 @@ import $ from 'jquery';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import '../../css/Common.css';
+import Peer from 'simple-peer';
 
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
-  const { currentUser: { fullName, id, photoURL }, socket, setObjectUserModal, setBundleShareMessageModal, setBundleDetailMessageModal } = React.useContext(AuthContext);
+  const { currentUser, currentUser: { fullName, id, photoURL, socket_id }, socket, setObjectUserModal, setBundleShareMessageModal, setBundleDetailMessageModal } = React.useContext(AuthContext);
   const { docsFriendMessages } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
 
+  /* Biến cho videoCAll. Đối với caller | receiver */
+  /* Caller:  */
+  const [stream, setStream] = useState();
+  const [wasInviting, setWasInviting] = useState(false);
+  const [wasHearing, setWasHearing] = useState(false);
+  const [isReceiverAcceptedCall, setIsReceiverAcceptedCall] = useState(false);
+  const [socketIdReveiver, setSocketIdReceiver] = useState("");
+  const [socketIdCaller, setSocketIdCaller] = useState("");
+  const [nameCaller, setNameCaller] = useState("");
+  const [endCall, setEndCall] = useState(false);
+  const [callerSignal, setCallerSignal] = useState();
+
+  const myVideo = React.useRef();
+  const userVideo = React.useRef();
+  const connectionRef = React.useRef();
+
 
 //Khởi tạo useEffect
+useEffect(() => {
+  if(currentUser) {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then((stream) => {
+      setStream(stream);
+      myVideo.current.srcObject = stream;
+    });
+    setSocketIdCaller(socket_id);
+    setNameCaller(fullName);
+    socket.on("join_call_video", (data) => {/* socket luôn lắng nge ai ở server emit lên kênh join_call_video (luôn nge ai gọi tới mình) */
+      setWasInviting(true);
+      setSocketIdCaller(data.socketIdCaller);
+      setNameCaller(data.nameCaller);
+      setCallerSignal(data.signal);//-> khi có ai đó gọi đến qua kênh signal nhả ra "data". Mình lưu trữ lại "data" của người gọi đó. Nếu đống nhấc máy, > sẽ dùng callerSignal này để thiết lập connectionRef.
+    });
+  }
+},[]);
 useEffect(() => {
     setTimeout(() => {
       $("#chatContent").scrollTop($("#chatContent")[0].scrollHeight);
@@ -203,6 +236,48 @@ useEffect(() => {
     navigator.clipboard.writeText(msg);
     toast.success("Copied message ✔️");
   },[]);
+  const handleConfirmCallVideo = useCallback((socketIdReceiver) => {
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream: stream,
+    })
+    peer.on("signal", (data) => { /* tạo ra 1 peer (mình là người khởi xướng) -> tiến hành pending... và luôn lắng nge ai emit trên kênh "signal" mình đang pending */
+      //Nhả ra 1 signal "data". Bất cứ ai peer emit lên kênh tên signal và truyền vào data trùng vs data này thì connection sẽ được thiết lập giữa 2-peer.
+      console.log('test data: ', data);
+      setWasInviting(true);
+      socket.emit("join_call_video", {  //có 1 kênh join_call_video lắng nge ở server. Socket này gọi vào kênh đó -> kênh đó emit lại cho kênh join_call_video ở useEffect phía client có socket_id là receiver data mình truyển ở đây vào. Ở ChatFriend.js có 1 kênh có mã socketid luôn lắng nge socket emit.
+        socketIdReceiver: socketIdReceiver,
+        signalData: data,
+        socketIdCaller: socketIdCaller,
+        nameCaller: nameCaller,
+      });
+    });
+    peer.on("stream", (stream) => {
+      userVideo.current.srcObject = stream;
+    });
+    socket.on("is_receiver_accepted_call", (signal) => {//Sau khi emit data của mình vào kênh join_call_video. Thì tạo ra 1 socket lắng nge emit kênh "is_receiver_accepted_call" để chờ.
+      setIsReceiverAcceptedCall(true);
+      peer.signal(signal);//-> gắn signal của receiver đồng ý call cho peer caller
+    });
+    connectionRef.current = peer;
+  },[nameCaller, socket, socketIdCaller, stream]);
+  const handleAnswerCallVideo = useCallback(() => {
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream: stream,
+    });
+    peer.on("signal", (data) => {
+      socket.emit("is_receiver_accepted_call", {signal: data, socketIdCaller: socketIdCaller});
+    });
+    peer.on("stream", (stream) => {
+      userVideo.current.srcObject = stream;
+    });
+    peer.signal(callerSignal);
+    connectionRef.current = peer;
+    setWasHearing(true);
+  },[callerSignal, socket, socketIdCaller, stream]);
 
 //Render component
   return (
@@ -336,15 +411,22 @@ useEffect(() => {
         </div>
 
 <div className="modal" id="CallVideoModal">
-  <div className="modal-dialog modal-fullscreen">
+  <div className="modal-dialog modal-dialog-centered modal-xl">
     <div className="modal-content">
 
       <div className="modal-header">
         <h4 className="modal-title fw-bold">Gọi video đến bạn bè</h4>
         <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
       </div>
-
-      <div className="modal-body">
+      
+      {
+      wasInviting ?
+      <div>
+        Ai đó đang gọi cho bạn...
+        <button onClick={handleAnswerCallVideo}>Nhấc máy</button>
+      </div>
+      :
+      <div className="modal-body" style={{ position: 'relative', height: '70vh' }}>
           <div className='p-3 text-center' id='absDivCenter' style={{ boxShadow: 'rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px', width:'50%' }}>
               <div className='text-primary'><FaInfoCircle /> Hãy đảm bảo thiết bị của bạn có kết nối <ImVideoCamera /> và <HiMicrophone />!</div>
               <div className='p-2 text-center'>
@@ -356,18 +438,14 @@ useEffect(() => {
               </div>
               <div className="d-flex">
                   <div className='w-100'>
-                    <button className='w-100 btn btn-success btn-lg'>Xác nhận</button>
+                    <button className='w-100 btn btn-success btn-lg' onClick={handleConfirmCallVideo}>Xác nhận</button>
                   </div>
                   <div className='w-100'></div>
-                  <div className='w-100'><button className='w-100 btn btn-danger btn-lg' data-bs-dismiss="modal">Huỷ bỏ</button></div>
+                  <div className='w-100'><button className='w-100 btn btn-secondary btn-lg' data-bs-dismiss="modal">Huỷ bỏ</button></div>
               </div>
           </div>
       </div>
-
-      <div className="modal-footer">
-        <button type="button" className="btn btn-danger btn-lg" data-bs-dismiss="modal">Đóng</button>
-      </div>
-
+      }
     </div>
   </div>
 </div>

@@ -1,19 +1,17 @@
 const express = require('express');
 const app = express();
 const socket = require('socket.io');
+const server = app.listen(4000, () => {
+    console.log('Server is running in 4000...');
+});
 
-const accountSid = "AC187d966f20179bb71157e293dcca8cf5";
-const authToken = "320174b19c02094c6676af72e0fc954a";
-
-const client = require("twilio")(accountSid, authToken);
+//Phần firebaseAdmin sdk
 const moment = require("moment");
 var admin = require("firebase-admin");
 var serviceAccount = require("./ultimatechat-4f632-firebase-adminsdk-oyyp9-6239d0a374.json");
-
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount)
 });
-
 var db = admin.firestore();
 function getRealTimeUsers () {
     const users = [];
@@ -44,6 +42,11 @@ function setUserSocketId(id, socket_id) {
     });
 }
 
+
+//Phần Twilio
+const accountSid = "AC187d966f20179bb71157e293dcca8cf5";
+const authToken = "320174b19c02094c6676af72e0fc954a";
+const client = require("twilio")(accountSid, authToken);
 // client.messages
 //     .create({
 //         body: 'Hello from Node',
@@ -51,14 +54,13 @@ function setUserSocketId(id, socket_id) {
 //         from: '+19704708385',
 //     })
 //     .then((message) => console.log('message Sid = ', message.sid));
-
-const server = app.listen(4000, () => {
-    console.log('Server is running in 4000...');
-});
-//Phần Twilio
 app.post("/ResetPasswordByOTP", (req, res) => {
     console.log('ok son!');
 });
+
+
+
+
 //Phần socket
 const io = socket(server);
 require('events').EventEmitter.prototype._maxListeners = 70;
@@ -71,10 +73,8 @@ process.on('warning', function (err) {
 });
 var online = [];
 io.on("connection", (socket) => {   //lắng nge ai: io.connect("http://localhost:4000")
-
     //Lắng nge 1 browser connect tới URL; Gắn id cho browser
-    console.log(`Browser: ${socket.id}, joined the lobby.`);
-
+    console.log(`+ ${socket.id} joined the game`);
     //Socket nge ai đã đăng nhập
     socket.on("signIn", (currentUser) => {
         online.push({...currentUser, socket_id: socket.id});
@@ -91,21 +91,28 @@ io.on("connection", (socket) => {   //lắng nge ai: io.connect("http://localhos
                 }
             }
         }
-        console.log(`Browser: ${socket.id} offline (${online.length}/10000😉) ❌`);
+        console.log(`- ${socket.id} offline (${online.length}/10000😉) ❌`);
     });
-
     socket.on("join_room", (idRoom) => {
         socket.join(idRoom);
         console.log(`User with ID: ${socket.id} joined room: ${idRoom}`);
     });
-
     socket.on("send_message", (objectMessage, idRoom) => {
         socket.to(idRoom).emit("receive_message", objectMessage);
     });
-
     io.on("disconnect", () => {
         console.log('2. User Disconnected: ', socket.id);
     });
+
+
+    //Socket for callVideo
+    socket.on("join_call_video", (data) => {
+        socket.to(data.socketIdReceiver).emit("join_call_video", {signal: data.signalData, socketIdCaller: data.socketIdCaller, nameCaller: data.nameCaller});
+    });
+    socket.on("is_receiver_accepted_call", (data) => {
+        socket.to(data.socketIdCaller).emit("is_receiver_accepted_call", data.signal);
+    });
+    
 });
 io.on("disconnect", () => {
     console.log('3. User Disconnected: ', socket.id);
