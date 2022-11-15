@@ -1,15 +1,17 @@
 /* eslint-disable no-unused-vars */
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { HiStatusOnline } from 'react-icons/hi';
+import { HiStatusOnline, HiMicrophone } from 'react-icons/hi';
 import { BiDotsVertical } from 'react-icons/bi';
 import { RiEmotionLaughFill, RiImageAddFill, RiInformationFill } from 'react-icons/ri';
 import { MdSend, MdWavingHand } from 'react-icons/md';
-import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa';
+import { FaHandSparkles, FaHandsWash, FaRegHandPointRight, FaInfoCircle } from 'react-icons/fa';
 import { GiHand } from 'react-icons/gi';
 import { BsFillTrash2Fill } from 'react-icons/bs';
 import { TfiSharethisAlt } from 'react-icons/tfi';
 import { IoCopy } from 'react-icons/io5';
 import { TiDelete } from 'react-icons/ti';
+import { AiFillVideoCamera } from 'react-icons/ai';
+import { ImVideoCamera } from 'react-icons/im';
 import moment from 'moment';
 import { arrayRemove, arrayUnion, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
@@ -20,6 +22,7 @@ import { AppContext } from '../../provider/AppProvider';
 import $ from 'jquery';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
+import '../../css/Common.css';
 
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
@@ -206,11 +209,11 @@ useEffect(() => {
     <div className='h-100 d-flex flex-column' style={{overflow:'hidden'}}>
         <ToastContainer theme='colored' />
 
-        <div className='d-flex border align-items-center'>
+        <div className='d-flex align-items-center border-bottom'>
             <div>
                 <img src={selectedFriend.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' data-bs-toggle="modal" data-bs-target="#ManagerUserModal" onClick={() => setObjectUserModal(selectedFriend)} />
             </div>
-            <div className='mx-1'>
+            <div className='mx-1 flex-fill'>
                 <span className='fw-bold d-block'>{selectedFriend.fullName}</span>
                 {
                   selectedFriend.status ?
@@ -218,6 +221,9 @@ useEffect(() => {
                   :
                   <span className="small">Truy cập {moment(selectedFriend.lastOnline, "MMMM Do YYYY, h:mm:ss a").fromNow()}</span>
                 }
+            </div>
+            <div>
+              <AiFillVideoCamera className='fs-2 needCursor' data-bs-toggle="modal" data-bs-target="#CallVideoModal" />
             </div>
         </div>
 
@@ -329,6 +335,42 @@ useEffect(() => {
             <MdSend className='text-primary fs-1' id='needCursor' onClick={() => sendMessage(formatMessageHaveIcon(currentMessage))} />
         </div>
 
+<div className="modal" id="CallVideoModal">
+  <div className="modal-dialog modal-fullscreen">
+    <div className="modal-content">
+
+      <div className="modal-header">
+        <h4 className="modal-title fw-bold">Gọi video đến bạn bè</h4>
+        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div className="modal-body">
+          <div className='p-3 text-center' id='absDivCenter' style={{ boxShadow: 'rgba(0, 0, 0, 0.3) 0px 19px 38px, rgba(0, 0, 0, 0.22) 0px 15px 12px', width:'50%' }}>
+              <div className='text-primary'><FaInfoCircle /> Hãy đảm bảo thiết bị của bạn có kết nối <ImVideoCamera /> và <HiMicrophone />!</div>
+              <div className='p-2 text-center'>
+                  <img src={selectedFriend.photoURL} alt="photoURL" width='100' height='100' className='rounded-circle' />
+                  <br />
+                  <span className='fw-bold lead'>{selectedFriend.fullName}</span>
+                  <br />
+                  <span className='text-muted'>{selectedFriend.slogan}</span>
+              </div>
+              <div className="d-flex">
+                  <div className='w-100'>
+                    <button className='w-100 btn btn-success btn-lg'>Xác nhận</button>
+                  </div>
+                  <div className='w-100'></div>
+                  <div className='w-100'><button className='w-100 btn btn-danger btn-lg' data-bs-dismiss="modal">Huỷ bỏ</button></div>
+              </div>
+          </div>
+      </div>
+
+      <div className="modal-footer">
+        <button type="button" className="btn btn-danger btn-lg" data-bs-dismiss="modal">Đóng</button>
+      </div>
+
+    </div>
+  </div>
+</div>
 
     </div>
   );

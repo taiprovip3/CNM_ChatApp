@@ -20,11 +20,9 @@ function GetRooms() {
                     return x.createAt - y.createAt;
                 });
                 setRooms(listRoom);
-            });
-            setTimeout(() => {
-                setIsLoadRooms(true);
                 setProgress(prev => prev + 14);
-            }, 250);
+                setIsLoadRooms(true);
+            });
             return unsubcriber;
         }
     }, [isLoadUsers, setIsLoadRooms, setProgress]);

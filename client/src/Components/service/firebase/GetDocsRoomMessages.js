@@ -8,19 +8,19 @@ export default function GetDocsRoomMessages() {
   const [documents, setDocuments] = React.useState([]);
   React.useEffect(() => {
     if(isLoadRoomsUser) {
-      const q = query(collection(database, "RoomMessages"), where("idRoom", "in", roomsUser));
-      const unsubcriber = onSnapshot(q, (querySnapShot) => {
-        const listDocRoomMessagesUserJoinedHasBeenChanged = [];
-        querySnapShot.forEach((document) => {
-            listDocRoomMessagesUserJoinedHasBeenChanged.push(document.data());
+      if(roomsUser.length > 0) {
+        const q = query(collection(database, "RoomMessages"), where("idRoom", "in", roomsUser));
+        const unsubcriber = onSnapshot(q, (querySnapShot) => {
+          const listDocRoomMessagesUserJoinedHasBeenChanged = [];
+          querySnapShot.forEach((document) => {
+              listDocRoomMessagesUserJoinedHasBeenChanged.push(document.data());
+          });
+          setDocuments(listDocRoomMessagesUserJoinedHasBeenChanged);
         });
-        setDocuments(listDocRoomMessagesUserJoinedHasBeenChanged);
-      });
-      setTimeout(() => {
-        setIsLoadDocsRoomMessages(true);
-            setProgress(prev => prev + 16);
-        }, 250);
-      return unsubcriber;
+        return unsubcriber;
+      }
+      setProgress(prev => prev + 16);
+      setIsLoadDocsRoomMessages(true);
     }
   },[isLoadRoomsUser, roomsUser, setIsLoadDocsRoomMessages, setProgress]);
   return documents;

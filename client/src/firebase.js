@@ -10,12 +10,12 @@ const firebaseConfig = {
     // storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
     // messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
     // appId: process.env.REACT_APP_FIREBASE_APP_ID,
-    apiKey: "AIzaSyBsyrxEQxut5bZWMz267H8-1oN9jEgFXxo",
-    authDomain: "ultimatechat-91d78.firebaseapp.com",
-    projectId: "ultimatechat-91d78",
-    storageBucket: "ultimatechat-91d78.appspot.com",
-    messagingSenderId: "389301412232",
-    appId: "1:389301412232:web:bf2eac1bd0755ee70a9a3d"
+    apiKey: "AIzaSyAcgx72HvwilTbWzhcQA898zr2gzRNsuvQ",
+    authDomain: "ultimatechat-4f632.firebaseapp.com",
+    projectId: "ultimatechat-4f632",
+    storageBucket: "ultimatechat-4f632.appspot.com",
+    messagingSenderId: "349979181533",
+    appId: "1:349979181533:web:4d9c42be25b289542a3634"
 };
 
 const app = initializeApp(firebaseConfig);

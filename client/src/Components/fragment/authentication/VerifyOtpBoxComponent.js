@@ -16,7 +16,7 @@ export default function VerifyOtpBoxComponent() {
     const [regOTP, setRegOTP] = useState('');
     const history = useNavigate();
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setCurrentUser, confirmationToken } = useContext(AuthContext);
+    const { socket, setCurrentUser, confirmationToken } = useContext(AuthContext);
 
     const onRegOTPChange = useCallback((e) => {
         setRegOTP(e.target.value);
@@ -57,10 +57,11 @@ export default function VerifyOtpBoxComponent() {
         }
         setDoc(doc(database, 'Users', uid), user);
         setCurrentUser(user);
+        socket.emit("signIn", user);
         setTimeout(() => {
             history('/home');
         }, 2500);
-    }, [history, setCurrentUser]);
+    }, [history, setCurrentUser, socket]);
     const handleConfirmOTP = useCallback((e) => {
         if(regOTP === "" || regOTP == null || regOTP === undefined || regOTP.length <6){
             toast.error('Vui lòng kiểm tra lại field OTP');

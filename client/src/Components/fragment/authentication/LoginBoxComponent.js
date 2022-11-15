@@ -16,7 +16,7 @@ export default function LoginBoxComponent() {
     const [logPassword, setLogPassword] = useState('123123az');
     const history = useNavigate();
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setCurrentUser } = useContext(AuthContext);
+    const { socket, setCurrentUser } = useContext(AuthContext);
 
     const onLogEmailChange = useCallback((e) => {
         setLogEmail(e.target.value);
@@ -34,6 +34,7 @@ export default function LoginBoxComponent() {
                     const UsersDocRef = doc(database, "Users", uid);
                     const UsersDocSnap = await getDoc(UsersDocRef);
                     setCurrentUser({...UsersDocSnap.data(), status: true});
+                    socket.emit("signIn", {...UsersDocSnap.data(), status: true});
                     history('/home');
                 } else{
                     toast.error("Tài khoản này chưa được xác thực");
@@ -52,7 +53,7 @@ export default function LoginBoxComponent() {
                     toast.error("Tài khoản chưa được đăng ký");
                 }
             });
-    }, [logEmail, logPassword, history, setCurrentUser]);
+    }, [history, logEmail, logPassword, setCurrentUser, socket]);
 
     return (
         <>

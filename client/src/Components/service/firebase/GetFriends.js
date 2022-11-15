@@ -30,11 +30,9 @@ function GetFriends() {
                     }
                 }
                 setFriends(listFriendFactoryed);
-            });
-            setTimeout(() => {
-                setIsLoadUserFriends(true);
                 setProgress(prev => prev + 14);
-            }, 250);
+                setIsLoadUserFriends(true);
+            });
             return unsubcriber;
         }
     }, [id, isLoadRooms, setIsLoadUserFriends, setProgress, users]);

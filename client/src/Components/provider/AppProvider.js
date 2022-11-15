@@ -14,6 +14,7 @@ export const AppProvider = ({ children }) => {
     const [docsFriendMessages, setDocsFriendMessages] = React.useState([]);
     const [roomsUser, setRoomsUser] = React.useState([]);//list ids room user joined
     const [docsRoomMessages, setDocsRoomMessages] = React.useState([]);
+    // const [user, setUser] = React.useState(null);
     
     const [isLoadUsers, setIsLoadUsers] = React.useState(false);
     const [isLoadRooms, setIsLoadRooms] = React.useState(false);

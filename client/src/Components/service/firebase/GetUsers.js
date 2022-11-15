@@ -19,11 +19,9 @@ function GetUsers() {
                     listUser.push(document.data());
                 });
                 setUsers(listUser);
-            });
-            setTimeout(() => {
-                setIsLoadUsers(true);
                 setProgress(prev => prev + 14);
-            }, 250);
+                setIsLoadUsers(true);
+            });
             return unsubcriber;
         }
     },[currentUser, setIsLoadUsers, setProgress]);

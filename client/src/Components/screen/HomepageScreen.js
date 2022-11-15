@@ -40,6 +40,7 @@ import ShareMessageModal from '../fragment/modal/ShareMessageModal';
 import DetailMessageModal from '../fragment/modal/DetailMessageModal';
 import GetRoomsUser from '../service/firebase/GetRoomsUser';
 import GetDocsRoomMessages from '../service/firebase/GetDocsRoomMessages';
+import FirebaseGetRealtimeUser from '../service/FirebaseGetRealtimeUser';
 
 export default function HomepageScreen() {
 //Khai báo biến
@@ -63,7 +64,7 @@ export default function HomepageScreen() {
                 </div>
             </div>;
   }
-    
+
     const arraysUsers = GetUsers(); 
     const arraysRooms = GetRooms(); 
     const arraysFriends = GetFriends();
@@ -99,6 +100,13 @@ export default function HomepageScreen() {
     React.useEffect(() => {
         setDocsRoomMessages(arraysDocsRoomMessages);
     },[arraysDocsRoomMessages, setDocsRoomMessages]);
+    
+    const userData = FirebaseGetRealtimeUser(currentUser.id);
+    React.useEffect(() => {
+        if(userData) {
+            setCurrentUser(userData);
+        }
+    },[setCurrentUser, userData]);
 
 
 
@@ -354,13 +362,19 @@ if(textSearchStranger.length >= 9) {
             window.location.href = '/';
         }
     },[currentUser.email]);
+    const onChangeColoredTheme = useCallback(() => {
+        if(currentUser) {
+            const UsersRef = doc(database, "Users", currentUser.id);
+            setDoc(UsersRef, { theme: currentUser.theme === "light" ? "dark" : "light" }, { merge: true });
+        }
+    },[currentUser]);
   
 //Render giao diện
   return(
     <>
     {
-        isLoadDocsFriendMessages ?
-        <div className='container-fluid bg-white' id='outer'>
+        isLoadDocsRoomMessages ?
+        <div className={currentUser.theme === "light" ? 'container-fluid bg-white' : 'container-fluid bg-dark text-white'} id='outer'>
             <ToastContainer theme='colored' />
             { currentRowShow === 'row-chat' ? <RowChat /> : <RowPhonebook /> }
         </div>
@@ -574,8 +588,12 @@ if(textSearchStranger.length >= 9) {
                                     </div>
                                     <div className="d-flex">
                                         <div className='text-muted w-100'>Màu nền</div>
-                                        <div className="form-check form-switch px-3 w-100">
-                                            <input className="form-check-input" type="checkbox" id="mySwitch" name="darkmode" value="yes" />
+                                        <div className="form-check form-switch w-100">
+                                            {
+                                                currentUser.theme === "light" ?
+                                                <input className="form-check-input" type="checkbox" id="mySwitch" name="darkmode" value="yes" onChange={() => onChangeColoredTheme()} /> :
+                                                <input className="form-check-input" type="checkbox" id="mySwitch" name="darkmode" value="yes" onChange={() => onChangeColoredTheme()} defaultChecked />
+                                            }
                                             <label className="form-check-label" htmlFor="mySwitch">Dark Mode</label>
                                         </div>
                                     </div>

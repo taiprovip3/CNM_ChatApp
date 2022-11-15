@@ -226,7 +226,7 @@ const formatMessageHaveIcon = useCallback((msg) =>{
         <ToastContainer theme='colored' />
 
 
-        <div className='d-flex border align-items-center'>
+        <div className='d-flex border-bottom align-items-center'>
             <div>
                 <img src={selectedMyRoom.urlImage} alt="urlImage" width='45' height='45' className='rounded-circle needCursor' data-bs-toggle="modal" data-bs-target="#ManagerGroupModal" onClick={() => setObjectGroupModal(selectedMyRoom)} />
             </div>

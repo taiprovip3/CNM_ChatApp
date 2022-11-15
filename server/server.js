@@ -8,11 +8,10 @@ const authToken = "320174b19c02094c6676af72e0fc954a";
 const client = require("twilio")(accountSid, authToken);
 const moment = require("moment");
 var admin = require("firebase-admin");
-var serviceAccount = require("./ultimatechat-91d78-firebase-adminsdk-e9t30-c066a2bcf7.json");
+var serviceAccount = require("./ultimatechat-4f632-firebase-adminsdk-oyyp9-6239d0a374.json");
 
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://ultimatechat-91d78.firebaseio.com'
+    credential: admin.credential.cert(serviceAccount)
 });
 
 var db = admin.firestore();

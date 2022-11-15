@@ -21,10 +21,8 @@ function GetDocFriendRequests() {
                     setDocument(doc.data());
                 }
             });
-            setTimeout(() => {
-                setIsLoadFriendRequest(true);
-                setProgress(prev => prev + 14);
-            }, 250);
+            setProgress(prev => prev + 14);
+            setIsLoadFriendRequest(true);
             return unsubcriber;
         }
     },[id, isLoadUserFriends, setIsLoadFriendRequest, setProgress]);

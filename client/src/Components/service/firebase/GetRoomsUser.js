@@ -19,11 +19,9 @@ export default function GetRoomsUser() {
           listRoomIdUserJoined.push(document.data().id);
         });
         setIds(listRoomIdUserJoined);
+        setProgress(prev => prev + 14);
+        setIsLoadRoomsUser(true);
       });
-      setTimeout(() => {
-          setIsLoadRoomsUser(true);
-          setProgress(prev => prev + 14);
-      }, 250);
       return unsubcriber;
     }
   },[id, isLoadDocsFriendMessages, setIsLoadRoomsUser, setProgress]);

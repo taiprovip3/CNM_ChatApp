@@ -24,7 +24,7 @@ import { AppContext } from '../../provider/AppProvider';
 import { async } from '@firebase/util';
 
 export default memo(function RowChat() {
-    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
+    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL, theme }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
     const { rooms, friends, docsFriendMessages, docsRoomMessages } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = React.useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = React.useState('');
@@ -153,7 +153,6 @@ export default memo(function RowChat() {
         return lastObjectMessage.idSender === id ? "Bạn: " + msg : nameSender + ": " + msg;
     },[id, docsFriendMessages]);
     const getRoomLastMessage = useCallback((objectRoom) => {
-        console.log(objectRoom);
         let roomMessages = [];
         for(let i=0; i<docsRoomMessages.length; i++) {
             const element = docsRoomMessages[i];
@@ -172,10 +171,10 @@ export default memo(function RowChat() {
     },[docsRoomMessages, id]);
 
     return (
-        <div className="row" id="row-chat">
+        <div className="row"id="row-chat">
 
 
-            <div className='col-lg-1 border bg-primary' id='divA'>
+            <div className='col-lg-1 bg-primary' id='divA'>
                 <div data-bs-toggle="modal" data-bs-target="#SignoutModal">
                     <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3 needCursor' width="45" height="45" />
                 </div>
@@ -189,7 +188,7 @@ export default memo(function RowChat() {
                     <RiSettings5Line id='iconSetting' className='h1 text-white' data-bs-toggle="modal" data-bs-target="#UserInfoModal" />
                 </div>
             </div>
-            <div className='col-lg-3 border' id='divB'>
+            <div className='col-lg-3' id='divB'>
 
                 <div className='d-flex align-items-center'>
                     <div className="input-group">
@@ -209,11 +208,11 @@ export default memo(function RowChat() {
                     </ul>
                 </div>
 
-                <div id="FlatListOneBoxItem" className='border'>
+                <div id="FlatListOneBoxItem">
                     {
                         roomAndFriendToDisplay.map(obj => {
                             if(obj.type) {
-                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={Math.random()} onClick={() => onClickOneRoom(obj)}>
+                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center needCursor' : 'container d-flex align-items-center needCursor'} key={Math.random()} onClick={() => onClickOneRoom(obj)}>
                                 <div className='col-lg-2'>
                                 <img src={obj.urlImage} alt="photoURL" className='rounded-circle' width='45' height='45' />
                                 </div>
@@ -224,7 +223,7 @@ export default memo(function RowChat() {
                                 </div>
                             </div>
                             } else {
-                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center border-bottom needCursor' : 'container d-flex align-items-center border border-primary needCursor'} key={Math.random()} onClick={() => onClickOneFriend(obj)}>
+                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center needCursor' : 'container d-flex align-items-center needCursor'} key={Math.random()} onClick={() => onClickOneFriend(obj)}>
                                 <div className='col-lg-2'>
                                     <img src={obj.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />
                                 </div>
@@ -240,7 +239,7 @@ export default memo(function RowChat() {
                 </div>
 
             </div>
-            <div className='col-lg-8' id='divC'>
+            <div className='col-lg-8 border border-left' id='divC'>
                 {
                 (!selectedObject) ?
                     <div id='sliderDiv' className='text-center'>

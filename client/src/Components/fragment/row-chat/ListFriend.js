@@ -185,7 +185,7 @@ export default memo(function ListFriend() {
                     : renderFromRequests()
                 }
             </div>
-            <div className='h-50 border-top overflow-auto'>
+            <div className='h-50 overflow-auto'>
                 {
                     listToRequest.length <= 0 ?
                     renderEmptyToRequests()

@@ -23,7 +23,7 @@ export default function LoadingScreen() {
 
     return (
         <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
-            <ToastContainer theme='dark' />
+            <ToastContainer theme='colored' />
             <div>
                 <div className="d-flex">
                     <span className="spinner-grow text-info spinner-grow-lg"></span>

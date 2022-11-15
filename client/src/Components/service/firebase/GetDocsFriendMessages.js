@@ -25,11 +25,9 @@ function GetDocsFriendMessages() {
                     documents.push(document.data());
                 });
                 setDocsFriendMessages(documents);
-            });
-            setTimeout(() => {
-                setIsLoadDocsFriendMessages(true);
                 setProgress(prev => prev + 14);
-            }, 250);
+                setIsLoadDocsFriendMessages(true);
+            });
             return unsubcriber;
         }
     }, [id, isLoadFriendRequest, setIsLoadDocsFriendMessages, setProgress]);
