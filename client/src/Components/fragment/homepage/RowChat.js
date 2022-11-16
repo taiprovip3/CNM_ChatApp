@@ -21,7 +21,6 @@ import ChatRoom from '../../fragment/row-chat/ChatRoom';
 import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
 import { AppContext } from '../../provider/AppProvider';
-import { async } from '@firebase/util';
 
 export default memo(function RowChat() {
     const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL, theme }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);

@@ -106,13 +106,30 @@ io.on("connection", (socket) => {   //lắng nge ai: io.connect("http://localhos
 
 
     //Socket for callVideo
-    socket.on("join_call_video", (data) => {
-        socket.to(data.socketIdReceiver).emit("join_call_video", {signal: data.signalData, socketIdCaller: data.socketIdCaller, nameCaller: data.nameCaller});
+    socket.on("i_want_call_video", (data) => {
+        socket
+            .to(data.receiver.socket_id)
+            .emit("robot_receiver", {
+                caller: data.caller,
+                callerPeerData: data.callerPeerData,
+                receiver: data.receiver
+            });
     });
-    socket.on("is_receiver_accepted_call", (data) => {
-        socket.to(data.socketIdCaller).emit("is_receiver_accepted_call", data.signal);
+    socket.on("i_accept_to_call", (data) => {
+        socket
+            .to(data.caller.socket_id)
+            .emit("caller_await_server_response", data.peerDataReceiver);
     });
-    
+    socket.on("i_deny_to_call", (socket_id) => {
+        socket
+            .to( socket_id )
+            .emit("caller_await_server_response", null);
+    });
+    socket.on("i_cancel_to_call", (socket_id) => {
+        socket
+            .to(socket_id)
+            .emit("robot_receiver", null);
+    });
 });
 io.on("disconnect", () => {
     console.log('3. User Disconnected: ', socket.id);

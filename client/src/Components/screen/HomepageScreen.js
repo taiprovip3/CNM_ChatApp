@@ -9,14 +9,14 @@ import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import "../css/HomepageScreen.css";
 import { BsFillShieldLockFill } from 'react-icons/bs'
-import { MdCameraswitch, MdOutlineEditOff } from 'react-icons/md';
+import { MdCameraswitch, MdOutlineEditOff, MdOutlineVideoCameraFront, MdPermPhoneMsg } from 'react-icons/md';
 import { FcSmartphoneTablet } from 'react-icons/fc';
 import { FaUserFriends, FaUserMinus } from 'react-icons/fa';
 import { TbPencilOff, TbUpload } from 'react-icons/tb';
 import { TiCamera } from 'react-icons/ti';
 import { IoIosImages } from 'react-icons/io';
 import { CgClose } from 'react-icons/cg';
-import { HiSearch, HiOutlineUserGroup } from 'react-icons/hi';
+import { HiSearch, HiOutlineUserGroup,HiExternalLink } from 'react-icons/hi';
 import { IoPersonAddSharp } from 'react-icons/io5';
 import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../firebase';
@@ -45,7 +45,7 @@ import FriendVideoCallModal from '../fragment/modal/FriendVideoCallModal';
 
 export default function HomepageScreen() {
 //Khai báo biến
-  var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal } = React.useContext(AuthContext);
+  var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus } = React.useContext(AuthContext);
   const { progress,setProgress, users,setUsers, rooms,setRooms, friends,setFriends, docFriendRequests,setDocFriendRequests, docsFriendMessages,setDocsFriendMessages, roomsUser,setRoomsUser, docsRoomMessages,setDocsRoomMessages, isLoadUsers,setIsLoadUsers, isLoadRooms,setIsLoadRooms, isLoadUserFriends,setIsLoadUserFriends, isLoadFriendRequest,setIsLoadFriendRequest, isLoadDocsFriendMessages,setIsLoadDocsFriendMessages, isLoadRoomsUser,setIsLoadRoomsUser, isLoadDocsRoomMessages,setIsLoadDocsRoomMessages, progressPercent, setProgressPercent } = React.useContext(AppContext);
 
   if(!currentUser){
@@ -373,6 +373,26 @@ if(textSearchStranger.length >= 9) {
 //Render giao diện
   return(
     <>
+    {
+        (receiverStatus === "RECEIVING") &&
+        <div id="RobotReceiver" className='bg-primary text-white d-flex p-3 lead'>
+        <div className="d-flex flex-fill">
+            <div className='d-flex align-items-center justify-content-center'>
+                <MdOutlineVideoCameraFront className='fs-1' />
+            </div>
+            <div className='px-3'>
+                <span className='d-block'>{caller.fullName}</span>
+                <span>Đang gọi video đến cho bạn...</span>
+            </div>
+        </div>
+        <div className='d-flex justify-content-center align-items-center'>
+            <div>
+                <MdPermPhoneMsg className="fw-bold text-white fs-1 border rounded-circle p-2 needCursor d-block" onClick={() => setSelectedFriend(caller)} />
+                <span>Xem chi tiết<HiExternalLink /></span>
+            </div>
+        </div>
+    </div>
+    }
     {
         isLoadDocsRoomMessages ?
         <div className={currentUser.theme === "light" ? 'container-fluid bg-white' : 'container-fluid bg-dark text-white'} id='outer'>
