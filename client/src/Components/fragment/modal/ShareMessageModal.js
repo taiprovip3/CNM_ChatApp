@@ -31,7 +31,7 @@ export default memo(function ShareMessageModal() {
 
     React.useEffect(() => {//lắng nge click chia sẽ trong ChatFriend hay ko
     if(bundleShareMessageModal)
-        $("#openModal").click();
+        $("#openShareMessageModal").click();
     else
         $(".btn-close").click();
     },[bundleShareMessageModal]);
@@ -142,7 +142,7 @@ export default memo(function ShareMessageModal() {
   return (
     <div>
         <ToastContainer theme='colored' />
-        <button data-bs-toggle="modal" data-bs-target="#ShareMessageModal" id='openModal' className='d-none'>Click me pls</button>
+        <button data-bs-toggle="modal" data-bs-target="#ShareMessageModal" id='openShareMessageModal' className='d-none'>Click me pls</button>
         <div className="modal fade" id="ShareMessageModal" tabIndex="-1" role="dialog" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">

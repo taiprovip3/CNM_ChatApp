@@ -20,6 +20,8 @@ export const AuthProvider = ({ children }) => {
     const [bundleShareMessageModal, setBundleShareMessageModal] = useState(null);
     const [bundleDetailMessageModal, setBundleDetailMessageModal] = useState(null);
 
+    const [selectedFriend, setSelectedFriend] = useState({bod:1,bom:1,boy:1903,age:21,email:'tly63779@cdfaq.com ',fullName:'Phan Tấn Tài',id:'BN12jZMETsVpzjq1w2QpUBXdeA33',joinDate:'November 5th 2022, 1:51:39 pm',keywords:["P", "PH"],lastOnline:"November 15th 2022, 10:34:50 am", phoneNumber:"+84",photoURL:"https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg",role:["MEMBER"],sex:false,slogan:'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!',socket_id:"MNApR2q-X4_XEAu-AAAJ",status:false,theme:"light",address: "Không"});
+
     useEffect(() => {
         setSocket(io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] }));
     },[]);
@@ -36,7 +38,7 @@ export const AuthProvider = ({ children }) => {
     },[currentRowShow, stopSlider]);
 
     return (
-      <AuthContext.Provider value={{ objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, setSocket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, bundleShareMessageModal, setBundleShareMessageModal, bundleDetailMessageModal, setBundleDetailMessageModal }}>
+      <AuthContext.Provider value={{ selectedFriend, setSelectedFriend, objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, setSocket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, bundleShareMessageModal, setBundleShareMessageModal, bundleDetailMessageModal, setBundleDetailMessageModal }}>
         {children}
       </AuthContext.Provider>
     )
