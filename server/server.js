@@ -41,6 +41,16 @@ function setUserSocketId(id, socket_id) {
         console.log('Update socket_id successfully!');
     });
 }
+async function getLastSocketIdUserCallVideo(id) {
+    return db.collection("LastUserCallVideo").where("usersocket_id", "==", id).get();
+        // .then((querySnapShot) => {
+        //     querySnapShot.forEach((doc) => {
+        //         console.log('oraL ', doc.data().mysocket_id);
+        //         return doc.data().mysocket_id;
+        //     });
+        //     // return querySnapShot.docs[0].data.mysocket_id;
+        // });
+}
 
 
 //Phần Twilio
@@ -92,6 +102,12 @@ io.on("connection", (socket) => {   //lắng nge ai: io.connect("http://localhos
             }
         }
         console.log(`- ${socket.id} offline (${online.length}/10000😉) ❌`);
+        getLastSocketIdUserCallVideo(socket.id)
+            .then((querySnapShot) => {
+                querySnapShot.forEach((doc) => {
+                    socket.to(doc.data().mysocket_id).emit("caller_await_server_response", {command: "RECEIVER_END"});
+                });
+            });
     });
     socket.on("join_room", (idRoom) => {
         socket.join(idRoom);

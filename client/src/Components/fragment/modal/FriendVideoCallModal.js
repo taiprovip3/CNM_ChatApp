@@ -8,6 +8,8 @@ import $ from 'jquery';
 import Peer from 'simple-peer';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
+import { doc, setDoc } from 'firebase/firestore';
+import { database } from '../../../firebase';
 
 export default function FriendVideoCallModal() {
 
@@ -100,13 +102,21 @@ export default function FriendVideoCallModal() {
     }
   },[]);
 
+  const setLastUserSocketId = useCallback(async () => {
+    await setDoc(doc(database, "LastUserCallVideo", currentUser.id), {
+      mysocket_id: currentUser.socket_id,
+      usersocket_id: selectedFriend.socket_id
+    });
+  },[currentUser, selectedFriend]);
   const handleCallerConfirmCallVideo = useCallback(() => {
     if(!myCameraOK) {
       toast.error("Vui lòng kiểm tra thiết bị kết nối camera & micro!");
+      setSelectedFriend(null);
       return;
     }
     if(!selectedFriend.status) {
       toast.error("Đối phương hiện đang offline");
+      setSelectedFriend(null);
       return;
     }
     const peer = new Peer({
@@ -115,6 +125,7 @@ export default function FriendVideoCallModal() {
       stream: myCameraStream,
     })
     peer.on("signal", (data) => { //Join & truyền vào kênh signal, (data) peer chính mình
+      setLastUserSocketId();
       isBusyWith.current = selectedFriend;
       setActor("caller");
       setCallerStatus("CALLING");
@@ -126,6 +137,7 @@ export default function FriendVideoCallModal() {
       });
     });
     socket.on("caller_await_server_response", (data) => {
+      console.log('server emited data command: ', data.command);
       if(data.command === "RECEIVER_ACCEPTED") {
         setActor("caller")
         setReceiverPeerData(data);//-> gắn signal của receiver đồng ý call cho peer stream caller
@@ -156,7 +168,7 @@ export default function FriendVideoCallModal() {
       userVideo.current.srcObject = stream;
     });
     connectionRef.current = peer;
-  },[currentUser, myCameraOK, myCameraStream, receiver, selectedFriend, setCaller, setCallerStatus, setReceiver, socket]);
+  },[currentUser, myCameraOK, myCameraStream, receiver, selectedFriend, setCaller, setCallerStatus, setLastUserSocketId, setReceiver, setSelectedFriend, socket]);
   const handleCallerCancelCallVideo = useCallback(() => {
     socket.emit("receiver_await_server_response", {command: "CALLER_CANCEL", receiver});
     isBusyWith.current = "";
@@ -175,6 +187,7 @@ export default function FriendVideoCallModal() {
   const handleReceiverAnswerCallVideo = useCallback(() => {
     if(!myCameraOK) {
       toast.error("Vui lòng kiểm tra thiết bị kết nối camera & micro!");
+      setSelectedFriend(null);
       return;
     }
     setActor("receiver"); //nhận view mới
@@ -196,7 +209,7 @@ export default function FriendVideoCallModal() {
     });
     peer.signal(callerPeerData);
     connectionRef.current = peer;
-  },[caller, callerPeerData, myCameraOK, myCameraStream, setReceiverStatus, socket]);
+  },[caller, callerPeerData, myCameraOK, myCameraStream, setReceiverStatus, setSelectedFriend, socket]);
   const handleReceiverDenyCallVideo = useCallback(() => {
     isBusyWith.current = "";
     setReceiverStatus("NO_RECEIVE");

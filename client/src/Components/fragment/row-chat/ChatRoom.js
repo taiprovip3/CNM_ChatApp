@@ -25,7 +25,7 @@ import $ from 'jquery';
 
 export default memo(function ChatRoom({ selectedRoom, setSelectedObject }) {
 //Khởi tạo biến
-  const { setObjectGroupModal, currentUser: { fullName, id, photoURL, theme }, socket, setBundleShareMessageModal, setBundleDetailMessageModal } = React.useContext(AuthContext);
+  const { setObjectGroupModal, currentUser: { fullName, id, photoURL, theme }, socket, setBundleShareMessageModal, setBundleDetailMessageModal, setSelectedRoom } = React.useContext(AuthContext);
   const { rooms } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
@@ -48,7 +48,6 @@ useEffect(() => {//Có 1 useEffect y chang như này bên RowChat.js nó thực 
           for(var i=0; i<newRoom.listMember.length; i++) {
             if(newRoom.listMember[i] === id) {
               test = true;
-              console.log('Ko cần rerender nếu giao diện là member ko rời khỏi phòng');
               break;
             }
           }
@@ -236,7 +235,7 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                 <span className='small'><HiUserGroup /> {selectedMyRoom.listMember.length} thành viên</span>
             </div>
             <div className='d-flex justify-content-center align-items-center mx-1 rounded-circle p-1' style={{ boxShadow: 'rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px' }}>
-                <MdGroupAdd className='fs-1 needCursor' />
+                <MdGroupAdd className='fs-1 needCursor' onClick={() => setSelectedRoom(selectedMyRoom)} />
             </div>
         </div>
 

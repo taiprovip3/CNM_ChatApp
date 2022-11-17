@@ -42,6 +42,7 @@ import GetRoomsUser from '../service/firebase/GetRoomsUser';
 import GetDocsRoomMessages from '../service/firebase/GetDocsRoomMessages';
 import FirebaseGetRealtimeUser from '../service/FirebaseGetRealtimeUser';
 import FriendVideoCallModal from '../fragment/modal/FriendVideoCallModal';
+import RoomInviteFriendModal from '../fragment/modal/RoomInviteFriendModal';
 
 export default function HomepageScreen() {
 //Khai báo biến
@@ -763,6 +764,7 @@ if(textSearchStranger.length >= 9) {
         <ShareMessageModal />
         <DetailMessageModal />
         <FriendVideoCallModal />
+        <RoomInviteFriendModal />
     </>
   );
 }
