@@ -386,9 +386,10 @@ if(textSearchStranger.length >= 9) {
             </div>
         </div>
         <div className='d-flex justify-content-center align-items-center'>
-            <div>
-                <MdPermPhoneMsg className="fw-bold text-white fs-1 border rounded-circle p-2 needCursor d-block" onClick={() => setSelectedFriend(caller)} />
-                <span>Xem chi tiết<HiExternalLink /></span>
+            <div className='text-center'>
+                <MdPermPhoneMsg className="fw-bold text-white fs-1 border rounded-circle p-2 needCursor" onClick={() => setSelectedFriend(caller)} />
+                <br />
+                <span className='text-decoration-underline'>Xem chi tiết<HiExternalLink /></span>
             </div>
         </div>
     </div>

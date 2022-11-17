@@ -106,29 +106,15 @@ io.on("connection", (socket) => {   //lắng nge ai: io.connect("http://localhos
 
 
     //Socket for callVideo
-    socket.on("i_want_call_video", (data) => {
+    socket.on("receiver_await_server_response", (data) => {
         socket
             .to(data.receiver.socket_id)
-            .emit("robot_receiver", {
-                caller: data.caller,
-                callerPeerData: data.callerPeerData,
-                receiver: data.receiver
-            });
+            .emit("receiver_await_server_response", data);
     });
-    socket.on("i_accept_to_call", (data) => {
+    socket.on("caller_await_server_response", (data) => {
         socket
             .to(data.caller.socket_id)
-            .emit("caller_await_server_response", data.peerDataReceiver);
-    });
-    socket.on("i_deny_to_call", (socket_id) => {
-        socket
-            .to( socket_id )
-            .emit("caller_await_server_response", null);
-    });
-    socket.on("i_cancel_to_call", (socket_id) => {
-        socket
-            .to(socket_id)
-            .emit("robot_receiver", null);
+            .emit("caller_await_server_response", data);
     });
 });
 io.on("disconnect", () => {

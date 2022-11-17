@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
     const [bundleDetailMessageModal, setBundleDetailMessageModal] = useState(null);
 
     const [selectedFriend, setSelectedFriend] = useState(null);
-    const [caller, setCaller] = useState(null);
+    const [caller, setCaller] = useState(currentUser);
     const [receiver, setReceiver] = useState(null);
     const [callerStatus, setCallerStatus] = useState("NO_CALL");
     const [receiverStatus, setReceiverStatus] = useState("NO_RECEIVE");
