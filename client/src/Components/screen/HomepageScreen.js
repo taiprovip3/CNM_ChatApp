@@ -376,23 +376,23 @@ if(textSearchStranger.length >= 9) {
     {
         (receiverStatus === "RECEIVING") &&
         <div id="RobotReceiver" className='bg-primary text-white d-flex p-3 lead'>
-        <div className="d-flex flex-fill">
-            <div className='d-flex align-items-center justify-content-center'>
-                <MdOutlineVideoCameraFront className='fs-1' />
+            <div className="d-flex flex-fill">
+                <div className='d-flex align-items-center justify-content-center'>
+                    <MdOutlineVideoCameraFront className='fs-1' />
+                </div>
+                <div className='px-3'>
+                    <span className='d-block'>{caller.fullName}</span>
+                    <span>Đang gọi video đến cho bạn...</span>
+                </div>
             </div>
-            <div className='px-3'>
-                <span className='d-block'>{caller.fullName}</span>
-                <span>Đang gọi video đến cho bạn...</span>
+            <div className='d-flex justify-content-center align-items-center'>
+                <div className='text-center'>
+                    <MdPermPhoneMsg className="fw-bold text-white fs-1 border rounded-circle p-2 needCursor" onClick={() => setSelectedFriend(caller)} />
+                    <br />
+                    <span className='text-decoration-underline'>Xem chi tiết<HiExternalLink /></span>
+                </div>
             </div>
         </div>
-        <div className='d-flex justify-content-center align-items-center'>
-            <div className='text-center'>
-                <MdPermPhoneMsg className="fw-bold text-white fs-1 border rounded-circle p-2 needCursor" onClick={() => setSelectedFriend(caller)} />
-                <br />
-                <span className='text-decoration-underline'>Xem chi tiết<HiExternalLink /></span>
-            </div>
-        </div>
-    </div>
     }
     {
         isLoadDocsRoomMessages ?
@@ -698,8 +698,8 @@ if(textSearchStranger.length >= 9) {
                     showGroupModalComponent === 'info' ?
                     <Info setShowGroupModalComponent={setShowGroupModalComponent} /> :
                         showGroupModalComponent === "update" ?
-                        <Update objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} /> :
-                        <Authorization objectGroupModal={objectGroupModal} users={users} currentUser={currentUser} setCurrentRowShow={setCurrentRowShow} setShowGroupModalComponent={setShowGroupModalComponent} setObjectUserModal={setObjectUserModal} />
+                        <Update setShowGroupModalComponent={setShowGroupModalComponent} /> :
+                        <Authorization setShowGroupModalComponent={setShowGroupModalComponent} />
                 }
             </div>
         </div>

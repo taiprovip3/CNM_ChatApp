@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 /* eslint-disable no-unused-vars */
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useCallback, useEffect, useState } from 'react';
 import { BiLinkAlt } from 'react-icons/bi';
 import { MdOutlineExitToApp } from 'react-icons/md';
 import { toast } from 'react-toastify';
@@ -12,25 +12,26 @@ import { MdVpnKey, MdGroups } from 'react-icons/md';
 import { RiGroup2Fill } from 'react-icons/ri';
 import { BsThreeDots } from 'react-icons/bs';
 import $ from 'jquery';
+import { AppContext } from '../../provider/AppProvider';
+import { AuthContext } from '../../provider/AuthProvider';
 
-export default memo(function Authorization({ objectGroupModal, setObjectUserModal, users, currentUser, setCurrentRowShow, setShowGroupModalComponent }) {
-    console.log('Authorization rerendered!');
+export default memo(function Authorization({ setShowGroupModalComponent }) {
+
+    const { objectGroupModal, currentUser, setCurrentRowShow, setObjectUserModal } = React.useContext(AuthContext);
+    const { users } = React.useContext(AppContext);
 
     useEffect(() => {
-        console.log('objectGroupModal has been change!');
-    }, [objectGroupModal]);
+        console.log('authorization: ',users);
+    },[users]);
 
-    const getUserById = (idUser) => {
-        var userData = null;
+    const getUserById = useCallback((idUser) => {
         for(let i=0; i<users.length; i++) {
-            if(users[i].id === idUser)
-            {
-                userData = users[i];
-                break;
+            if(users[i].id === idUser){
+                return users[i];
             }
         }
-        return userData;
-    }
+        return null;
+    },[users]);
 
     const onClickMember = (idMemberSelected) => {
         $(".btn-close").click();
@@ -116,10 +117,10 @@ export default memo(function Authorization({ objectGroupModal, setObjectUserModa
                         objectGroupModal.listMember.map((id) => {
                             return <div className="d-flex border rounded p-3 my-1" style={{ backgroundColor: '#d3f5c4' }} key={Math.random()}>
                                         <div className='d-flex align-items-center needCursor' onClick={() => onClickMember(id)} data-bs-toggle="modal" data-bs-target="#ManagerUserModal">
-                                            <img src={getUserById(id).photoURL} alt="photoURL" width='45' height='45' className='rounded-circle border' />
+                                            <img src={getUserById(id) && getUserById(id).photoURL} alt="photoURL" width='45' height='45' className='rounded-circle border' />
                                         </div>
                                         <div className='px-1 flex-fill'>
-                                            <span className='fw-bold'>{getUserById(id).fullName}</span>
+                                            <span className='fw-bold'>{getUserById(id) && getUserById(id).fullName}</span>
                                             <br />
                                             <span>{objectGroupModal.owner === id ? "Nhóm trưởng" : "Thành viên"}</span>
                                         </div>

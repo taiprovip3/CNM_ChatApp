@@ -23,7 +23,7 @@ import $ from 'jquery';
 import { AppContext } from '../../provider/AppProvider';
 
 export default memo(function RowChat() {
-    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL, theme }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
+    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
     const { rooms, friends, docsFriendMessages, docsRoomMessages } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = React.useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = React.useState('');
@@ -35,7 +35,11 @@ export default memo(function RowChat() {
         if(rooms.length >0 || friends.length >0 ) {
             if(selectedCategory === "ALL") {
                 let tempArray = [];
-                rooms.forEach((o) => { tempArray.push(o); })
+                rooms.forEach((o,i) => { 
+                    if(rooms[i].listMember.includes(id)) {
+                        tempArray.push(o);
+                    }
+                })
                 friends.forEach((o) => { tempArray.push(o); });
                 setRoomsAndFriends(tempArray);
             } else {

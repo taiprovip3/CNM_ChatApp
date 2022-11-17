@@ -28,7 +28,7 @@ import Peer from 'simple-peer';
 
 export default memo(function ChatFriend({ selectedFriend, idRoomOfSelectedFriendAndYou }) {
 //Khởi tạo biến
-  const { currentUser, currentUser: { fullName, id, photoURL, socket_id }, socket, setObjectUserModal, setBundleShareMessageModal, setBundleDetailMessageModal, setSelectedFriend } = React.useContext(AuthContext);
+  const { currentUser, currentUser: { fullName, id, photoURL, socket_id, theme }, socket, setObjectUserModal, setBundleShareMessageModal, setBundleDetailMessageModal, setSelectedFriend } = React.useContext(AuthContext);
   const { docsFriendMessages } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
@@ -230,9 +230,9 @@ useEffect(() => {
         <div id='chatContent' className='flex-fill' style={{overflow: 'scroll'}}>
             
             <div className='border bg-white w-50 mt-5 mx-auto rounded p-3 text-center'>
-                <span className='fs-2 fw-bold'>{selectedFriend.fullName}</span>
+                <span className={theme === "dark" ? 'fs-2 fw-bold text-dark' : 'fs-2 fw-bold'}>{selectedFriend.fullName}</span>
                 <br />
-                <span>{selectedFriend.slogan}</span>
+                <span className={theme === "dark" ? 'text-dark' : ''}>{selectedFriend.slogan}</span>
                 <div className='d-flex flex-wrap justify-content-center'>
                 </div>
                 <hr />

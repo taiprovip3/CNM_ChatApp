@@ -7,8 +7,13 @@ import { arrayRemove, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../../firebase';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import $ from 'jquery';
+import { AuthContext } from '../../provider/AuthProvider';
+import { AppContext } from '../../provider/AppProvider';
 
-export default memo(function Update({ objectGroupModal, users, currentUser, setCurrentRowShow, setShowGroupModalComponent }) {
+export default memo(function Update({ setShowGroupModalComponent }) {
+
+    const { objectGroupModal, currentUser, setCurrentRowShow } = React.useContext(AuthContext);
+    const { users } = React.useContext(AppContext);
 
     const awaitHandleUploadPhotoURL = async (editRoomUrlImage, oldPath, currentPath) => {
         let link;

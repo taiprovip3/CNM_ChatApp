@@ -243,9 +243,9 @@ const formatMessageHaveIcon = useCallback((msg) =>{
         <div id='chatContent' className='flex-fill' style={{overflow: 'scroll'}}>
             
             <div className='border bg-white w-50 mt-5 mx-auto rounded p-3 text-center'>
-                <span className='fs-2 fw-bold'>{selectedMyRoom.name}</span>
+                <span className={theme === "dark" ? 'fs-2 fw-bold text-dark' : 'fs-2 fw-bold'}>{selectedMyRoom.name}</span>
                 <br />
-                <span>{selectedMyRoom.description}</span>
+                <span className={theme === "dark" ? 'text-dark' : ''}>{selectedMyRoom.description}</span>
                 <div className='d-flex flex-wrap justify-content-center'>
                 {
                   selectedMyRoom.listMember.map((o) => {

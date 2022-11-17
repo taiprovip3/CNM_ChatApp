@@ -1,3 +1,4 @@
+/* eslint-disable array-callback-return */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import { doc, getDoc } from 'firebase/firestore';
@@ -32,7 +33,7 @@ export default memo(function ListRoom() {
   },[]);
 
   useEffect(() => {
-    convertListRoom(rooms);
+    convertListRoom(rooms.filter(val => val.listMember.includes(id) && val));
   },[rooms]);
 
   return (
