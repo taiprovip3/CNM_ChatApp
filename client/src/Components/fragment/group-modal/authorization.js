@@ -14,6 +14,7 @@ import { BsThreeDots } from 'react-icons/bs';
 import $ from 'jquery';
 
 export default memo(function Authorization({ objectGroupModal, setObjectUserModal, users, currentUser, setCurrentRowShow, setShowGroupModalComponent }) {
+    console.log('Authorization rerendered!');
 
     useEffect(() => {
         console.log('objectGroupModal has been change!');
@@ -113,10 +114,10 @@ export default memo(function Authorization({ objectGroupModal, setObjectUserModa
                 </div>
                     {
                         objectGroupModal.listMember.map((id) => {
-                            return <div className="d-flex border rounded p-3 my-1" style={{ backgroundColor: '#d3f5c4' }} key={id}>
+                            return <div className="d-flex border rounded p-3 my-1" style={{ backgroundColor: '#d3f5c4' }} key={Math.random()}>
                                         <div className='d-flex align-items-center needCursor' onClick={() => onClickMember(id)} data-bs-toggle="modal" data-bs-target="#ManagerUserModal">
                                             <img src={getUserById(id).photoURL} alt="photoURL" width='45' height='45' className='rounded-circle border' />
-                                            </div>
+                                        </div>
                                         <div className='px-1 flex-fill'>
                                             <span className='fw-bold'>{getUserById(id).fullName}</span>
                                             <br />

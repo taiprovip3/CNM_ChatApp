@@ -10,7 +10,7 @@ import { RiEmotionSadFill } from 'react-icons/ri';
 
 export default memo(function ListRoom() {
 //Khởi tạo biến
-  const { currentUser: { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } } = React.useContext(AuthContext);
+  const { currentUser: { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber, theme } } = React.useContext(AuthContext);
   const { rooms } = React.useContext(AppContext);
   const [newListRoom, setNewListRoom] = useState([]);
 
@@ -52,14 +52,14 @@ export default memo(function ListRoom() {
                     if(room.listMember.length < 4){
                         return <div className='col-lg-4 bg-white text-center p-3' id='OneRoom' key={Math.random()}>
                             <div id='containerAvatar' className='p-5'>
-                                <img src={room.listMember[0].photoURL} alt="photoURL" width='45' height='45' id='FirstImage' className='rounded-circle' />
-                                <img src={room.listMember[1].photoURL} alt="photoURL" width='45' height='45' id='SecondImage' className='rounded-circle' />
-                                <img src={room.listMember[2].photoURL} alt="photoURL" width='45' height='45' id='ThirdImage' className='rounded-circle' />
+                                <img src={room.listMember.length < 2 ? "https://res.cloudinary.com/dopzctbyo/image/upload/v1649587869/cld-sample.jpg" : room.listMember[0].photoURL} alt="photoURL" width='45' height='45' id='FirstImage' className='rounded-circle' />
+                                <img src={room.listMember.length < 3 ? "https://res.cloudinary.com/dopzctbyo/image/upload/v1649587869/cld-sample.jpg" : room.listMember[1].photoURL} alt="photoURL" width='45' height='45' id='SecondImage' className='rounded-circle' />
+                                <img src={room.listMember.length < 4 ? "https://res.cloudinary.com/dopzctbyo/image/upload/v1649587869/cld-sample.jpg" : room.listMember[2].photoURL} alt="photoURL" width='45' height='45' id='ThirdImage' className='rounded-circle' />
                             </div>
                             <div id='containerText'>
-                                <span className='fw-bold'>{room.name}</span>
+                                <span className={theme === "dark" ? 'fw-bold text-dark' : 'fw-bold'}>{room.name}</span>
                                 <br />
-                                <span>{room.listMember.length} thành viên</span>
+                                <span className={theme === "dark" ? 'text-dark' : ''}>{room.listMember.length} thành viên</span>
                             </div>
                         </div>;
                     } else{
@@ -71,9 +71,9 @@ export default memo(function ListRoom() {
                                 <img src="https://cdn3.iconfinder.com/data/icons/math-numbers-solid/24/ellipsis-solid-512.png" alt="photoURL" width='45' height='45' id='FourImage' className='rounded-circle' />
                             </div>
                             <div id='containerText'>
-                                <span className='fw-bold'>{room.name}</span>
+                                <span className={theme === "dark" ? 'fw-bold text-dark' : 'fw-bold'}>{room.name}</span>
                                 <br />
-                                <span>{room.listMember.length} thành viên</span>
+                                <span className={theme === "dark" ? 'text-dark' : ''}>{room.listMember.length} thành viên</span>
                             </div>
                         </div>;
                     }

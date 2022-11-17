@@ -25,14 +25,14 @@ export default memo(function Info({ setShowGroupModalComponent }) {
     },[]);
 
     //Trợ
-    useEffect(() => {
+    useEffect(() => {   //Lấy user từ mảng idUser
         if(objectGroupModal) {
             Object.assign(tempObjectGroupModal, objectGroupModal);
             const listUser = [];
             for (let index = 0; index < objectGroupModal.listMember.length; index++) {
                 const element = objectGroupModal.listMember[index];
                 for (let index2 = 0; index2 < users.length; index2++) {
-                    const element2 = users[index];
+                    const element2 = users[index2];
                     if(element === element2.id){
                         listUser.push(element2);
                     }

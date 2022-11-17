@@ -6,12 +6,15 @@ import { ImVideoCamera } from 'react-icons/im';
 import { AuthContext } from '../../provider/AuthProvider';
 import $ from 'jquery';
 import Peer from 'simple-peer';
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 export default function FriendVideoCallModal() {
 
   const { socket, currentUser, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus } = React.useContext(AuthContext);
 
   //Biến chung:
+  const [myCameraOK, setMyCameraOK] = useState(true);
   const [myCameraStream, setMyCameraStream] = useState();
   const [actor, setActor] = useState("receiver");
   const [callerPeerData, setCallerPeerData] = useState();
@@ -40,6 +43,7 @@ export default function FriendVideoCallModal() {
           setMyCameraStream(stream);
         } catch (error) {
           console.error(error);
+          setMyCameraOK(false);
         }
       }
       getUserMedia();
@@ -97,6 +101,14 @@ export default function FriendVideoCallModal() {
   },[]);
 
   const handleCallerConfirmCallVideo = useCallback(() => {
+    if(!myCameraOK) {
+      toast.error("Vui lòng kiểm tra thiết bị kết nối camera & micro!");
+      return;
+    }
+    if(!selectedFriend.status) {
+      toast.error("Đối phương hiện đang offline");
+      return;
+    }
     const peer = new Peer({
       initiator: true,
       trickle: false,
@@ -144,7 +156,7 @@ export default function FriendVideoCallModal() {
       userVideo.current.srcObject = stream;
     });
     connectionRef.current = peer;
-  },[currentUser, myCameraStream, receiver, selectedFriend, setCaller, setCallerStatus, setReceiver, socket]);
+  },[currentUser, myCameraOK, myCameraStream, receiver, selectedFriend, setCaller, setCallerStatus, setReceiver, socket]);
   const handleCallerCancelCallVideo = useCallback(() => {
     socket.emit("receiver_await_server_response", {command: "CALLER_CANCEL", receiver});
     isBusyWith.current = "";
@@ -161,6 +173,10 @@ export default function FriendVideoCallModal() {
 
 
   const handleReceiverAnswerCallVideo = useCallback(() => {
+    if(!myCameraOK) {
+      toast.error("Vui lòng kiểm tra thiết bị kết nối camera & micro!");
+      return;
+    }
     setActor("receiver"); //nhận view mới
     setReceiverStatus("ACCEPTED");
     const peer = new Peer({
@@ -180,7 +196,7 @@ export default function FriendVideoCallModal() {
     });
     peer.signal(callerPeerData);
     connectionRef.current = peer;
-  },[caller, callerPeerData, myCameraStream, setReceiverStatus, socket]);
+  },[caller, callerPeerData, myCameraOK, myCameraStream, setReceiverStatus, socket]);
   const handleReceiverDenyCallVideo = useCallback(() => {
     isBusyWith.current = "";
     setReceiverStatus("NO_RECEIVE");
@@ -198,18 +214,23 @@ export default function FriendVideoCallModal() {
 
   const handleCloseFriendVideoCallModal = useCallback(() => {
     if(selectedFriend) {
-      if(actor === "caller") {
+      if(actor === "caller") {//caller
         socket.emit("receiver_await_server_response", {command: "CALLER_CANCEL", receiver: selectedFriend, caller: currentUser});
         isBusyWith.current = "";
         setCallerStatus("NO_CALL");
+      } else {//receiver
+        if(receiverStatus === "ACCEPTED") {
+          socket.emit("caller_await_server_response", {command: "RECEIVER_END", caller: caller});
+        }
       }
     }
     setSelectedFriend(null);
-  },[actor, currentUser, selectedFriend, setCallerStatus, setSelectedFriend, socket]);
+  },[actor, caller, currentUser, receiverStatus, selectedFriend, setCallerStatus, setSelectedFriend, socket]);
 
 
   return (
     <>
+    <ToastContainer theme='colored' />
     <button className='d-none' data-bs-toggle="modal" data-bs-target="#FriendVideoCallModal" id="openFriendVideoCallModal"></button>
     <div className="modal" id="FriendVideoCallModal" tabIndex="-1" role="dialog" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
         <div className="modal-dialog modal-dialog-centered modal-xl">

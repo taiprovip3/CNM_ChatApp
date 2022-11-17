@@ -2,7 +2,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { HiUserGroup } from 'react-icons/hi';
 import { RiEmotionLaughFill, RiImageAddFill, RiInformationFill } from 'react-icons/ri';
-import { MdSend, MdWavingHand } from 'react-icons/md';
+import { MdSend, MdWavingHand, MdGroupAdd } from 'react-icons/md';
 import { FaHandSparkles, FaHandsWash, FaRegHandPointRight } from 'react-icons/fa';
 import { GiHand } from 'react-icons/gi';
 import { BiDotsVertical } from 'react-icons/bi';
@@ -25,7 +25,7 @@ import $ from 'jquery';
 
 export default memo(function ChatRoom({ selectedRoom, setSelectedObject }) {
 //Khởi tạo biến
-  const { setObjectGroupModal, currentUser: { fullName, id, photoURL }, socket, setBundleShareMessageModal, setBundleDetailMessageModal } = React.useContext(AuthContext);
+  const { setObjectGroupModal, currentUser: { fullName, id, photoURL, theme }, socket, setBundleShareMessageModal, setBundleDetailMessageModal } = React.useContext(AuthContext);
   const { rooms } = React.useContext(AppContext);
   const [currentMessage, setCurrentMessage] = useState('');
   const [listObjectMessage, setListObjectMessage] = useState([]);
@@ -235,6 +235,9 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                 <br />
                 <span className='small'><HiUserGroup /> {selectedMyRoom.listMember.length} thành viên</span>
             </div>
+            <div className='d-flex justify-content-center align-items-center mx-1 rounded-circle p-1' style={{ boxShadow: 'rgba(136, 165, 191, 0.48) 6px 2px 16px 0px, rgba(255, 255, 255, 0.8) -6px -2px 16px 0px' }}>
+                <MdGroupAdd className='fs-1 needCursor' />
+            </div>
         </div>
 
         <div id='chatContent' className='flex-fill' style={{overflow: 'scroll'}}>
@@ -298,14 +301,14 @@ const formatMessageHaveIcon = useCallback((msg) =>{
                             <div>
                                 <img src={objectMessage.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
                             </div>
-                            <div className='bg-white rounded p-2 mx-1'>
+                            <div className='bg-white rounded p-2 mx-1 border rounded'>
                                 <span className='text-muted small'>{objectMessage.nameSender}</span>
                                 <br />
                                 {
                                   objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
                                   <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
                                   :
-                                  <span className='fw-bold'>{objectMessage.msg}</span>
+                                  <span className={theme === "dark" ? 'fw-bold text-dark' : 'fw-bold'}>{objectMessage.msg}</span>
                                 }
                                 <br />
                                 <span className='text-muted small'>{objectMessage.time}</span>
