@@ -23,7 +23,8 @@ import $ from 'jquery';
 import { AppContext } from '../../provider/AppProvider';
 
 export default memo(function RowChat() {
-    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
+    console.log('RowChatRerender !');
+    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal, matchRoomToken, setMathRoomToken } = React.useContext(AuthContext);
     const { rooms, friends, docsFriendMessages, docsRoomMessages } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = React.useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = React.useState('');
@@ -49,34 +50,45 @@ export default memo(function RowChat() {
                     setRoomsAndFriends(friends);
             }
         }
-    },[rooms, friends, selectedCategory]);
+    },[friends, id, rooms, selectedCategory]);
     let roomAndFriendToDisplay = roomsAndfriends;
+
     const handleTextSearch = useCallback((e) => {
         setTextSearch(e.target.value);
     },[]);
-    if(textSearch.length >= 9) {//nếu tìm bạn và là tìm sdt
-        if(textSearch.match(/\d/g)) {//và match toàn số
-            roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
-                if( !val.type )
-                    if(val.phoneNumber.includes(textSearch))
-                        return val;
-            });
+    if(textSearch !== " ") {//nếu tìm bạn và là tìm sdt
+        roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
+            if( ((!val.type) && (val.phoneNumber.includes(textSearch))) || ((val.type) && (val.name.toLowerCase().includes(textSearch.toLowerCase()))) || ((!val.type) && (val.fullName.toLowerCase().includes(textSearch.toLowerCase()))) ) {
+                return val;
+            }
+        });
+        for (let index = 0; index < rooms.length; index++) {
+            const room = rooms[index];
+            if(room.id === textSearch) {
+                console.log("match a token");
+                setMathRoomToken(room);
+            }
         }
-    } else{
-        if(textSearch !== "") {
-            roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
-                if( val.type ) {//nếu obj là phòng thì lọc textSearch theo name room
-                    if(val.name.toLowerCase().includes(textSearch.toLowerCase())) {
-                        return val;
-                    }
-                } else {//nếu obj là friend thì lọc textSearch theo fullName user
-                    if(val.fullName.toLowerCase().includes(textSearch.toLowerCase())) {
-                        return val;
-                    }
-                }
-            });
-        }
+        // if(textSearch.match(/\d/g)) {//và match toàn số
+        //     roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
+        //         if( !val.type )
+        //             if(val.phoneNumber.includes(textSearch))
+        //                 return val;
+        //     });
+        // } else{
+        //     roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
+        //         if( val.type ) {//nếu obj là phòng thì lọc textSearch theo name room
+        //             if(val.name.toLowerCase().includes(textSearch.toLowerCase())) {
+        //                 return val;
+        //             }
+        //         } else {//nếu obj là friend thì lọc textSearch theo fullName user
+        //             if(val.fullName.toLowerCase().includes(textSearch.toLowerCase())) {
+        //                 return val;
+        //             }
+        //         }
+        //     });
     }
+
     React.useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
         if(selectedObject){ //Nếu rooms trên firebase bị thay đổi thì ai đang selectedObject room
             //GetRoom mới bằng id room cũ

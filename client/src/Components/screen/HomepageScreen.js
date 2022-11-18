@@ -18,6 +18,7 @@ import { IoIosImages } from 'react-icons/io';
 import { CgClose } from 'react-icons/cg';
 import { HiSearch, HiOutlineUserGroup,HiExternalLink } from 'react-icons/hi';
 import { IoPersonAddSharp } from 'react-icons/io5';
+import { AiFillQuestionCircle } from 'react-icons/ai';
 import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../firebase';
 import moment from 'moment';
@@ -43,8 +44,12 @@ import GetDocsRoomMessages from '../service/firebase/GetDocsRoomMessages';
 import FirebaseGetRealtimeUser from '../service/FirebaseGetRealtimeUser';
 import FriendVideoCallModal from '../fragment/modal/FriendVideoCallModal';
 import RoomInviteFriendModal from '../fragment/modal/RoomInviteFriendModal';
+import * as bootstrap from 'bootstrap';
 
 export default function HomepageScreen() {
+//Javascript
+const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 //Khai báo biến
   var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus } = React.useContext(AuthContext);
   const { progress,setProgress, users,setUsers, rooms,setRooms, friends,setFriends, docFriendRequests,setDocFriendRequests, docsFriendMessages,setDocsFriendMessages, roomsUser,setRoomsUser, docsRoomMessages,setDocsRoomMessages, isLoadUsers,setIsLoadUsers, isLoadRooms,setIsLoadRooms, isLoadUserFriends,setIsLoadUserFriends, isLoadFriendRequest,setIsLoadFriendRequest, isLoadDocsFriendMessages,setIsLoadDocsFriendMessages, isLoadRoomsUser,setIsLoadRoomsUser, isLoadDocsRoomMessages,setIsLoadDocsRoomMessages, progressPercent, setProgressPercent } = React.useContext(AppContext);
@@ -370,6 +375,10 @@ if(textSearchStranger.length >= 9) {
             setDoc(UsersRef, { theme: currentUser.theme === "light" ? "dark" : "light" }, { merge: true });
         }
     },[currentUser]);
+    const onChangeIsPrivate = useCallback(() => {
+        const UsersRef = doc(database, "Users", currentUser.id);
+        setDoc(UsersRef, { isPrivate: !currentUser.isPrivate}, { merge: true });
+    },[currentUser]);
   
 //Render giao diện
   return(
@@ -614,11 +623,23 @@ if(textSearchStranger.length >= 9) {
                                         <div className="form-check form-switch w-100">
                                             {
                                                 currentUser.theme === "light" ?
-                                                <input className="form-check-input" type="checkbox" id="mySwitch" name="darkmode" value="yes" onChange={() => onChangeColoredTheme()} /> :
-                                                <input className="form-check-input" type="checkbox" id="mySwitch" name="darkmode" value="yes" onChange={() => onChangeColoredTheme()} defaultChecked />
+                                                <input className="form-check-input" type="checkbox" id="myTheme" name="lightmode" value="yes" onChange={() => onChangeColoredTheme()} /> :
+                                                <input className="form-check-input" type="checkbox" id="myTheme" name="darkmode" value="yes" onChange={() => onChangeColoredTheme()} defaultChecked />
                                             }
-                                            <label className="form-check-label" htmlFor="mySwitch">Dark Mode</label>
+                                            <label className="form-check-label" htmlFor="myTheme">Dark Mode</label>
                                         </div>
+                                    </div>
+                                    <div className="d-flex">
+                                        <div className='text-muted w-100'>Chế độ riêng tư</div>
+                                        <div className="form-check form-switch w-100">
+                                            {
+                                                currentUser.isPrivate ?
+                                                <input className="form-check-input" type="checkbox" id="myPrivate" name="public" value="yes" onChange={() => onChangeIsPrivate()} /> :
+                                                <input className="form-check-input" type="checkbox" id="myPrivate" name="private" value="yes" onChange={() => onChangeIsPrivate()} defaultChecked />
+                                            }
+                                            <label className="form-check-label flex-fill" htmlFor="myPrivate">Công khai</label>
+                                        </div>
+                                        <div data-bs-toggle="popover" title="Mặc định là `Public`" data-bs-content="Public - tự động ý khi bạn bè của bạn thêm / xóa, tag.. bạn vào các hội thoại chat. Private - trái ngược với public, các tác vụ thêm, xóa, tag được chuyển thành lời mời hoặc thông báo đến bạn để duyệt trước."><AiFillQuestionCircle className='text-primary lead' data-bs-toggle="tooltip" title="Nhấp giải thích" /></div>
                                     </div>
                             </div>
                         </div>

@@ -28,6 +28,8 @@ export const AuthProvider = ({ children }) => {
 
     const [selectedRoom, setSelectedRoom] = useState(null);
 
+    const [matchRoomToken, setMathRoomToken] = useState(null);
+
     useEffect(() => {
         setSocket(io.connect("http://localhost:4000", { transports: ['websocket', 'polling', 'flashsocket'] }));
     },[]);
@@ -44,7 +46,7 @@ export const AuthProvider = ({ children }) => {
     },[currentRowShow, stopSlider]);
 
     return (
-      <AuthContext.Provider value={{ selectedRoom, setSelectedRoom, objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, setSocket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, bundleShareMessageModal, setBundleShareMessageModal, bundleDetailMessageModal, setBundleDetailMessageModal, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus }}>
+      <AuthContext.Provider value={{ matchRoomToken, setMathRoomToken, selectedRoom, setSelectedRoom, objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, setSocket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, bundleShareMessageModal, setBundleShareMessageModal, bundleDetailMessageModal, setBundleDetailMessageModal, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus }}>
         {children}
       </AuthContext.Provider>
     )
