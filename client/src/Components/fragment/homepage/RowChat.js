@@ -21,17 +21,33 @@ import ChatRoom from '../../fragment/row-chat/ChatRoom';
 import ChatFriend from '../../fragment/row-chat/ChatFriend';
 import $ from 'jquery';
 import { AppContext } from '../../provider/AppProvider';
+import TokenJoinRoomModal from '../modal/TokenJoinRoomModal';
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 export default memo(function RowChat() {
-    console.log('RowChatRerender !');
-    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal, matchRoomToken, setMathRoomToken } = React.useContext(AuthContext);
+    const { myIndex, intervalRef, stopSlider, socket, currentUser, currentUser: { id, photoURL }, setCurrentRowShow, setObjectGroupModal } = React.useContext(AuthContext);
     const { rooms, friends, docsFriendMessages, docsRoomMessages } = React.useContext(AppContext);
     const [selectedObject, setSelectedObject] = React.useState(null);
     const [idRoomIfClickChatToOneFriend, setIdRoomIfClickChatToOneFriend] = React.useState('');
     const [selectedCategory, setSelectedCategory] = React.useState("ALL");
     const [roomsAndfriends, setRoomsAndFriends] = React.useState([]);
     const [textSearch, setTextSearch] = React.useState("");
+    const [matchRoomToken, setMathRoomToken] = React.useState(null);
 
+    React.useEffect(() => {
+        if(textSearch !== "" && rooms) {
+            for (let index = 0; index < rooms.length; index++) {
+                const room = rooms[index];
+                if(room.id === textSearch) {
+                    toast.success("Đã tìm thấy phòng");
+                    setMathRoomToken(room);
+                } else {
+                    setMathRoomToken(null);
+                }
+            }
+        }
+    },[rooms, textSearch]);
     React.useEffect(() => {//vừa lắng nge data rooms hoặc friends trên firebase thay đổi vừa lắng nge category
         if(rooms.length >0 || friends.length >0 ) {
             if(selectedCategory === "ALL") {
@@ -62,31 +78,6 @@ export default memo(function RowChat() {
                 return val;
             }
         });
-        for (let index = 0; index < rooms.length; index++) {
-            const room = rooms[index];
-            if(room.id === textSearch) {
-                console.log("match a token");
-                setMathRoomToken(room);
-            }
-        }
-        // if(textSearch.match(/\d/g)) {//và match toàn số
-        //     roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
-        //         if( !val.type )
-        //             if(val.phoneNumber.includes(textSearch))
-        //                 return val;
-        //     });
-        // } else{
-        //     roomAndFriendToDisplay = roomsAndfriends.filter((val) => {
-        //         if( val.type ) {//nếu obj là phòng thì lọc textSearch theo name room
-        //             if(val.name.toLowerCase().includes(textSearch.toLowerCase())) {
-        //                 return val;
-        //             }
-        //         } else {//nếu obj là friend thì lọc textSearch theo fullName user
-        //             if(val.fullName.toLowerCase().includes(textSearch.toLowerCase())) {
-        //                 return val;
-        //             }
-        //         }
-        //     });
     }
 
     React.useEffect(() => {//Khi list room trên firebase đc cập nhật sẽ làm cho RowChat này bị rerender
@@ -187,6 +178,7 @@ export default memo(function RowChat() {
 
     return (
         <div className="row"id="row-chat">
+            <ToastContainer theme='dark' />
 
 
             <div className='col-lg-1 bg-primary' id='divA'>
@@ -280,6 +272,7 @@ export default memo(function RowChat() {
             </div>
 
 
+            <TokenJoinRoomModal room={matchRoomToken} />
         </div>
   );
 });
