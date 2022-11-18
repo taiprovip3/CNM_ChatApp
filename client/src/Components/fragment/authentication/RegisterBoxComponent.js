@@ -62,7 +62,8 @@ export default function RegisterBoxComponent() {
           keywords: GenerateKeyWords(displayName),
           theme: "light",
           status: false,
-          lastOnline: currentTime
+          lastOnline: currentTime,
+          isPrivate: false
         }
         setDoc(doc(database, 'Users', uid), user);
         setTimeout(() => {

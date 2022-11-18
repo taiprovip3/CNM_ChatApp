@@ -13,7 +13,19 @@ import { AppContext } from '../../provider/AppProvider';
 export default memo(function Update({ setShowGroupModalComponent }) {
 
     const { objectGroupModal, currentUser, setCurrentRowShow } = React.useContext(AuthContext);
-    const { users } = React.useContext(AppContext);
+    const { users, rooms } = React.useContext(AppContext);
+
+    //Trợ
+    useEffect(() => {//useEffect đóng modal member khi thằng đó bị kick khỏi nhóm trong khi đang mở modal
+        for (let index = 0; index < rooms.length; index++) {
+            const room = rooms[index];
+            if(room.id === objectGroupModal.id) {
+                if(! room.listMember.includes(currentUser.id) ) {
+                    $(".btn-close").click();
+                }
+            }
+        }
+    },[currentUser, objectGroupModal, rooms]);
 
     const awaitHandleUploadPhotoURL = async (editRoomUrlImage, oldPath, currentPath) => {
         let link;

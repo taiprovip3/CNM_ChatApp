@@ -18,13 +18,23 @@ export default memo(function Info({ setShowGroupModalComponent }) {
     //Biến
     const [listUserInRoom, setListUserInRoom] = useState([]);
     const { socket, objectGroupModal, setObjectGroupModal, currentUser } = React.useContext(AuthContext);
-    const { users } = React.useContext(AppContext);
+    const { users, rooms } = React.useContext(AppContext);
 
     let tempObjectGroupModal = useMemo(() => {
         return {createAt: 'November 5th 2022, 04:54:47 pm', description: 'Bắt đầu chia sẽ các câu chuyện thú vị cùng nhau', id: 'mjywna2m2mg', listMember: [], name: 'Phòng Anh Văn', owner: 'rGXgMCmbPuaP4FEQ9v087qVw1ZI2', type: 'group', urlImage: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg'}
     },[]);
 
     //Trợ
+    useEffect(() => {//useEffect đóng modal member khi thằng đó bị kick khỏi nhóm trong khi đang mở modal
+        for (let index = 0; index < rooms.length; index++) {
+            const room = rooms[index];
+            if(room.id === objectGroupModal.id) {
+                if(! room.listMember.includes(currentUser.id) ) {
+                    $(".btn-close").click();
+                }
+            }
+        }
+    },[currentUser, objectGroupModal, rooms]);
     useEffect(() => {   //Lấy user từ mảng idUser
         if(objectGroupModal) {
             Object.assign(tempObjectGroupModal, objectGroupModal);

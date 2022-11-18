@@ -51,8 +51,9 @@ useEffect(() => {//Có 1 useEffect y chang như này bên RowChat.js nó thực 
               break;
             }
           }
-          if(!test)
+          if(!test) {
             setSelectedObject(null);
+          }
         }
       });
 },[id, rooms, selectedRoom, setSelectedObject]);

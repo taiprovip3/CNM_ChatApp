@@ -1,19 +1,23 @@
 /* eslint-disable array-callback-return */
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
-import { doc, getDoc } from 'firebase/firestore';
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
+import React, { memo, useCallback, useState } from 'react';
 import { database } from '../../../firebase';
 import { AuthContext } from '../../provider/AuthProvider';
 import "../../css/ListRoom.css";
 import { AppContext } from '../../provider/AppProvider';
 import { RiEmotionSadFill } from 'react-icons/ri';
+import FirebaseGetRoomRequests from '../../service/FirebaseGetRoomRequests';
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
+import moment from 'moment';
 
 export default memo(function ListRoom() {
-//Khởi tạo biến
-  const { currentUser: { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber, theme } } = React.useContext(AuthContext);
+
+  const { currentUser: { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber, theme }, setCurrentRowShow } = React.useContext(AuthContext);
   const { rooms } = React.useContext(AppContext);
   const [newListRoom, setNewListRoom] = useState([]);
+  const [listRoomPendingInvite, setListRoomPendingInvite] = useState([]);
 
   const convertListRoom = useCallback(async (rooms) => {
     const arrayRooms = [];
@@ -31,14 +35,103 @@ export default memo(function ListRoom() {
     }
     setNewListRoom(arrayRooms);
   },[]);
-
-  useEffect(() => {
+  React.useEffect(() => {
     convertListRoom(rooms.filter(val => val.listMember.includes(id) && val));
+  },[convertListRoom, id, rooms]);
+
+
+  const getRoomById = useCallback((idRoom) => {
+    for (let index = 0; index < rooms.length; index++) {
+        const element = rooms[index];
+        if(element.id === idRoom) {
+            return element;
+        }
+    }
+    return null;
   },[rooms]);
+  const roomRequests = FirebaseGetRoomRequests(id);//Trả về list idRoom
+  React.useEffect(() => {
+    const listObjectPendingInviteConverted = [];
+    for (let index = 0; index < roomRequests.length; index++) {
+        const element = roomRequests[index];
+        listObjectPendingInviteConverted.push(getRoomById(element));
+    }
+    setListRoomPendingInvite(listObjectPendingInviteConverted);
+  },[getRoomById, roomRequests]);
+  const handleJoinRoom = useCallback(async (idRoom) => {
+    try {
+        await updateDoc(doc(database, "Rooms", idRoom), {
+            listMember: arrayUnion(id)
+        });
+        await updateDoc(doc(database, "RoomRequests", idRoom), {
+            pendingInvites: arrayRemove(id)
+        });
+        await updateDoc(doc(database, "RoomMessages", idRoom), {
+            listObjectMessage: arrayUnion({
+                idSender: id,
+                nameSender: "Thông báo",
+                msg: fullName + " đã tham gia nhóm",
+                time: moment().format('MMMM Do YYYY, h:mm:ss a'),
+                photoURL: photoURL,
+                idMessage: (Math.random() + 1).toString(36).substring(2)
+            })
+        });
+        toast.success("Tham gia nhóm thành công ✔️");
+        setCurrentRowShow("row-chat");
+    } catch (error) {
+        toast.error(error)
+    }
+  },[fullName, id, photoURL, setCurrentRowShow]);
+  const handleEjectInvite = useCallback(async (idRoom) => {
+    try {
+        await updateDoc(doc(database, "RoomRequests", idRoom), {
+            pendingInvites: arrayRemove(id)
+        });
+    } catch (error) {
+        toast.error(error);
+    }
+  },[id]);
 
   return (
     <div className='container h-100 overflow-auto'>
+        <ToastContainer theme='colored' />
         <div className="row">
+            {listRoomPendingInvite.map(room => {
+                    return <div className="col-lg-4 border p-1 text-center" style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', top:0, left:0 }} key={Math.random()}>
+                        <span className='text-decoration-underline fw-bolder'>Lời mời vào nhóm</span>
+                    </div>
+                    <br />
+                    <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='45' height='45' className='rounded-circle' />
+                    <br />
+                    <span>{room.name}</span>
+                    <br />
+                    <span className='text-muted small'>{room.description}</span>
+                    <br />
+                    <span>{room.listMember.length} Thành viên</span>
+                    <div className="d-flex">
+                        <button className="btn btn-link w-100" onClick={() => handleJoinRoom(room.id)}>Tham gia</button>
+                        <button className="btn btn-link w-100" onClick={() => handleEjectInvite(room.id)}>Từ chối</button>
+                    </div>
+                </div>
+                })}
+            {/* <div className="col-lg-4 border p-1 text-center" style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', top:0, left:0 }}>
+                    <span className='text-decoration-underline fw-bolder'>Lời mời vào nhóm</span>
+                </div>
+                <br />
+                <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='45' height='45' className='rounded-circle' />
+                <br />
+                <span>My First Room</span>
+                <br />
+                <span className='text-muted small'>Bắt đầu chia sẽ các câu chuyện thú vị cùng nhau</span>
+                <br />
+                <span>3 Thành viên</span>
+                <div className="d-flex">
+                    <button className="btn btn-link w-100" onClick={handleJoinRoom}>Tham gia</button>
+                    <button className="btn btn-link w-100" onClick={handleEjectInvite}>Từ chối</button>
+                </div>
+            </div> */}
             {
                 (newListRoom.length <= 0) ?
                     <div className='d-flex justify-content-center align-items-center' id="absCenterBox">

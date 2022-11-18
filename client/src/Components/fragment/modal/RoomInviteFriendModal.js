@@ -1,13 +1,9 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
-import React, { useCallback, useState } from 'react';
-import { FaInfoCircle } from 'react-icons/fa';
-import { HiMicrophone } from 'react-icons/hi';
-import { ImVideoCamera } from 'react-icons/im';
+import React, { useCallback } from 'react';
 import { MdPersonSearch } from 'react-icons/md';
 import { AuthContext } from '../../provider/AuthProvider';
 import $ from 'jquery';
-import Peer from 'simple-peer';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { arrayUnion, doc, setDoc, updateDoc } from 'firebase/firestore';
@@ -17,13 +13,13 @@ import { AppContext } from '../../provider/AppProvider';
 export default function RoomInviteFriendModal() {
 
   const { selectedRoom, setSelectedRoom } = React.useContext(AuthContext);
-  const { friends, users } = React.useContext(AppContext);
+  const { friends } = React.useContext(AppContext);
 
-  const [myFriends, setMyFriends] = React.useState([]);
   const myFriendsRef = React.useRef([]);
+  const [myFriends, setMyFriends] = React.useState([]);
+  const [textSearch, setTextSearch] = React.useState("");
 
   React.useEffect(() => {
-    console.log('oraDeska: ', friends);
     if( selectedRoom ) {
         $("#openRoomInviteFriendModal").click();
     } else {
@@ -37,42 +33,88 @@ export default function RoomInviteFriendModal() {
             if( !selectedRoom.listMember.includes(val.id) )
                 arrChk.push({...val, isSelected: false});
         });
-        console.log('s: ', arrChk);
         setMyFriends(arrChk);
         myFriendsRef.current = arrChk;
     }
   },[friends, selectedRoom]);
 
   const onCheckboxChange = (e, aUser) => {
-    if(aUser.isPrivate) {
-        toast.error("Người này đã chặn tất cả lời mời / cuộc gọi, tag...")
-        return;
+    if(e.target.checked && aUser.isPrivate) {
+        toast.info("Người này đã chặn tự động tất cả lời mời / cuộc gọi, tag... Các yêu cầu sẽ chuyển thành lời mời chờ phản hồi!");
     }
     myFriendsRef.current = myFriendsRef.current.map(m => (
         m.id === aUser.id ? {...m, isSelected: e.target.checked} : m
     ));
   };
+
   const handleInviteUsers = async () => {
-    const listIdFriendSelected = [];
+    const listIdFriendSelectedNotPrivate = [];
+    const listIdFriendSelectedAndPrivate = [];
     for(let i=0; i<myFriendsRef.current.length; i++) {
         const element = myFriendsRef.current[i];
         if(element.isSelected) {
-            listIdFriendSelected.push(element.id);
+            if(element.isPrivate) {
+                listIdFriendSelectedAndPrivate.push(element.id);
+            } else {
+                listIdFriendSelectedNotPrivate.push(element.id);
+            }
         }
     }
-    if(listIdFriendSelected.length <= 0) {
+    if(parseInt(listIdFriendSelectedAndPrivate.length) + parseInt(listIdFriendSelectedNotPrivate.length) <= 0 ) {
         toast.error("Vui lòng chọn ít nhất 1 người");
         return;
     }
-    for(let i=0; i<listIdFriendSelected.length; i++) {
-        const element = listIdFriendSelected[i];
+    //Đối với notPrivate
+    for(let i=0; i<listIdFriendSelectedNotPrivate.length; i++) {
+        const element = listIdFriendSelectedNotPrivate[i];
         await updateDoc(doc(database, "Rooms", selectedRoom.id), {
             listMember: arrayUnion(element)
         });
     }
-    toast.success("Thêm thành công ✔️");
+    //Đối với Private
+    try {
+        for(let i=0; i<listIdFriendSelectedAndPrivate.length; i++) {
+            const element = listIdFriendSelectedAndPrivate[i];
+            await updateDoc(doc(database, "RoomRequests", selectedRoom.id), {
+                pendingInvites: arrayUnion(element)
+            });
+        }
+    } catch (error) {
+        console.log(error.code);
+        if(error.code === "not-found") {
+            const pendingInvites = [];
+            for(let i=0; i<listIdFriendSelectedAndPrivate.length; i++) {
+                const element = listIdFriendSelectedAndPrivate[i];
+                pendingInvites.push(element);
+            }
+            await setDoc(doc(database, "RoomRequests", selectedRoom.id), {
+                pendingInvites: pendingInvites
+            });
+        }
+    }
+    toast.success("Thêm / gửi lời mời thành công ✔️");
     setSelectedRoom(null);
   };
+  let myFriendsToDisplay = myFriends;
+  if(textSearch.length >= 9) {//nếu tìm bạn và là tìm sdt
+    if(textSearch.match(/\d/g)) {//và match toàn số
+        myFriendsToDisplay = myFriendsToDisplay.filter((val) => {
+            if(val.phoneNumber.includes(textSearch))
+                return val;
+        });
+    }
+  } else{
+    if(textSearch !== "") {
+        myFriendsToDisplay = myFriendsToDisplay.filter((val) => {
+            if(val.fullName.toLowerCase().includes(textSearch.toLowerCase())) {
+                return val;
+            }
+        });
+    }
+  }
+  const handleSearch = useCallback((e) => {
+    setTextSearch(e.target.value);
+  },[]);
   return (
     <>
     <ToastContainer theme='colored' />
@@ -89,7 +131,7 @@ export default function RoomInviteFriendModal() {
                     {/* div_1 input */}
                     <div className="border p-2 input-group lead">
                         <span className='input-group-text fs-1'><MdPersonSearch /></span>
-                        <input type="text" placeholder='Nhập tên, số điện thoại hoặc địa chỉ email bạn bè' className='form-control p-2' />
+                        <input type="text" placeholder='Nhập tên, số điện thoại hoặc địa chỉ email bạn bè' className='form-control p-2' onChange={handleSearch} />
                     </div>
                     <br />
                     <span className='bg-primary text-white lead fw-bold rounded p-2'>Tất cả</span>
@@ -97,11 +139,16 @@ export default function RoomInviteFriendModal() {
                     {/* div_2 FlatList */}
                     <div className="p-2 overflow-auto" style={{ maxHeight: '50vh' }}>
                         {
-                            myFriends.map(m => {
+                            myFriendsToDisplay.map(m => {
                                 return <div className="p-2 d-flex align-items-center lead border-bottom" id='OneItem' key={Math.random()}>
-                                            <input type="checkbox" value="selectedChoose" className='rounded-circle' name='selectedChoose' id="selectedChoose" onChange={(e) => onCheckboxChange(e,m)} />&ensp;
-                                            <img src={m.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />&ensp;
-                                            <span>{m.fullName}</span>
+                                            {
+                                                m.isSelected ?
+                                                <input type="checkbox" value="selectedChoose" className='rounded-circle' name='selectedChoose' id="selectedChoose" onChange={(e) => onCheckboxChange(e,m)} defaultChecked />
+                                                : <input type="checkbox" value="selectedChoose" className='rounded-circle' name='selectedChoose' id="selectedChoose" onChange={(e) => onCheckboxChange(e,m)} />
+                                            }
+                                            &ensp;
+                                            <img src={m && m.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />&ensp;
+                                            <span>{m && m.fullName}</span>
                                         </div>
                             })
                         }
