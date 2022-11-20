@@ -8,6 +8,7 @@ import AuthenticationScreen from './Components/screen/AuthenticationScreen';
 import WhiteBoxReducerProvider from './Components/provider/WhiteBoxReducerProvider';
 import LoadingScreen from './Components/screen/LoadingScreen';
 import { AppContext, AppProvider } from './Components/provider/AppProvider';
+import TestScreen from './Components/screen/TestScreen';
 
 export default function App() {
 
@@ -19,6 +20,7 @@ export default function App() {
             <Routes>
               <Route exact path="/" element={<AuthenticationScreen />} />
               <Route exact path="/home" element={<HomepageScreen />} />
+              <Route exact path="/test" element={<TestScreen />} />
             </Routes>
           </Router>
           </AppProvider>

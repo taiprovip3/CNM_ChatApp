@@ -60,6 +60,7 @@ export default function TokenJoinRoomModal({ room }) {
                         <span>{room && room.owner}</span><br />
                         <span>Danh sách thành viên:</span><br />
                         {
+                            room &&
                             room.listMember.map(element => {
                               return <span className='d-block' key={Math.random()}>- {element}</span>;
                             })

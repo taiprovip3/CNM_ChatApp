@@ -5,10 +5,12 @@ import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { GoUnverified } from 'react-icons/go';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { database } from '../../../firebase';
+import { auth, database } from '../../../firebase';
 import moment from 'moment';
 import { AuthContext } from '../../provider/AuthProvider';
 import { useNavigate } from 'react-router-dom';
+import GenerateRandomString from '../../service/GenerateRandomString';
+import { createUserWithEmailAndPassword, updateEmail, updatePassword } from 'firebase/auth';
 import GenerateKeyWords from '../../service/GenerateKeyWords';
 
 export default function VerifyOtpBoxComponent() {
@@ -30,14 +32,54 @@ export default function VerifyOtpBoxComponent() {
         }, 2500);
     },[history, setCurrentUser]);
     const registerAccountUser = useCallback((userObject) => {
+        //Tao acc vs randomEmail cho nguoi dung
+        const displayName = 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991);
+        const regEmail = "DESKTOP-EMAIL" + GenerateRandomString() + "@gmail.com";
+        const regPassword = GenerateRandomString();
+        createUserWithEmailAndPassword(auth, regEmail, regPassword)
+            .then((userCredential) => {
+                const user = auth.currentUser;
+                updateEmail(user, regEmail)
+                    .then(() => {
+                        console.log('Update random email & password success, please check your phone number, password');
+                        updatePassword(user, regPassword)
+                            .then(() => {
+                                console.log('Update a random password for user success!');
+                                fetch("http://localhost:4000/SendPasswordToOTP", {
+                                    method: "POST",
+                                    body: JSON.stringify(regPassword),
+                                })
+                                .then((response) => response.json())
+                                .then((result) => {
+                                    if(result.message === "SUCCESS") {
+                                        console.log('Fetching success to server!');
+                                    } else {
+                                        console.log('Something error when fetch to server!');
+                                    }
+                                });
+                            });
+                    });
+            })
+            .catch( (error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                if(errorCode === 'auth/email-already-in-use'){
+                    console.log('error1: ', errorCode + errorMessage);
+                    toast.error('Email này đã bị ai đó đăng ký!');
+                    console.log('Nếu không phải là bạn, hãy chọn Reset Password.');
+                } else{
+                    console.log('error2: ', errorCode + errorMessage);
+                    toast.error(errorMessage);
+                }
+            });
+
         toast.success('Đăng ký tài khoản thành công');
         toast.success('Dịch chuyển bạn đến trang chủ... 👋');
-        const { email, uid, phoneNumber } = userObject;
-        const displayName = 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991);
+        const { uid, phoneNumber } = userObject;
         const currentTime = moment().format('MMMM Do YYYY, h:mm:ss a');
         const user = {
           id: uid,
-          email: email,
+          email: regEmail,
           fullName: displayName,
           age: -1,
           joinDate: currentTime,

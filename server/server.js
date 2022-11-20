@@ -43,13 +43,6 @@ function setUserSocketId(id, socket_id) {
 }
 async function getLastSocketIdUserCallVideo(id) {
     return db.collection("LastUserCallVideo").where("usersocket_id", "==", id).get();
-        // .then((querySnapShot) => {
-        //     querySnapShot.forEach((doc) => {
-        //         console.log('oraL ', doc.data().mysocket_id);
-        //         return doc.data().mysocket_id;
-        //     });
-        //     // return querySnapShot.docs[0].data.mysocket_id;
-        // });
 }
 
 
@@ -57,15 +50,18 @@ async function getLastSocketIdUserCallVideo(id) {
 const accountSid = "AC187d966f20179bb71157e293dcca8cf5";
 const authToken = "320174b19c02094c6676af72e0fc954a";
 const client = require("twilio")(accountSid, authToken);
-// client.messages
-//     .create({
-//         body: 'Hello from Node',
-//         to: '+840338188506',
-//         from: '+19704708385',
-//     })
-//     .then((message) => console.log('message Sid = ', message.sid));
-app.post("/ResetPasswordByOTP", (req, res) => {
-    console.log('ok son!');
+app.post("/SendPasswordToOTP", (req, res) => {
+    const { password } = req.body;
+
+    console.log('password: ', password);
+    // client.messages
+    //     .create({
+    //         body: 'Hello from Node',
+    //         to: '+840338188506',
+    //         from: '+19704708385',
+    //     })
+    //     .then((message) => console.log('message Sid = ', message.sid));
+    return res.send("SUCCESSS");
 });
 
 

@@ -26,33 +26,38 @@ export default function LoginBoxComponent() {
     }, []);
 
     const handleLoginAccountByUsernameAndPassword = useCallback((e) => {
-        signInWithEmailAndPassword(auth, logEmail, logPassword)
-            .then(async (userCredential) => {
-                const { emailVerified } = userCredential.user;
-                if(emailVerified){
-                    const { user: { uid } } = userCredential;
-                    const UsersDocRef = doc(database, "Users", uid);
-                    const UsersDocSnap = await getDoc(UsersDocRef);
-                    setCurrentUser({...UsersDocSnap.data(), status: true});
-                    socket.emit("signIn", {...UsersDocSnap.data(), status: true});
-                    history('/home');
-                } else{
-                    toast.error("Tài khoản này chưa được xác thực");
-                    toast.error("Vui lòng chọn mục `Quên mật khẩu` để tái xác thực");
-                    return;
-                }
-            })
-            .catch( (error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                console.log(errorMessage);
-                if(errorCode === "auth/wrong-password"){
-                    toast.error("Sai mật khẩu");
-                }
-                if(errorCode === "auth/user-not-found"){
-                    toast.error("Tài khoản chưa được đăng ký");
-                }
-            });
+        const regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+        if(regexEmail.test(logEmail)) {//TH dang nhap = email
+            signInWithEmailAndPassword(auth, logEmail, logPassword)
+                .then(async (userCredential) => {
+                    const { emailVerified } = userCredential.user;
+                    if(emailVerified){
+                        const { user: { uid } } = userCredential;
+                        const UsersDocRef = doc(database, "Users", uid);
+                        const UsersDocSnap = await getDoc(UsersDocRef);
+                        setCurrentUser({...UsersDocSnap.data(), status: true});
+                        socket.emit("signIn", {...UsersDocSnap.data(), status: true});
+                        history('/home');
+                    } else{
+                        toast.error("Tài khoản này chưa được xác thực");
+                        toast.error("Vui lòng chọn mục `Quên mật khẩu` để tái xác thực");
+                        return;
+                    }
+                })
+                .catch( (error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.log(errorMessage);
+                    if(errorCode === "auth/wrong-password"){
+                        toast.error("Sai mật khẩu");
+                    }
+                    if(errorCode === "auth/user-not-found"){
+                        toast.error("Tài khoản chưa được đăng ký");
+                    }
+                });
+        } else {
+            
+        }
     }, [history, logEmail, logPassword, setCurrentUser, socket]);
 
     return (
