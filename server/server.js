@@ -1,5 +1,16 @@
 const express = require('express');
 const app = express();
+
+app.use(express.json({
+    type: "*/*"
+}));
+const bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use((req, res, next) =>{
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Headers','Origin, X-Requested-With, Content-Type,Accept, Authortization');  
+    res.setHeader('Acces-Control-Allow-Methods','GET, POST, PATCH, DELETE');
+
 const socket = require('socket.io');
 const server = app.listen(4000, () => {
     console.log('Server is running in 4000...');
@@ -51,17 +62,20 @@ const accountSid = "AC187d966f20179bb71157e293dcca8cf5";
 const authToken = "320174b19c02094c6676af72e0fc954a";
 const client = require("twilio")(accountSid, authToken);
 app.post("/SendPasswordToOTP", (req, res) => {
-    const { password } = req.body;
-
-    console.log('password: ', password);
+    //to: '+840338188506',
+    const { phonenumber, password } = req.body;
     // client.messages
     //     .create({
-    //         body: 'Hello from Node',
-    //         to: '+840338188506',
+    //         body: 'UltimateChat, you registered an account in UChat.Com. Your password is: ' + password,
+    //         to: phonenumber,
     //         from: '+19704708385',
     //     })
     //     .then((message) => console.log('message Sid = ', message.sid));
-    return res.send("SUCCESSS");
+    res.header(
+        "Access-Control-Allow-Origin","http://localhost:*"
+    )
+    res.json( {username: 'Joe'})
+    return res;
 });
 
 

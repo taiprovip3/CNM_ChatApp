@@ -4,28 +4,21 @@ import GenerateRandomString from '../service/GenerateRandomString';
 export default function TestScreen() {
 
   const sendSMS = () => {
-    // let headers = new Headers();
+    let headers = new Headers();
 
-    // headers.append('Content-Type', 'application/json');
-    // headers.append('Accept', 'application/json');
-    // headers.append('Authorization', 'Basic ' + base64.encode(username + ":" +  password));
-    // headers.append('Origin','http://localhost:3000');
-
+    headers.append('Content-Type', 'application/json');
+    headers.append('Accept', 'application/json');
+    headers.append('Origin','http://localhost:3000');
+    headers.append('GET', 'POST', 'OPTIONS');
     const regPassword = GenerateRandomString();
+    console.log('regPassword: ', regPassword);
     fetch("http://localhost:4000/SendPasswordToOTP", {
-        mode: 'no-cors',
+        // mode: 'cors',
+        // credentials: 'include',
         method: "POST",
-        credentials: 'include',
-        body: JSON.stringify(regPassword),
+        body: JSON.stringify({ password: regPassword }),
+        // headers: headers,
     });
-    // .then((response) => response.json())
-    // .then((result) => {
-    //     if(result.message === "SUCCESS") {
-    //         console.log('Fetching success to server!');
-    //     } else {
-    //         console.log('Something error when fetch to server!');
-    //     }
-    // });
   }
 
   return (
