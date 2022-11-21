@@ -1,15 +1,21 @@
 const express = require('express');
 const app = express();
-
 app.use(express.json({
     type: "*/*"
 }));
+const cors = require("cors");
+app.use(cors());
+// app.use(function(req, res, next) {
+//     res.setHeader('Access-Control-Allow-Origin', '*');
+//     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+//     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+//     res.setHeader('Access-Control-Allow-Credentials', true);
+//     next();
+// });
 const bodyParser = require('body-parser');
 app.use(bodyParser.json());
-app.use((req, res, next) =>{
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Headers','Origin, X-Requested-With, Content-Type,Accept, Authortization');  
-    res.setHeader('Acces-Control-Allow-Methods','GET, POST, PATCH, DELETE');
+
+
 
 const socket = require('socket.io');
 const server = app.listen(4000, () => {
@@ -64,18 +70,15 @@ const client = require("twilio")(accountSid, authToken);
 app.post("/SendPasswordToOTP", (req, res) => {
     //to: '+840338188506',
     const { phonenumber, password } = req.body;
-    // client.messages
-    //     .create({
-    //         body: 'UltimateChat, you registered an account in UChat.Com. Your password is: ' + password,
-    //         to: phonenumber,
-    //         from: '+19704708385',
-    //     })
-    //     .then((message) => console.log('message Sid = ', message.sid));
-    res.header(
-        "Access-Control-Allow-Origin","http://localhost:*"
-    )
-    res.json( {username: 'Joe'})
-    return res;
+    client.messages
+        .create({
+            body: 'UltimateChat, you registered an account in UChat.Com. Your password is: ' + password,
+            to: phonenumber,
+            from: '+19704708385',
+        })
+        .then((message) => console.log('message Sid = ', message.sid));
+    // res.json( {username: 'Joe'})
+    return res.sendStatus(200);
 });
 
 

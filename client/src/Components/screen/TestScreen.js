@@ -4,20 +4,17 @@ import GenerateRandomString from '../service/GenerateRandomString';
 export default function TestScreen() {
 
   const sendSMS = () => {
-    let headers = new Headers();
 
-    headers.append('Content-Type', 'application/json');
-    headers.append('Accept', 'application/json');
-    headers.append('Origin','http://localhost:3000');
-    headers.append('GET', 'POST', 'OPTIONS');
     const regPassword = GenerateRandomString();
     console.log('regPassword: ', regPassword);
     fetch("http://localhost:4000/SendPasswordToOTP", {
-        // mode: 'cors',
-        // credentials: 'include',
+        mode: 'cors',
         method: "POST",
         body: JSON.stringify({ password: regPassword }),
-        // headers: headers,
+    })
+    // .then((res) => res.json())
+    .then((data) => {
+      console.log(data.status);
     });
   }
 

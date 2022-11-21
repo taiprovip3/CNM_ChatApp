@@ -10,7 +10,7 @@ import moment from 'moment';
 import { AuthContext } from '../../provider/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import GenerateRandomString from '../../service/GenerateRandomString';
-import { createUserWithEmailAndPassword, updateEmail, updatePassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateEmail, updatePassword, updateProfile } from 'firebase/auth';
 import GenerateKeyWords from '../../service/GenerateKeyWords';
 
 export default function VerifyOtpBoxComponent() {
@@ -33,6 +33,7 @@ export default function VerifyOtpBoxComponent() {
     },[history, setCurrentUser]);
     const registerAccountUser = useCallback((userObject) => {
         //Tao acc vs randomEmail cho nguoi dung
+        const { uid, phoneNumber } = userObject;
         const displayName = 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991);
         const regEmail = "DESKTOP-EMAIL" + GenerateRandomString() + "@gmail.com";
         const regPassword = GenerateRandomString();
@@ -46,13 +47,18 @@ export default function VerifyOtpBoxComponent() {
                             .then(() => {
                                 console.log('Update a random password for user success!');
                                 fetch("http://localhost:4000/SendPasswordToOTP", {
+                                    mode: 'cors',
                                     method: "POST",
-                                    body: JSON.stringify(regPassword),
+                                    body: JSON.stringify({ phonenumber: phoneNumber, password: regPassword })
                                 })
-                                .then((response) => response.json())
-                                .then((result) => {
-                                    if(result.message === "SUCCESS") {
-                                        console.log('Fetching success to server!');
+                                .then((response) => {
+                                    if(response.status === 200) {
+                                        console.log('Send sms success to: ', userCredential);
+                                        updateProfile(auth.currentUser, {
+                                            emailVerified: true
+                                        }).then(() => {
+                                            console.log('Update emailVerified user success');
+                                        });
                                     } else {
                                         console.log('Something error when fetch to server!');
                                     }
@@ -75,7 +81,7 @@ export default function VerifyOtpBoxComponent() {
 
         toast.success('Đăng ký tài khoản thành công');
         toast.success('Dịch chuyển bạn đến trang chủ... 👋');
-        const { uid, phoneNumber } = userObject;
+
         const currentTime = moment().format('MMMM Do YYYY, h:mm:ss a');
         const user = {
           id: uid,

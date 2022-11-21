@@ -1,5 +1,6 @@
+/* eslint-disable no-useless-escape */
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import React, { useCallback, useContext, useState } from 'react';
 import { auth, database } from '../../../firebase';
 import { AuthContext } from '../../provider/AuthProvider';
@@ -25,9 +26,9 @@ export default function LoginBoxComponent() {
       setLogPassword(e.target.value);
     }, []);
 
-    const handleLoginAccountByUsernameAndPassword = useCallback((e) => {
+    const handleLoginAccountByUsernameAndPassword = useCallback(async (e) => {
         const regexEmail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-        if(regexEmail.test(logEmail)) {//TH dang nhap = email
+        if(regexEmail.test(logEmail)) { //TH dang nhap = email
             signInWithEmailAndPassword(auth, logEmail, logPassword)
                 .then(async (userCredential) => {
                     const { emailVerified } = userCredential.user;
@@ -56,7 +57,45 @@ export default function LoginBoxComponent() {
                     }
                 });
         } else {
-            
+            try {
+                const phoneNumner = "+84" + logEmail.substring(1,999);
+                const q = query(collection(database, "Users"), where("phoneNumber", "==", phoneNumner));
+                const querySnapShot = await getDocs(q);
+                const emailUser = querySnapShot.docs[0].data().email;
+                signInWithEmailAndPassword(auth, emailUser, logPassword)
+                .then(async (userCredential) => {
+                    const { emailVerified } = userCredential.user;
+                    if(emailVerified){
+                        const { user: { uid } } = userCredential;
+                        const UsersDocRef = doc(database, "Users", uid);
+                        const UsersDocSnap = await getDoc(UsersDocRef);
+                        setCurrentUser({...UsersDocSnap.data(), status: true});
+                        socket.emit("signIn", {...UsersDocSnap.data(), status: true});
+                        history('/home');
+                    } else{
+                        toast.error("Tài khoản này chưa được xác thực");
+                        toast.error("Vui lòng chọn mục `Quên mật khẩu` để tái xác thực");
+                        return;
+                    }
+                })
+                .catch( (error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    console.log(errorMessage);
+                    if(errorCode === "auth/wrong-password"){
+                        toast.error("Sai mật khẩu");
+                    }
+                    if(errorCode === "auth/user-not-found"){
+                        toast.error("Tài khoản chưa được đăng ký");
+                    }
+                });
+            } catch (error) {
+                console.log(error.code);
+                console.log(error.message);
+                if(error.code === undefined) {
+                    toast.error("Tài khoản / sđt không tồn tại");
+                }
+            }
         }
     }, [history, logEmail, logPassword, setCurrentUser, socket]);
 
