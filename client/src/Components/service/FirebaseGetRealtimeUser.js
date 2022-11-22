@@ -10,8 +10,12 @@ export default function FirebaseGetRealtimeUser(idUser) {
 
   React.useEffect(() => {
     const unsubcriber = onSnapshot(doc(database, "Users", idUser), (document) => {
+      if(document.exists()) {
         console.log('listened: ', document.data());
         setDataUser(document.data());
+      } else {
+        console.log('FirebaseGetRealTimeUser can"t find idUser ');
+      }
     });
     return unsubcriber;
   },[idUser]);

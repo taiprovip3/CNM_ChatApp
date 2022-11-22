@@ -13,7 +13,7 @@ export default function LoginOTPBoxComponent() {
     const [countryCode, setCountryCode] = useState('+84');
 
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setConfirmationToken } = useContext(AuthContext);
+    const { setConfirmationToken, setTemporaryPhoneNumberHolder } = useContext(AuthContext);
 
     const onPhoneNumberChange = useCallback((e) => {
         setPhoneNumber(e.target.value);
@@ -47,8 +47,11 @@ export default function LoginOTPBoxComponent() {
         signInWithPhoneNumber(auth, countryCode + phoneNumber, appVerified)
             .then(confirmationResult => { //Firebase trả về 1 xác thực có chứa OTP, hết hạn sau 30s
                 toast.info('Mã OTP đã gửi đến `'+ phoneNumber + '`');
-                setConfirmationToken(confirmationResult);
-                dispatch("SHOW_VERIFY_OTP_BOX_COMPONENT");
+                setTemporaryPhoneNumberHolder(phoneNumber);
+                setTimeout(() => {
+                    setConfirmationToken(confirmationResult);
+                    dispatch("SHOW_VERIFY_OTP_BOX_COMPONENT");
+                }, 1500);
             })
             .catch(err => {
                 console.log(err);
@@ -57,7 +60,7 @@ export default function LoginOTPBoxComponent() {
             .finally(() => {
                 window.recaptchaVerifier.clear();
             });
-    },[phoneNumber, generateCaptcha, countryCode, setConfirmationToken, dispatch]);
+    },[countryCode, dispatch, generateCaptcha, phoneNumber, setConfirmationToken, setTemporaryPhoneNumberHolder]);
 
     return (
         <>

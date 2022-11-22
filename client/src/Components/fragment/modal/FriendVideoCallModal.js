@@ -10,9 +10,14 @@ import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { doc, setDoc } from 'firebase/firestore';
 import { database } from '../../../firebase';
+import * as bootstrap from 'bootstrap';
 
 export default function FriendVideoCallModal() {
-
+//Javascript popper
+var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'))
+var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+  return new bootstrap.Dropdown(dropdownToggleEl)
+})
   const { socket, currentUser, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus } = React.useContext(AuthContext);
 
   //Biến chung:
@@ -170,11 +175,11 @@ export default function FriendVideoCallModal() {
     connectionRef.current = peer;
   },[currentUser, myCameraOK, myCameraStream, receiver, selectedFriend, setCaller, setCallerStatus, setLastUserSocketId, setReceiver, setSelectedFriend, socket]);
   const handleCallerCancelCallVideo = useCallback(() => {
-    socket.emit("receiver_await_server_response", {command: "CALLER_CANCEL", receiver});
+    socket.emit("receiver_await_server_response", {command: "CALLER_CANCEL", receiver, caller: currentUser});
     isBusyWith.current = "";
     setCallerStatus("NO_CALL");
     //Lưu vết huỷ cuộc gọi
-  },[receiver, setCallerStatus, socket]);
+  },[currentUser, receiver, setCallerStatus, socket]);
   const handleCallerEndCallVideo = useCallback(() => {
     console.log('handleCallerEndCallVideo chạy');
     socket.emit("receiver_await_server_response", {command: "CALLER_END", receiver});
@@ -283,24 +288,31 @@ export default function FriendVideoCallModal() {
                                   </div>
                               </div>
                           : (receiverStatus === "RECEIVING") ?
-                                <div>
-                                    <div>{caller.fullName}</div>
-                                    <div>Đang gọi đến bạn</div>
-                                    <div><button onClick={handleReceiverAnswerCallVideo}>Đồng ý</button></div>
-                                    <div><button onClick={handleReceiverDenyCallVideo}>Từ chối</button></div>
+                                <div className='border d-flex align-items-center justify-content-center text-center w-100'>
+                                    <div>
+                                        <div><img src={receiver && receiver.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' /></div>
+                                        <div className='fw-bold'>{caller.fullName}</div>
+                                        <div>Đang gọi video đến bạn...</div>
+                                        <div className="d-flex">
+                                            <div className='w-100 text-center'><button onClick={handleReceiverAnswerCallVideo} className="btn btn-primary btn-sm">Đồng ý</button></div>
+                                            <div className='w-100 text-center'><button onClick={handleReceiverDenyCallVideo} className="btn btn-outline-secondary btn-sm">Từ chối</button></div>
+                                        </div>
+                                    </div>
                                 </div>
                             : (receiverStatus === "ACCEPTED") ?
-                                <div>
+                                <div className='text-center'>
                                     <div><video playsInline ref={userVideo} autoPlay style={{ width: "100%", height:'100%' }} /></div>
                                     <div>Đã kết nối với</div>
                                     <div>{caller.fullName}</div>
-                                    <div><button onClick={handleReceiverEndCallVideo}>Ngắt kết nối</button></div>
+                                    <div><button onClick={handleReceiverEndCallVideo} className="btn btn-outline-secondary btn-lg">Ngắt kết nối</button></div>
                                 </div>
                               : (receiverStatus === "END") ?
-                                    <div>
-                                        <div>{caller.fullName}</div>
-                                        <div>Đã rời cuộc trò chuyện</div>
-                                        <div><button onClick={() => setReceiverStatus("NO_RECEIVE")}>Xác nhận</button></div>
+                                    <div className='border d-flex align-items-center jutify-content-center text-center'>
+                                        <div>
+                                            <div>{caller.fullName}</div>
+                                            <div>Đã rời cuộc trò chuyện</div>
+                                            <div><button onClick={() => setReceiverStatus("NO_RECEIVE")} className="btn btn-outline-primary btn-lg">Xác nhận</button></div>
+                                        </div>
                                     </div>
                                 : null
                       :
@@ -325,34 +337,45 @@ export default function FriendVideoCallModal() {
                                   </div>
                               </div>
                           : (callerStatus === "CALLING") ?
-                              <div>
-                                  <div>Vui lòng chờ đợi</div>
-                                  <div>{receiver && receiver.fullName} phản hồi</div>
-                                  <div><button onClick={handleCallerCancelCallVideo}>Huỷ gọi</button></div>
+                              <div className='text-center border d-flex align-items-center justify-content-center w-50'>
+                                  <div>
+                                      <div>Vui lòng chờ đợi</div>
+                                      <div><img src={receiver && receiver.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' /></div>
+                                      <div className='fw-bold lead'>{receiver && receiver.fullName}</div>
+                                      <div>phản hồi</div>
+                                      <div><button onClick={handleCallerCancelCallVideo} className="btn btn-outline-danger btn-lg">Huỷ gọi</button></div>
+                                  </div>
                               </div>
                             : (callerStatus === "ACCEPTED") ?
-                                <div>
+                                <div className='text-center'>
                                     <div><video playsInline ref={userVideo} autoPlay style={{ width: "100%", height:'100%' }} /></div>
-                                    <div>{receiver && receiver.fullName} đã đồng ý kết nối</div>
-                                    <div><button onClick={handleCallerEndCallVideo}>Ngắt kết nối</button></div>
+                                    <div>{receiver && receiver.fullName}</div>
+                                    <div>đã đồng ý kết nối</div>
+                                    <div><button onClick={handleCallerEndCallVideo} className="btn btn-outline-secondary btn-lg">Ngắt kết nối</button></div>
                                 </div>
                             : (callerStatus === "DENIED") ?
-                                <div>
-                                    <div>{receiver && receiver.fullName}</div>
-                                    <div>đã từ chối cuộc gọi</div>
-                                    <div><button onClick={() => setCallerStatus("NO_CALL")}>Xác nhận</button></div>
-                                </div>
-                              : (callerStatus === "END") ?
-                                  <div>
-                                      <div>{receiver && receiver.fullName}</div>
-                                      <div>đã rời cuộc trò truyện</div>
-                                      <div><button onClick={() => setCallerStatus("NO_CALL")}>Xác nhận</button></div>
-                                  </div>
-                                : (callerStatus === "BUSY") ?
+                                <div className='border text-center d-flex align-items-center justify-content-center w-50'>
                                     <div>
                                         <div>{receiver && receiver.fullName}</div>
-                                        <div>máy đang bận. Vui lòng gọi lại sau!</div>
-                                        <div><button onClick={() => setCallerStatus("NO_CALL")}>Xác nhận</button></div>
+                                        <div>đã từ chối cuộc gọi</div>
+                                        <div><button onClick={() => setCallerStatus("NO_CALL")} className="btn btn-outline-primary btn-lg">Xác nhận</button></div>
+                                    </div>
+                                </div>
+                              : (callerStatus === "END") ?
+                                  <div className='text-center border d-flex justify-content-center align-items-center w-50'>
+                                      <div>
+                                          <div>{receiver && receiver.fullName}</div>
+                                          <div>đã rời cuộc trò truyện</div>
+                                          <div><button onClick={() => setCallerStatus("NO_CALL")} className="btn btn-outline-secondary btn-lg">Xác nhận</button></div>
+                                      </div>
+                                  </div>
+                                : (callerStatus === "BUSY") ?
+                                    <div className='border d-flex align-items-center justify-content-center text-center'>
+                                        <div>
+                                            <div>{receiver && receiver.fullName}</div>
+                                            <div>máy đang bận. Vui lòng gọi lại sau!</div>
+                                            <div><button onClick={() => setCallerStatus("NO_CALL")} className="btn btn-outline-primary btn-lg">Xác nhận</button></div>
+                                        </div>
                                     </div>
                                   : null
                     }

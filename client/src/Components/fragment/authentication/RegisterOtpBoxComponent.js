@@ -4,8 +4,9 @@ import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { WhiteBoxReducerContext } from '../../provider/WhiteBoxReducerProvider';
 import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
-import { auth } from '../../../firebase';
+import { auth, database } from '../../../firebase';
 import { AuthContext } from '../../provider/AuthProvider';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 
 export default function RegisterOtpBoxComponent() {
 
@@ -13,7 +14,7 @@ export default function RegisterOtpBoxComponent() {
     const [regPhoneNumber, setRegPhoneNumber] = useState('');
     const [countryCode, setCountryCode] = useState('+84');
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { setConfirmationToken } = useContext(AuthContext);
+    const { setConfirmationToken, setTemporaryPhoneNumberHolder } = useContext(AuthContext);
 
     //Hàm
     const onRegPhoneNumberChange = useCallback((e) => {
@@ -37,28 +38,50 @@ export default function RegisterOtpBoxComponent() {
             }
         }, auth);
     },[]);
-    const handleRegisterAccountByPhoneNumberProvider = useCallback(() => {
+    const handleRegisterAccountByPhoneNumberProvider = useCallback(async () => {
         if(regPhoneNumber === "" || regPhoneNumber === undefined) {
-          toast.error('Vui lòng nhập số điện thoại');
+          toast.error('Vui lòng nhập số điện thoại!');
           return;
         }
-            generateCaptcha();
-            let appVerified = window.recaptchaVerifier; //appVerified -> con window đã recaptcha thành công
-            signInWithPhoneNumber(auth, countryCode + regPhoneNumber, appVerified)
-                .then(confirmationResult => { //Firebase trả về 1 xác thực có chứa OTP, hết hạn sau 30s
-                    toast.info('Mã OTP đã gửi đến `'+ regPhoneNumber + '`');
-                    toast.info('Hết hạn sau 30s...');
-                    setConfirmationToken(confirmationResult);
-                    dispatch("SHOW_VERIFY_OTP_BOX_COMPONENT");
-                })
-                .catch(err => {
-                    console.log(err);
-                    toast.error(err.message);
-                })
-                .finally(() => {
-                    window.recaptchaVerifier.clear();
-                });
-    }, [countryCode, dispatch, generateCaptcha, regPhoneNumber, setConfirmationToken]);
+        var regexPhoneNumber = /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/;
+        if(!regexPhoneNumber.test(regPhoneNumber)) {
+            toast.error('Định dạng sđt chưa đúng!');
+            return;
+        }
+        try {//nếu bypass 2 if trên -> rơi vao khối trycatch
+            const q = query(collection(database, "Users"), where("phoneNumber", "==", regPhoneNumber));
+            const querySnapShot = await getDocs(q);
+            const userData = querySnapShot.docs[0].data();
+            if(userData) {
+                toast.error("SĐT đã có người sử dụng!");
+                return;
+            }
+        } catch (error) {
+            console.log(error.code);
+                console.log(error.message);
+                if(error.code === undefined) {
+                    console.log('Có thể đăng ký tài khoản này!');
+                    generateCaptcha();
+                    let appVerified = window.recaptchaVerifier; //appVerified -> con window đã recaptcha thành công
+                    signInWithPhoneNumber(auth, countryCode + regPhoneNumber, appVerified)
+                        .then(confirmationResult => { //Firebase trả về 1 xác thực có chứa OTP, hết hạn sau 30s
+                            setTemporaryPhoneNumberHolder(regPhoneNumber);
+                            toast.info('Mã OTP đã gửi đến `'+ regPhoneNumber + '`');
+                            setTimeout(() => {
+                                setConfirmationToken(confirmationResult);
+                                dispatch("SHOW_VERIFY_OTP_BOX_COMPONENT");
+                            }, 1500);
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            toast.error(err.message);
+                        })
+                        .finally(() => {
+                            window.recaptchaVerifier.clear();
+                        });
+                }
+        }
+    }, [countryCode, dispatch, generateCaptcha, regPhoneNumber, setConfirmationToken, setTemporaryPhoneNumberHolder]);
 
     //FontEnd
     return (

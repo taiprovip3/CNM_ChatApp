@@ -4,13 +4,13 @@ import { WhiteBoxReducerContext } from '../../provider/WhiteBoxReducerProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import { GoUnverified } from 'react-icons/go';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
 import { auth, database } from '../../../firebase';
 import moment from 'moment';
 import { AuthContext } from '../../provider/AuthProvider';
 import { useNavigate } from 'react-router-dom';
 import GenerateRandomString from '../../service/GenerateRandomString';
-import { createUserWithEmailAndPassword, updateEmail, updatePassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateEmail, updatePassword } from 'firebase/auth';
 import GenerateKeyWords from '../../service/GenerateKeyWords';
 
 export default function VerifyOtpBoxComponent() {
@@ -18,7 +18,7 @@ export default function VerifyOtpBoxComponent() {
     const [regOTP, setRegOTP] = useState('');
     const history = useNavigate();
     const { dispatch } = useContext(WhiteBoxReducerContext);
-    const { socket, setCurrentUser, confirmationToken } = useContext(AuthContext);
+    const { socket, setCurrentUser, confirmationToken, temporaryPhoneNumberHolder } = useContext(AuthContext);
 
     const onRegOTPChange = useCallback((e) => {
         setRegOTP(e.target.value);
@@ -31,39 +31,61 @@ export default function VerifyOtpBoxComponent() {
             history('/home');
         }, 2500);
     },[history, setCurrentUser]);
-    const registerAccountUser = useCallback((userObject) => {
+    const registerAccountUser = useCallback((phoneNumberForTwilio) => {
         //Tao acc vs randomEmail cho nguoi dung
-        const { uid, phoneNumber } = userObject;
         const displayName = 'DESKTOP-USER' + Math.floor(Math.random() * 9007199254740991);
         const regEmail = "DESKTOP-EMAIL" + GenerateRandomString() + "@gmail.com";
         const regPassword = GenerateRandomString();
         createUserWithEmailAndPassword(auth, regEmail, regPassword)
             .then((userCredential) => {
-                const user = auth.currentUser;
-                updateEmail(user, regEmail)
+                updateEmail(auth.currentUser, regEmail)
                     .then(() => {
-                        console.log('Update random email & password success, please check your phone number, password');
-                        updatePassword(user, regPassword)
+                        updatePassword(auth.currentUser, regPassword)
                             .then(() => {
-                                console.log('Update a random password for user success!');
                                 fetch("http://localhost:4000/SendPasswordToOTP", {
                                     mode: 'cors',
                                     method: "POST",
-                                    body: JSON.stringify({ phonenumber: phoneNumber, password: regPassword })
+                                    body: JSON.stringify({ phonenumber: phoneNumberForTwilio.trim(), password: regPassword }),
                                 })
                                 .then((response) => {
                                     if(response.status === 200) {
-                                        console.log('Send sms success to: ', userCredential);
-                                        updateProfile(auth.currentUser, {
-                                            emailVerified: true
-                                        }).then(() => {
-                                            console.log('Update emailVerified user success');
-                                        });
+                                        const currentTime = moment().format('MMMM Do YYYY, h:mm:ss a');
+                                        const { uid } = userCredential.user;
+                                        const user = {
+                                        id: uid,
+                                        email: regEmail,
+                                        fullName: displayName,
+                                        age: -1,
+                                        joinDate: currentTime,
+                                        address: 'Không',
+                                        roles: ['MEMBER'],
+                                        sex: false,
+                                        photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
+                                        slogan: 'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!',
+                                        phoneNumber: temporaryPhoneNumberHolder,
+                                        bod: 1,
+                                        bom: 1,
+                                        boy: parseInt(new Date().getFullYear()-119),
+                                        keywords: GenerateKeyWords(displayName),
+                                        theme: "light",
+                                        status: false,
+                                        lastOnline: currentTime,
+                                        isPrivate: false
+                                        }
+                                        setDoc(doc(database, 'Users', uid), user);
+                                        setCurrentUser(user);
+                                        socket.emit("signIn", user);
+                                        setTimeout(() => {
+                                            history('/home');
+                                        }, 2500);
+                                        toast.success('Đăng ký tài khoản thành công');
+                                        toast.success('Dịch chuyển bạn đến trang chủ... 👋');
                                     } else {
                                         console.log('Something error when fetch to server!');
+                                        toast.error("Server internal error!")
                                     }
-                                });
-                            });
+                                }).catch((error) => console.log(error));
+                            }).catch((error) => console.log(error));
                     });
             })
             .catch( (error) => {
@@ -78,39 +100,7 @@ export default function VerifyOtpBoxComponent() {
                     toast.error(errorMessage);
                 }
             });
-
-        toast.success('Đăng ký tài khoản thành công');
-        toast.success('Dịch chuyển bạn đến trang chủ... 👋');
-
-        const currentTime = moment().format('MMMM Do YYYY, h:mm:ss a');
-        const user = {
-          id: uid,
-          email: regEmail,
-          fullName: displayName,
-          age: -1,
-          joinDate: currentTime,
-          address: 'Không',
-          roles: ['MEMBER'],
-          sex: false,
-          photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg',
-          slogan: 'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!',
-          phoneNumber: phoneNumber,
-          bod: 1,
-          bom: 1,
-          boy: parseInt(new Date().getFullYear()-119),
-          keywords: GenerateKeyWords(displayName),
-          theme: "light",
-          status: false,
-          lastOnline: currentTime,
-          isPrivate: false
-        }
-        setDoc(doc(database, 'Users', uid), user);
-        setCurrentUser(user);
-        socket.emit("signIn", user);
-        setTimeout(() => {
-            history('/home');
-        }, 2500);
-    }, [history, setCurrentUser, socket]);
+    }, [history, setCurrentUser, socket, temporaryPhoneNumberHolder]);
     const handleConfirmOTP = useCallback((e) => {
         if(regOTP === "" || regOTP == null || regOTP === undefined || regOTP.length <6){
             toast.error('Vui lòng kiểm tra lại field OTP');
@@ -118,22 +108,24 @@ export default function VerifyOtpBoxComponent() {
         }
         confirmationToken.confirm(regOTP)
             .then(async (userCredential) => {
-                const { uid } = userCredential.user;
-                console.log(' uuid now = ', uid);
-                console.log(' userCredential = ', userCredential);
-                const UsersDocRef = doc(database, "Users", uid);
-                const UsersDocSnap = await getDoc(UsersDocRef);
-                if(UsersDocSnap.exists()){ //Nếu là đăng nhập
-                    loginUserCredential(UsersDocSnap.data());
-                } else{
-                    registerAccountUser(userCredential.user);
+                try {//TH tempHolderPhoNumber có tồn tại trong hệ thống
+                    const q = query(collection(database, "Users"), where("phoneNumber", "==", temporaryPhoneNumberHolder));
+                    const querySnapShot = await getDocs(q);
+                    const userData = querySnapShot.docs[0].data();
+                    loginUserCredential(userData);
+                } catch (error) {
+                    console.log(error);
+                    if(error.code === undefined) {//TH sdt nhập vào ko tồn tại trong db -> là đăng ký
+                        const { phoneNumber } = userCredential.user;
+                        registerAccountUser(phoneNumber);
+                    }
                 }
             })
             .catch((err) => {
                 console.log(err);
                 toast.error(err.message);
             });
-    }, [confirmationToken, loginUserCredential, regOTP, registerAccountUser]);
+    }, [confirmationToken, loginUserCredential, regOTP, registerAccountUser, temporaryPhoneNumberHolder]);
 
     return (
         <>

@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
 
     const [socket, setSocket] = useState(null);
     const [confirmationToken, setConfirmationToken] = useState(null);
+    const [temporaryPhoneNumberHolder, setTemporaryPhoneNumberHolder] = useState("");
     // const [currentUser, setCurrentUser] = useState({bod:1,bom:1,boy:1903,age:21,email:'taito1doraemon@gmail.com',fullName:'Phan Tấn Tài',id:'qx1kwaxpo2PGx5TbBGfND35lpyR2',joinDate:'November 5th 2022, 1:51:39 pm',keywords:["P", "PH"],lastOnline:"November 15th 2022, 10:34:50 am", phoneNumber:"+84",photoURL:"https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg",role:["MEMBER"],sex:false,slogan:'Xin chào bạn, mình là người tham gia mới. Nếu là bạn bè thì hãy cùng nhau giúp đỡ nhé!',socket_id:"MNApR2q-X4_XEAu-AAAJ",status:false,theme:"light",address: "Không"});
     const [currentUser, setCurrentUser] = useState(null);
     const [currentRowShow, setCurrentRowShow] = useState('row-chat'); //[row-chat, row-phonebook]
@@ -46,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     },[currentRowShow, stopSlider]);
 
     return (
-      <AuthContext.Provider value={{ matchRoomToken, setMathRoomToken, selectedRoom, setSelectedRoom, objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, setSocket, confirmationToken, setConfirmationToken, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, bundleShareMessageModal, setBundleShareMessageModal, bundleDetailMessageModal, setBundleDetailMessageModal, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus }}>
+      <AuthContext.Provider value={{ matchRoomToken, setMathRoomToken, selectedRoom, setSelectedRoom, objectUserModal, setObjectUserModal, objectGroupModal, setObjectGroupModal, myIndex, intervalRef, stopSlider, socket, setSocket, confirmationToken, setConfirmationToken, temporaryPhoneNumberHolder, setTemporaryPhoneNumberHolder, currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, bundleShareMessageModal, setBundleShareMessageModal, bundleDetailMessageModal, setBundleDetailMessageModal, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus }}>
         {children}
       </AuthContext.Provider>
     )

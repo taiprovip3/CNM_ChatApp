@@ -207,7 +207,7 @@ export default memo(function RowChat() {
                 </div>
 
                 <div className="dropdown p-1" id='categoryDiv'>
-                    <a className="dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" href='.'>Phân loại</a>
+                    <a className="btn btn-link dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" href='.'>Phân loại</a>
                     <ul className="dropdown-menu">
                         <li className={selectedCategory === "ALL" ? "dropdown-item active" : "dropdown-item"} onClick={() => setSelectedCategory("ALL")}>Tất cả</li>
                         <li className={selectedCategory === "ROOM" ? "dropdown-item active" : "dropdown-item"} onClick={() => setSelectedCategory("ROOM")}>Nhóm chat</li>

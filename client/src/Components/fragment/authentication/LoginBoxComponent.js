@@ -58,25 +58,25 @@ export default function LoginBoxComponent() {
                 });
         } else {
             try {
-                const phoneNumner = "+84" + logEmail.substring(1,999);
-                const q = query(collection(database, "Users"), where("phoneNumber", "==", phoneNumner));
+                const q = query(collection(database, "Users"), where("phoneNumber", "==", logEmail));
                 const querySnapShot = await getDocs(q);
                 const emailUser = querySnapShot.docs[0].data().email;
+                console.log(emailUser);
                 signInWithEmailAndPassword(auth, emailUser, logPassword)
                 .then(async (userCredential) => {
-                    const { emailVerified } = userCredential.user;
-                    if(emailVerified){
-                        const { user: { uid } } = userCredential;
-                        const UsersDocRef = doc(database, "Users", uid);
-                        const UsersDocSnap = await getDoc(UsersDocRef);
-                        setCurrentUser({...UsersDocSnap.data(), status: true});
-                        socket.emit("signIn", {...UsersDocSnap.data(), status: true});
-                        history('/home');
-                    } else{
-                        toast.error("Tài khoản này chưa được xác thực");
-                        toast.error("Vui lòng chọn mục `Quên mật khẩu` để tái xác thực");
-                        return;
+                    const { uid, emailVerified } = userCredential.user;
+                    if(!emailVerified){
+                        //Phát hiện tài khoản sdt chưa xác thực email...
+                        console.log('Phát hiện, tài khoản bạn chưa xác thực email. Vui lòng cập nhật.');
                     }
+                    const UsersDocRef = doc(database, "Users", uid);
+                    const UsersDocSnap = await getDoc(UsersDocRef);
+                    console.log('dees: ', userCredential);
+                    setCurrentUser({...UsersDocSnap.data(), status: true});
+                    socket.emit("signIn", {...UsersDocSnap.data(), status: true});
+                    setTimeout(() => {
+                        history('/home');
+                    }, 5000);
                 })
                 .catch( (error) => {
                     const errorCode = error.code;

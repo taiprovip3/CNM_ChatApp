@@ -16,7 +16,7 @@ import { AppContext } from '../../provider/AppProvider';
 export default memo(function ListFriend() {
 
     //Biến
-    const { currentUser: { id } } = React.useContext(AuthContext);
+    const { currentUser: { id, theme } } = React.useContext(AuthContext);
     const { docFriendRequests } = React.useContext(AppContext);
     const [listFromRequest, setListFromRequest] = useState([]);
     const [listToRequest, setListToRequest] = useState([]);
@@ -142,7 +142,7 @@ export default memo(function ListFriend() {
                         return <div className='text-center rounded' id="OneBoxRequest" key={request.idRequester}>
                             <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
                             <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
-                                <span>{request.description}</span>
+                                <span className={theme === "light" ? "text-dark" : "text-dark"}>{request.description}</span>
                                 <br />
                                 <button className='btn btn-link btn-sm w-100' onClick={() => handleCancelRequest(request)}>Huỷ yêu cầu</button>
                             </div>
@@ -151,7 +151,7 @@ export default memo(function ListFriend() {
                 }
             </div>
         </>
-    },[handleCancelRequest, listToRequest]);
+    },[handleCancelRequest, listToRequest, theme]);
 
     //Effect
     useEffect(() => {
