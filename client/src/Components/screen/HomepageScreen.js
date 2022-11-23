@@ -1,182 +1,190 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-useless-escape */
+/* eslint-disable react-hooks/rules-of-hooks */
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AuthContext } from '../provider/AuthProvider';
+import { AppContext } from '../provider/AppProvider';
 import { toast, ToastContainer } from 'react-toastify';
 import "react-toastify/dist/ReactToastify.css";
 import "../css/HomepageScreen.css";
-import { BsFillShieldLockFill, BsFillChatTextFill } from 'react-icons/bs'
-import { RiSettings5Line, RiFolderUserFill } from 'react-icons/ri';
-import { BiSearchAlt } from 'react-icons/bi';
-import { HiUserAdd, HiSearch, HiOutlineUserGroup } from 'react-icons/hi';
-import { MdCameraswitch, MdOutlineEditOff } from 'react-icons/md';
+import { BsFillShieldLockFill } from 'react-icons/bs'
+import { MdCameraswitch, MdOutlineEditOff, MdOutlineVideoCameraFront, MdPermPhoneMsg } from 'react-icons/md';
 import { FcSmartphoneTablet } from 'react-icons/fc';
-import { FaUserFriends, FaSortAlphaDown } from 'react-icons/fa';
-import { TbPencilOff, TbUpload, TbUsers } from 'react-icons/tb';
+import { FaUserFriends, FaUserMinus } from 'react-icons/fa';
+import { TbPencilOff, TbUpload } from 'react-icons/tb';
 import { TiCamera } from 'react-icons/ti';
 import { IoIosImages } from 'react-icons/io';
 import { CgClose } from 'react-icons/cg';
+import { HiSearch, HiOutlineUserGroup,HiExternalLink } from 'react-icons/hi';
+import { IoPersonAddSharp } from 'react-icons/io5';
 import { AiFillQuestionCircle } from 'react-icons/ai';
-import introduction1 from '../assets/introduction1.png';
-import introduction2 from '../assets/introduction2.png';
-import introduction3 from '../assets/introduction3.png';
-import introduction4 from '../assets/introduction4.png';
-import introduction5 from '../assets/introduction5.png';
-import introduction6 from '../assets/introduction6.png';
-import introduction7 from '../assets/introduction7.png';
-import introduction8 from '../assets/introduction8.png';
-import FirebaseGetRooms from '../service/FirebaseGetRooms';
-import FirebaseGetFriends from '../service/FirebaseGetFriends';
-import ChatFriend from '../fragment/ChatFriend';
-import ChatRoom from '../fragment/ChatRoom';
-import ListFriend from '../fragment/ListFriend';
-import ListRoom from '../fragment/ListRoom';
-import { arrayUnion, collection, doc, documentId, getDoc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from 'firebase/firestore';
+import { arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { database, storage } from '../../firebase';
 import moment from 'moment';
-import FirebaseGetStrangers from '../service/FirebaseGetStrangers';
 import $ from 'jquery';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import RowChat from '../fragment/homepage/RowChat';
+import RowPhonebook from '../fragment/homepage/RowPhonebook';
+import Info from '../fragment/group-modal/Info';
+import Update from '../fragment/group-modal/update';
+import Authorization from '../fragment/group-modal/authorization';
+import { renderYobDays, renderYobMonths, renderYobYears } from '../service/RenderYOB';
+import GetUsers from '../service/firebase/GetUsers';
+import GetRooms from '../service/firebase/GetRooms';
+import GetFriends from '../service/firebase/GetFriends';
+import GetDocFriendRequests from '../service/firebase/GetDocFriendRequests';
+import GetDocsFriendMessages from '../service/firebase/GetDocsFriendMessages';
+import LoadingScreen from './LoadingScreen';
+import GetStrangers from '../service/GetStrangers';
+import ShareMessageModal from '../fragment/modal/ShareMessageModal';
+import DetailMessageModal from '../fragment/modal/DetailMessageModal';
+import GetRoomsUser from '../service/firebase/GetRoomsUser';
+import GetDocsRoomMessages from '../service/firebase/GetDocsRoomMessages';
+import FirebaseGetRealtimeUser from '../service/FirebaseGetRealtimeUser';
+import FriendVideoCallModal from '../fragment/modal/FriendVideoCallModal';
+import RoomInviteFriendModal from '../fragment/modal/RoomInviteFriendModal';
+import * as bootstrap from 'bootstrap';
 
 export default function HomepageScreen() {
-
+//Javascript
+const popoverTriggerList = document.querySelectorAll('[data-bs-toggle="popover"]')
+const popoverList = [...popoverTriggerList].map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
 //Khai báo biến
-  var { currentUser, socket, setUserContext } = useContext(AuthContext);
-  var defaultObjectUser = {id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', email: 'ptt@gmail.com', address: 'undifined', age: 0, fullName: 'Phan Tấn Tài', joinDate: 'October 26th 2022, 3:38:30 pm', phoneNumber: '+84', photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg', role: ['MEMBER', 'ADMIN'], sex: false, slogan: 'Xin chào bạn, mình là người tham gia mới. Bạn bè hãy cùng nhau giúp đỡ nhé!'};
-  const myIndex = useRef(0);
-  const intervalRef = useRef(null);
-  const [listRoom, setListRoom] = useState([]);
-  const [listFriend, setListFriend] = useState([]);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [selectedFriend, setSelectedFriend] = useState(null);
-  const [idRoomOfSelectedFriendAndYou, setIdRoomOfSelectedFriendAndYou] = useState('');
-  const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
-  const [listUserStranger, setListUserStranger] = useState([]);
-  const [currentRowShow, setCurrentRowShow] = useState('row-chat'); //[row-chat, row-phonebook]
-  const [selectedObject, setSelectedObject] = useState('DanhSachKetBan');
+  var { currentUser, setCurrentUser, currentRowShow, setCurrentRowShow, objectGroupModal, objectUserModal, setObjectUserModal, selectedFriend, setSelectedFriend, caller, setCaller, receiver, setReceiver, callerStatus, setCallerStatus, receiverStatus, setReceiverStatus } = React.useContext(AuthContext);
+  const { progress,setProgress, users,setUsers, rooms,setRooms, friends,setFriends, docFriendRequests,setDocFriendRequests, docsFriendMessages,setDocsFriendMessages, roomsUser,setRoomsUser, docsRoomMessages,setDocsRoomMessages, isLoadUsers,setIsLoadUsers, isLoadRooms,setIsLoadRooms, isLoadUserFriends,setIsLoadUserFriends, isLoadFriendRequest,setIsLoadFriendRequest, isLoadDocsFriendMessages,setIsLoadDocsFriendMessages, isLoadRoomsUser,setIsLoadRoomsUser, isLoadDocsRoomMessages,setIsLoadDocsRoomMessages, progressPercent, setProgressPercent } = React.useContext(AppContext);
 
-  const [inputNameRoom, setInputNameRoom] = useState('');   //các useState dùng cho tạo room
-  const [selectedChkUser, setSelectedChkUser] = useState([]);
+  if(!currentUser){
+    setTimeout(() => {
+        window.location.href = '/';
+    }, 1500);
+    return <div id='none-log'>
+                <div className='border text-center p-3 rounded' id='none-log-child'>
+                <ToastContainer />
+                <BsFillShieldLockFill className='text-white display-6' />
+                <br />
+                Bạn chưa đăng nhập tài khoản.
+                <br />
+                Chúng tôi sẽ chuyển bạn đi trong phút chốc
+                <br />
+                ...(sau 2s)...
+                </div>
+            </div>;
+  }
+
+    const arraysUsers = GetUsers(); 
+    const arraysRooms = GetRooms(); 
+    const arraysFriends = GetFriends();
+    const arraysFriendRequests = GetDocFriendRequests();
+    const arraysDocsFriendMessages = GetDocsFriendMessages();
+    const arraysRoomsUser = GetRoomsUser();
+    const arraysDocsRoomMessages = GetDocsRoomMessages();
+
+    React.useEffect(() => {
+      setUsers(arraysUsers);
+    },[arraysUsers, setUsers]);
+
+    React.useEffect(() => {
+      setRooms(arraysRooms);
+    },[arraysRooms, setRooms]);
+
+    React.useEffect(() => {
+      setFriends(arraysFriends);
+    },[arraysFriends, setFriends]);
+
+    React.useEffect(() => {
+      setDocFriendRequests(arraysFriendRequests);
+    },[arraysFriendRequests, setDocFriendRequests]);
+
+    React.useEffect(() => {
+      setDocsFriendMessages(arraysDocsFriendMessages);
+    },[arraysDocsFriendMessages, setDocsFriendMessages]);
+
+    React.useEffect(() => {
+        setRoomsUser(arraysRoomsUser);
+    },[arraysRoomsUser, setRoomsUser]);
+
+    React.useEffect(() => {
+        setDocsRoomMessages(arraysDocsRoomMessages);
+    },[arraysDocsRoomMessages, setDocsRoomMessages]);
+    
+    const userData = FirebaseGetRealtimeUser(currentUser.id);
+    React.useEffect(() => {
+        if(userData) {
+            setCurrentUser(userData);
+        }
+    },[setCurrentUser, userData]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  const [showGroupModalComponent, setShowGroupModalComponent] = useState('info');
+  const [isShowUpdateInfoModal, setIsShowUpdateInfoModal] = useState(false);
+  const [inputNameRoom, setInputNameRoom] = useState('');
   const [listFriendCopy, setListFriendCopy] = useState([]);
   const counter = useRef(0);
   const [counterCheckedUser, setCounterCheckedUser] = useState(0);
-  if(currentUser == null){
-    currentUser = defaultObjectUser;
-    defaultObjectUser = null;
-  }
-  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
-  const memoIdUser = useMemo(() => {
-    return id;
-  },[id]);
+  const [textSearchStranger, setTextSearchStranger] = useState("");
+  const [textSearchFriend, setTextSearchFriend] = useState("");
 
-//Tạo hàm & useEffect[]
+  const { address, age, email, fullName, id, joinDate, photoURL, sex, slogan, phoneNumber } = currentUser;
+
+//useEffect[ listFriendCopy tạo phòng ]
 useEffect(() => {
-    if(listFriend.length > 0){
+    if(friends.length > 0){
         const data = [];
-        listFriend.forEach(e => {
+        friends.forEach(e => {
             data.push({...e, isChecked: false});
         });
         setListFriendCopy(data);
     }
-},[listFriend]);
+},[friends]);
 useEffect(() => {
     if(listFriendCopy.length > 0){
         counter.current = 0;
         for(var i=0; i<listFriendCopy.length; i++){
             if(listFriendCopy[i].isChecked){
                 counter.current++;
-                console.log('counter.current now = ', counter.current);
             }
         }
         setCounterCheckedUser(counter.current);
     }
 },[listFriendCopy]);
-const intervalSlider = () => { //Hàm start slidering
-    intervalRef.current = setInterval(() => {
-        var i;
-        for (i = 0; i < 8; i++) {
-            var obj1 = "#imgSliders" + i;
-            $(obj1).css("display", "none");
-        }
-        myIndex.current++;
-        if (myIndex.current > 8)
-            myIndex.current = 1;
-        var rs = myIndex.current-1;
-        var obj2 = "#imgSliders" + rs;
-        $(obj2).css("display", "block");
-    }, 2000);
-}
-const stopSlider = () => { //Hàm stop slidering
-    clearInterval(intervalRef.current);
-    intervalRef.current = null;
-}
-useEffect(() => { //useEffect gọi hàm start sliderding
-    intervalSlider();
+
+const handleSearchFriend = useCallback((e) => {
+    setTextSearchFriend(e.target.value);
 },[]);
-useEffect(() => { //useEffect gọi hàm stop slidering
-    if(selectedRoom !== null || selectedFriend !== null){
-        stopSlider();
+let listUserStrangerToDisplay = GetStrangers(id);
+if(textSearchStranger.length >= 9) {
+    if(textSearchStranger.match(/\d/g)) { //nếu là sđt
+        listUserStrangerToDisplay = GetStrangers().filter((val) => {
+            if( val.phoneNumber.includes(textSearchStranger) ) {
+                return val;
+            }
+        });
     }
-},[selectedRoom, selectedFriend]);
-    const rooms = FirebaseGetRooms(memoIdUser); //Lấy list room firebase
-    useEffect(() => {
-    rooms.sort(function(x, y){
-        return x.createAt - y.createAt;
-    });
-    setListRoom(rooms);
-    }, [rooms]);
-    const friends = FirebaseGetFriends(memoIdUser); //Lấy list friend firebase
-    useEffect(() => {
-        setTimeout(() => {
-        setListFriend(friends);
-        }, 500);
-    }, [friends]);
-    const strangers = FirebaseGetStrangers(memoIdUser); //Lấy list strangers firebase
-    useEffect(() => {
-        setTimeout(() => {
-            setListUserStranger(strangers);
-        }, 500);
-    },[strangers]);
-    const onClickOneRoom = useCallback((obj) => {
-        socket.emit("join_room", obj.id);
-        setSelectedFriend(null);
-        setSelectedRoom(obj);
-    }, [socket]);
-    const onClickOneFriend = useCallback(async (obj) => {
-        const q = query(collection(database, "FriendMessages"), where("listeners", "in", [obj.id + "__" + id, id + "__" + obj.id]));
-        const querySnapShot = await getDocs(q);
-        const idRoom = querySnapShot.docs[0].data().idRoom;
-        socket.emit("join_room", idRoom);
-        setSelectedRoom(null);
-        setSelectedFriend(obj);
-        setIdRoomOfSelectedFriendAndYou(idRoom);
-    }, [id, socket]);
-    const handleSelectedImage = useCallback((e) => {
-        alert('Do something with img user upload đi');
-    },[]);
-    const renderYobDays = () => {
-        const arr = [];
-        for(var i=1;i<32;i++){
-            arr.push(i);
-        }
-        return arr;
-    };
-    const renderYobMonths = () => {
-        const arr = [];
-        for(var i=1;i<13;i++){
-            arr.push(i);
-        }
-        return arr;
-    };
-    const renderYobYears = () => {
-        const currentYear = new Date().getFullYear();
-        const arr = [];
-        for(var i=currentYear-119;i<=currentYear;i++){
-            arr.push(i);
-        }
-        return arr;
-    };
+} else{
+    if(textSearchStranger !== "") {
+        listUserStrangerToDisplay = GetStrangers().filter((val) => {
+            if( val.fullName.toLowerCase().includes(textSearchStranger.toLowerCase()) ) {
+                return val;
+            }
+        });
+    }
+}
+
     const sendAddFriendRequest = useCallback(async (fromId, toId, toName) => {
         // 1. Cập nhật toRequest cho bản thân
         const currentTimeRequest = moment().format("MMMM Do YYYY, hh:mm:ss a");
@@ -202,9 +210,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             await setDoc(FromDocRef, {fromRequest:[fromRequestObject]});
         }
     },[fullName]);
-    const onInputNameRoomChange = useCallback((e) => {
-        setInputNameRoom(e.target.value);
-    },[]);
+
     const onSelectedChkUserChange = useCallback((obj) => {
         setListFriendCopy(
             (prevList) => prevList.map (
@@ -212,8 +218,10 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             )
         );
     },[]);
+    const onInputNameRoomChange = useCallback((e) => {
+        setInputNameRoom(e.target.value);
+    },[]);
     const handleCreateRoom = useCallback(() => {
-        console.log('my will = ', listFriendCopy);
         if(inputNameRoom.length < 3 || inputNameRoom === ""){
             toast.error("Tên nhóm rỗng hoặc quá ngắn", {
                 position: toast.POSITION.TOP_CENTER
@@ -254,23 +262,21 @@ useEffect(() => { //useEffect gọi hàm stop slidering
         });
         $("#btnCancelCreateRoomModal").click();
         setInputNameRoom('');
-        setListFriendCopy(listFriend);
+        setListFriendCopy(friends);
         setCounterCheckedUser(0);
 
-    },[counterCheckedUser, id, inputNameRoom, listFriend, listFriendCopy]);
+    },[counterCheckedUser, id, inputNameRoom, friends, listFriendCopy]);
     const awaitHandleUploadPhotoURL = async (idUser, fileUpload) => {
         let link;
         if(fileUpload == null){
             return link = photoURL;
         }
-        console.log(' function convert. img now = ', link);
         const pathStorage = `${idUser + "__" + fileUpload.name}`;
         const imagesRef = ref(storage, 'photoURLs/' + pathStorage);
         await uploadBytes(imagesRef, fileUpload)
           .then(async () => {
               await getDownloadURL(imagesRef)
                 .then((url) => {
-                    console.log(' img after promise = ', link);
                     link = url;
                 });
           })
@@ -290,14 +296,6 @@ useEffect(() => { //useEffect gọi hàm stop slidering
         const selectedYobYears = e.target["selectedYobYears"].value;
         var editAddress = e.target["editAddress"].value;
         var editSlogan = e.target["editSlogan"].value;
-        console.log(' e1 = ', e.target["selectedImage"].value);
-        console.log(' e2 = ', e.target["editFullName"].value);
-        console.log(' e3 = ', e.target["editSex"].value);
-        console.log(' e4 = ', e.target["selectedYobDays"].value);
-        console.log(' e5 = ', e.target["selectedYobMonths"].value);
-        console.log(' e6 = ', e.target["selectedYobYears"].value);
-        console.log(' e7 = ', e.target["editAddress"].value);
-        console.log(' e8 = ', e.target["editSlogan"].value);
         if(editFullName === ""){
             toast.error("Tên đại diện rỗng!", {
                 position: toast.POSITION.TOP_CENTER
@@ -313,14 +311,11 @@ useEffect(() => { //useEffect gọi hàm stop slidering
         const newPhotoURL = await awaitHandleUploadPhotoURL(id, selectedImageBinary);
         const ageCalc = parseInt(new Date().getFullYear() - selectedYobYears);
         const newCurrentUser = {
+            ...currentUser,
             address: editAddress,
             age: ageCalc,
-            email: email,
             fullName: editFullName,
-            id: id,
-            joinDate: joinDate,
             phoneNumber: phoneNumber,
-            roles: ["MEMBER"],
             sex: editSex,
             slogan: editSlogan,
             photoURL: newPhotoURL,
@@ -333,201 +328,90 @@ useEffect(() => { //useEffect gọi hàm stop slidering
             position: toast.POSITION.TOP_CENTER
         });
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
-        setUserContext(newCurrentUser);
+        setCurrentUser(newCurrentUser);
     };
     const handleCloseUpdateUserInfoModal = () => {
         $("#closeUpdateInfoModal").click();
         setIsShowUpdateInfoModal(!isShowUpdateInfoModal);
     }
-
-//Kiểm tra null user
-    if( !defaultObjectUser ) {
-        console.log('Current user in Homepage', currentUser);
-        setTimeout(() => {
-            window.location.href = '/auth';
-    }, 500);
-    return <div id='none-log'>
-        <div className='border text-center p-3 rounded' id='none-log-child'>
-        <ToastContainer />
-        <BsFillShieldLockFill className='text-white display-6' />
-        <br />
-        Bạn chưa đăng nhập tài khoản.
-        <br />
-        Chúng tôi sẽ chuyển bạn đi trong phút chốc
-        <br />
-        ...(sau 2s)...
-        </div>
-    </div>;
+    const handleSearchStranger = useCallback((e) => {
+        setTextSearchStranger(e.target.value);
+    },[]);
+    let listFriendCopyToDisplay = listFriendCopy;
+    if(textSearchFriend.length >= 9) {
+        if(textSearchFriend.match(/\d/g)) { //nếu là sđt
+            listFriendCopyToDisplay = listFriendCopy.filter((val) => {
+                if( val.phoneNumber.includes(textSearchFriend) ) {
+                    return val;
+                }
+            });
+        }
+    } else{
+        if(textSearchFriend !== "") {
+            listFriendCopyToDisplay = listFriendCopy.filter((val) => {
+                if( val.fullName.toLowerCase().includes(textSearchFriend.toLowerCase()) ) {
+                    return val;
+                }
+            });
+        }
     }
-//Javascript bootstrap
-// $(function () {
-//     $('[data-toggle="tooltip"]').tooltip();
-// });
-
+    const handleSignOut = useCallback((e) => {
+        e.preventDefault();
+        const selectBackupType = e.target["selectBackupType"].value;
+        if(selectBackupType === "backup") {
+            $("#btnSignOut > span").removeClass("d-none");
+            $("#btnSignOut").text("Saving data...").addClass("disabled");
+            localStorage.setItem("username", currentUser.email);
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1500);
+        } else{
+            window.location.href = '/';
+        }
+    },[currentUser.email]);
+    const onChangeColoredTheme = useCallback(() => {
+        if(currentUser) {
+            const UsersRef = doc(database, "Users", currentUser.id);
+            setDoc(UsersRef, { theme: currentUser.theme === "light" ? "dark" : "light" }, { merge: true });
+        }
+    },[currentUser]);
+    const onChangeIsPrivate = useCallback(() => {
+        const UsersRef = doc(database, "Users", currentUser.id);
+        setDoc(UsersRef, { isPrivate: !currentUser.isPrivate}, { merge: true });
+    },[currentUser]);
+  
 //Render giao diện
   return(
-    <div className='container-fluid bg-white' id='outer'>
-    <ToastContainer
-        theme='colored'
-    />
+    <>
     {
-    currentRowShow === 'row-chat'
-    ?
-    <div className="row">
-        <div className='col-lg-1 bg-primary border' id='divA'>
-            <div>
-                <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
-            </div>
-            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected'>
-                <BsFillChatTextFill className='fs-3 text-white mx-auto d-block' />
-            </div>
-            <div className='py-3 rounded' id='needCursor' onClick={() => setCurrentRowShow("row-phonebook")}>
-                <RiFolderUserFill className='fs-3 text-white mx-auto d-block' />
-            </div>
-            <div id='settings' className='p-1'>
-                <RiSettings5Line id='iconSetting' className='h1 text-white' data-bs-toggle="modal" data-bs-target="#UserInfoModal" />
-            </div>
-        </div>
-        <div className='col-lg-3 border' id='divB'>
-
-            <div className='d-flex align-items-center'>
-                <div className="input-group">
-                <span className="input-group-text"><BiSearchAlt /></span>
-                <input type="text" className="form-control" placeholder="Tìm kiếm" />
+        (receiverStatus === "RECEIVING") &&
+        <div id="RobotReceiver" className='bg-primary text-white d-flex p-3 lead'>
+            <div className="d-flex flex-fill">
+                <div className='d-flex align-items-center justify-content-center'>
+                    <MdOutlineVideoCameraFront className='fs-1' />
                 </div>
-                <HiUserAdd className='h3 m-2' id='needCursor' data-bs-toggle="modal" data-bs-target="#AddFriendModal" />
-                <HiOutlineUserGroup className='h3 m-1' data-bs-toggle="modal" data-bs-target="#CreateRoomModal" id='needCursor' />
+                <div className='px-3'>
+                    <span className='d-block'>{caller.fullName}</span>
+                    <span>Đang gọi video đến cho bạn...</span>
+                </div>
             </div>
-
-            <div className="dropdown p-1" id='category'>
-                <a className="dropdown-toggle text-decoration-none" data-bs-toggle="dropdown" href='.'>Phân loại</a>
-                <ul className="dropdown-menu">
-                <li><a className="dropdown-item active" href=".">Tất cả <FaSortAlphaDown /></a></li>
-                <li><a className="dropdown-item" href=".">Nhóm</a></li>
-                <li><a className="dropdown-item" href=".">Bạn bè</a></li>
-                </ul>
-            </div>
-
-            <div id="FlatListOneBoxItem" className='border'>
-                {
-                    listRoom.map( obj => {
-                        return <div id='needCursor' className={selectedRoom !== obj ? 'container d-flex align-items-center border-bottom' : 'container d-flex align-items-center border border-primary'} key={obj.id} onClick={() => onClickOneRoom(obj)}>
-                        <div className='col-lg-2'>
-                        <img src={obj.urlImage} alt="photoURL" id='roundedAvatarInItem' className='rounded-circle' width='45' height='45' />
-                        </div>
-                        <div className='col-lg-10 p-1'>
-                        <span className='fw-bold'>{obj.name}</span>
-                        <br />
-                        <small className='text-secondary'>{obj.description}</small>
-                        </div>
-                    </div>
-                    })
-                }
-                {
-                    listFriend.map( obj => {
-                    return <div id='needCursor' className={selectedFriend !== obj ? 'container d-flex align-items-center border-bottom' : 'container d-flex align-items-center border border-primary'} key={obj.id} onClick={() => onClickOneFriend(obj)}>
-                                <div className='col-lg-2'>
-                                    <img src={obj.photoURL} alt="photoURL" id='roundedAvatarInItem' className='rounded-circle' width='45' height='45' />
-                                </div>
-                                <div className='col-lg-10 p-1'>
-                                    <span className='fw-bold'>{obj.fullName}</span>
-                                    <br />
-                                    <small className='text-secondary'>{obj.slogan}</small>
-                                </div>
-                            </div>
-                })
-                }
-            </div>
-
-        </div>
-        <div id='divC' className='col-lg-8'>
-            {
-            (!selectedRoom && !selectedFriend) ?
-                <div id='contentDivC' className='text-center'>
-                    <p>Chào mừng đến với <span className='fw-bold fs-5'>UChat PC</span></p>
-                    <span>Khám phá những tiện ích hỗ trợ làm việc và trò chuyện cùng</span>
+            <div className='d-flex justify-content-center align-items-center'>
+                <div className='text-center'>
+                    <MdPermPhoneMsg className="fw-bold text-white fs-1 border rounded-circle p-2 needCursor" onClick={() => setSelectedFriend(caller)} />
                     <br />
-                    <span>người thân, bạn bè được tối ưu hoá cho máy tính của bạn</span>
-                    <img src={introduction1} alt="introduction1" id='imgSliders0' className='mySliders' style={{display:'block'}} />
-                    <img src={introduction2} alt="introduction2" id='imgSliders1' className='mySliders' />
-                    <img src={introduction3} alt="introduction2" id='imgSliders2' className='mySliders' />
-                    <img src={introduction4} alt="introduction4" id='imgSliders3' className='mySliders' />
-                    <img src={introduction5} alt="introduction5" id='imgSliders4' className='mySliders' />
-                    <img src={introduction6} alt="introduction6" id='imgSliders5' className='mySliders' />
-                    <img src={introduction7} alt="introduction7" id='imgSliders6' className='mySliders' />
-                    <img src={introduction8} alt="introduction8" id='imgSliders7' className='mySliders' />
+                    <span className='text-decoration-underline'>Xem chi tiết<HiExternalLink /></span>
                 </div>
-            :
-            !selectedFriend ?
-                <ChatRoom selectedRoom={selectedRoom} currentUser={currentUser} socket={socket} />
-                :
-                <ChatFriend selectedFriend={selectedFriend} currentUser={currentUser} socket={socket} idRoomOfSelectedFriendAndYou={idRoomOfSelectedFriendAndYou} />
-            }
-        </div>
-    </div>
-    :
-    <div className="row">
-        <div className='col-lg-1 bg-primary border' id='divA'>
-            <div>
-                <img src={photoURL} alt="photoURL" className='rounded-circle mx-auto d-block my-3' width="45" height="45" id='needCursor' />
-            </div>
-            <div className='py-3 rounded' id='needCursor' onClick={() => setCurrentRowShow("row-chat")}>
-                <BsFillChatTextFill className='fs-3 text-white mx-auto d-block' />
-            </div>
-            <div className='py-3 rounded my-3' id='frameIconBackgroundSelected' >
-                <RiFolderUserFill className='fs-3 text-white mx-auto d-block' />
-            </div>
-            <div id='settings' className='p-1'>
-                <RiSettings5Line id='iconSetting' className='h1 text-white' data-bs-toggle="modal" data-bs-target="#UserInfoModal" />
             </div>
         </div>
-        <div className="col-lg-3 border" id='divB'>
-            <div className='d-flex align-items-center'>
-                <div className="input-group">
-                <span className="input-group-text"><BiSearchAlt /></span>
-                <input type="text" className="form-control" placeholder="Tìm kiếm" />
-                </div>
-                <HiUserAdd className='h3 m-2' id='needCursor' data-bs-toggle="modal" data-bs-target="#AddFriendModal" />
-                <HiOutlineUserGroup className='h3 m-1' data-bs-toggle="modal" data-bs-target="#CreateRoomModal" id='needCursor' />
-            </div>
-            <div>
-                <div className='d-flex align-items-center p-1' id="needCursor" onClick={() => setSelectedObject('DanhSachKetBan')} style={selectedObject === 'DanhSachKetBan' ? {backgroundColor: '#69d0ff'} : {backgroundColor: 'white'}}>
-                    <img src="https://chat.zalo.me/assets/NewFr@2x.820483766abed8ab03205b8e4a8b105b.png" alt="DanhSachKetBan" width='45' height='45' />
-                    <span className='px-1'>Danh sách kết bạn</span>
-                </div>
-                <div className='d-flex align-items-center p-1' id="needCursor" onClick={() => setSelectedObject('DanhSachNhom')} style={selectedObject === 'DanhSachNhom' ? {backgroundColor: '#69d0ff'} : {backgroundColor: 'white'}}>
-                    <img src="https://chat.zalo.me/assets/group@2x.2d184edd797db8782baa0d5c7a786ba0.png" alt="DanhSachNhom" width='45' height='45' />
-                    <span className='px-1'>Danh sách nhóm</span>
-                </div>
-                <hr />
-                <div className="d-flex align-items-center">
-                    <span className='text-primary flex-fill'><TbUsers /> Bạn bè ({listFriend.length})</span>
-                    <AiFillQuestionCircle className='text-primary lead' data-bs-toggle="tooltip" title="Nhấp giải thích" />
-                </div>
-                {
-                    listFriend.map(obj => {
-                        return <div className={selectedFriend === obj ? 'd-flex border border-primary border-3 align-items-center p-1' : 'd-flex align-items-center p-1'} id="needCursor" key={obj.id} onClick={() => onClickOneFriend(obj)}>
-                                    <img src={obj.photoURL} alt="photoURL" width='45' height='45' className='rounded-circle' />
-                                    <span className='px-1'>{obj.fullName}</span>
-                                </div>;
-                    })
-                }
-            </div>
-        </div>
-        <div className="col-lg-8" id='divC'>
-            {
-                selectedObject === 'DanhSachKetBan' ?
-                <ListFriend currentUser={currentUser} />
-                :
-                <ListRoom currentUser={currentUser} listRoom={listRoom} />
-            }
-        </div>
-    </div>
     }
-
-
-
-
+    {
+        isLoadDocsRoomMessages ?
+        <div className={currentUser.theme === "light" ? 'container-fluid bg-white' : 'container-fluid bg-dark text-white'} id='outer'>
+            <ToastContainer theme='colored' />
+            { currentRowShow === 'row-chat' ? <RowChat /> : <RowPhonebook /> }
+        </div>
+        : <LoadingScreen />
+    }
         <div className="modal fade" id="CreateRoomModal">
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content">
@@ -544,14 +428,14 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                         Thêm bạn vào nhóm
                         <div className='input-group'>
                             <span className='input-group-text'><HiSearch /></span>
-                            <input type="text" className='form-control' placeholder='Nhập tên bạn bè...' />
+                            <input type="text" className='form-control' placeholder='Nhập tên bạn bè, số điện thoại, email...' onChange={handleSearchFriend} />
                         </div>
                         <br />
                         <span className='badge bg-primary p-2 fw-normal'>Tất cả</span>
                         <hr />
                         <div id='FlatListFriend' className='border'>
                         {
-                            listFriendCopy.map( obj => {
+                            listFriendCopyToDisplay.map( obj => {
                                 return <div id='OneBoxUser' className='d-flex align-items-center my-1' key={Math.random()}>
                                             {
                                                 obj.isChecked
@@ -585,17 +469,17 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                     <div className="modal-body">
                         <div className="input-group mb-3">
                             <span className="input-group-text" id="basic-addon1"><FcSmartphoneTablet /></span>
-                            <input type="text" className="form-control" placeholder="(+84) Nhập số điện thoại..." />
+                            <input type="text" className="form-control" placeholder="(+84) Nhập số điện thoại, tên hoặc email" onChange={handleSearchStranger} />
                         </div>
                         <FaUserFriends /> Có thể bạn quen:
                         <div id="FlatListStranger">
                             {
-                                listUserStranger.map(oneStranger => {
-                                    return <div className='border d-flex align-items-center my-1' key={oneStranger.id}>
+                                listUserStrangerToDisplay.map((oneStranger, index) => {
+                                    return <div className='border d-flex align-items-center my-1' key={Math.random()}>
                                         <img src={oneStranger.photoURL} alt="photoURL" className='rounded-circle' width='40' height='40' />
                                         <span className='mx-2 flex-fill'>{oneStranger.fullName}</span>
                                         <button className='btn btn-outline-primary btn-sm' onClick={() => sendAddFriendRequest(id, oneStranger.id, oneStranger.fullName)}>Kết bạn</button>
-                                    </div>
+                                    </div>;
                                 })
                             }
                         </div>
@@ -662,7 +546,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                         <div className="modal-header">
                             <p className="modal-title fw-bold">Cập nhật thông tin <MdOutlineEditOff /></p>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" style={{display: 'none'}} id="closeUpdateInfoModal"></button>
-                            <CgClose className='btn-close' id="needCursor" onClick={() => handleCloseUpdateUserInfoModal()} />
+                            <CgClose className='btn-close needCursor' onClick={() => handleCloseUpdateUserInfoModal()} />
                         </div>
                         <form onSubmit={handleUpdateUser}>
                         <div className="modal-body">
@@ -673,7 +557,7 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                                             <label htmlFor="selectedImage" style={{position:'absolute',bottom:0,right:0}}>
                                                 <IoIosImages />
                                             </label>
-                                            <input type="file" name="selectedImage" id="selectedImage" accept='image/png, image/jpeg' style={{visibility: 'hidden', width:0, height:0}} onChange={(e) => handleSelectedImage(e)} />
+                                            <input type="file" name="selectedImage" id="selectedImage" accept='image/png, image/jpeg' style={{visibility: 'hidden', width:0, height:0}} />
                                             <TbUpload style={{position:'absolute',bottom:0,left:0}}/>
                                         </div>
                                         <input className='form-control' type="text" placeholder='Nhập tên đại điện muốn thay đổi' defaultValue={fullName} style={{textAlign:'center'}} name="editFullName" />
@@ -734,6 +618,29 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                                             <input className='form-control' type="text" placeholder='Nhập câu nói thương hiệu của bạn' defaultValue={slogan} name="editSlogan" />
                                         </div>
                                     </div>
+                                    <div className="d-flex">
+                                        <div className='text-muted w-100'>Màu nền</div>
+                                        <div className="form-check form-switch w-100">
+                                            {
+                                                currentUser.theme === "light" ?
+                                                <input className="form-check-input" type="checkbox" id="myTheme" name="lightmode" value="yes" onChange={() => onChangeColoredTheme()} /> :
+                                                <input className="form-check-input" type="checkbox" id="myTheme" name="darkmode" value="yes" onChange={() => onChangeColoredTheme()} defaultChecked />
+                                            }
+                                            <label className="form-check-label" htmlFor="myTheme">Dark Mode</label>
+                                        </div>
+                                    </div>
+                                    <div className="d-flex">
+                                        <div className='text-muted w-100'>Chế độ riêng tư</div>
+                                        <div className="form-check form-switch w-100">
+                                            {
+                                                currentUser.isPrivate ?
+                                                <input className="form-check-input" type="checkbox" id="myPrivate" name="public" value="yes" onChange={() => onChangeIsPrivate()} /> :
+                                                <input className="form-check-input" type="checkbox" id="myPrivate" name="private" value="yes" onChange={() => onChangeIsPrivate()} defaultChecked />
+                                            }
+                                            <label className="form-check-label flex-fill" htmlFor="myPrivate">Công khai</label>
+                                        </div>
+                                        <div data-bs-toggle="popover" title="Mặc định là `Public`" data-bs-content="Public - tự động ý khi bạn bè của bạn thêm / xóa, tag.. bạn vào các hội thoại chat. Private - trái ngược với public, các tác vụ thêm, xóa, tag được chuyển thành lời mời hoặc thông báo đến bạn để duyệt trước."><AiFillQuestionCircle className='text-primary lead' data-bs-toggle="tooltip" title="Nhấp giải thích" /></div>
+                                    </div>
                             </div>
                         </div>
                         <div className="modal-footer">
@@ -770,6 +677,115 @@ useEffect(() => { //useEffect gọi hàm stop slidering
                 </div>
             </div>
         </div>
-    </div>
+        <div className="modal fade" id="SignoutModal">
+            <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                    <form onSubmit={handleSignOut}>
+                    <div className="modal-header">
+                        <p className="modal-title">Đăng xuất tài khoản</p>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div className="modal-body">
+                        <div>
+                            <img src="https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg" alt="backgroundURL" id='backgroundURL' width='100%' />
+                        </div>
+                        <div className='text-center' style={{marginTop:'-35px'}}>
+                            <img src={photoURL} alt="photoURL" className='border border-dark rounded-circle' width='70' height='70' />
+                            <br />
+                            <span className='fw-bold'>{fullName}</span>
+                            <div className="form-check text-start">
+                                <input type="radio" className="form-check-input" id="nonbackup" name="selectBackupType" value="nonbackup" defaultChecked />
+                                <label className="form-check-label" htmlFor="nonbackup">Đăng xuất tức thị, không lưu vết cho lần đăng nhập sau.</label>
+                            </div>
+                            <div className="form-check text-start">
+                                <input type="radio" className="form-check-input" id="backup" name="selectBackupType" value="backup" />
+                                <label className="form-check-label" htmlFor="backup">Sao lưu các vết session, cookie cho lần đăng nhập sau (Đăng xuất chậm sao lưu, load nhanh cho lần dùng sau).</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="modal-footer">
+                        <button type='submit' className='btn btn-danger text-white w-100' id='btnSignOut'>
+                        <span className="spinner-grow spinner-grow-sm d-none"></span>
+                            Đăng xuất tài khoản
+                        </button>
+                    </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div className="modal fade" id="ManagerGroupModal">
+            <div className="modal-dialog modal-dialog-centered">
+                {/* Thông tin */}
+                {
+                    showGroupModalComponent === 'info' ?
+                    <Info setShowGroupModalComponent={setShowGroupModalComponent} /> :
+                        showGroupModalComponent === "update" ?
+                        <Update setShowGroupModalComponent={setShowGroupModalComponent} /> :
+                        <Authorization setShowGroupModalComponent={setShowGroupModalComponent} />
+                }
+            </div>
+        </div>
+        <div className="modal fade" id="ManagerUserModal">
+            <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                    <div className="modal-header">
+                        <p className="modal-title">Thông tin tài khoản</p>
+                        <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div className="modal-body">
+                        {/* div1 */}
+                        <div className='border text-center'>
+                            <img src="https://cover-talk.zadn.vn/e/e/1/4/1/2d5ad12faad2450f03cdb4b7b1719508.jpg" alt="backgroundURL" id='backgroundURL' width='100%' />
+                            <img src={objectUserModal.photoURL} alt="urlImage" width='80' height='80' className='rounded-circle needCursor border' />
+                            <br />
+                            <span className='fw-bold'>{objectUserModal.fullName}</span>
+                            <br />
+                            <span>{objectUserModal.slogan}</span>
+                        </div>
+                        {/* div2 */}
+                        <div className="border p-3">
+                            <code className='fw-bold'>Thông tin cá nhân</code>
+                            <div className="d-flex">
+                                <div className='text-mured'>Điện thoại/Email:</div>&emsp;
+                                <div>{objectUserModal.phoneNumber === "+84" ? objectUserModal.email : objectUserModal.phoneNumber}</div>
+                            </div>
+                            <div className="d-flex">
+                                <div className='text-mured'>Giới tính:</div>&emsp;
+                                <div>{objectUserModal.sex ? "Nữ" : "Nam"}</div>
+                            </div>
+                            <div className="d-flex">
+                                <div className='text-mured'>Ngày sinh:</div>&emsp;
+                                <div>{objectUserModal.bod}/{objectUserModal.bom}/{objectUserModal.boy}</div>
+                            </div>
+                        </div>
+                        {/* div3 */}
+                        <div className="border p-3">
+                            <div className="d-flex border-bottom p-2 needCursor">
+                                <div className='lead d-flex align-items-center'><HiOutlineUserGroup /></div>
+                                <div className='px-2'>Nhóm chung</div>
+                            </div>
+                            <div className="d-flex border-bottom p-2 needCursor">
+                                <div className='lead d-flex align-items-center'><HiOutlineUserGroup /></div>
+                                <div className='px-2'>Chặn tin nhắn</div>
+                            </div>
+                            <div className="d-flex border-bottom p-2 needCursor">
+                                <div className='lead d-flex align-items-center'><IoPersonAddSharp /></div>
+                                <div className='px-2'>Kết bạn</div>
+                            </div>
+                            <div className="d-flex p-2 needCursor">
+                                <div className='lead d-flex align-items-center'><FaUserMinus /></div>
+                                <div className='px-2'>Hủy kết bạn</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ShareMessageModal />
+        <DetailMessageModal />
+        <FriendVideoCallModal />
+        <RoomInviteFriendModal />
+    </>
   );
 }
