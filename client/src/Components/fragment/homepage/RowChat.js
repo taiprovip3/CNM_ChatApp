@@ -40,8 +40,11 @@ export default memo(function RowChat() {
             for (let index = 0; index < rooms.length; index++) {
                 const room = rooms[index];
                 if(room.id === textSearch) {
+                    setTextSearch("");
                     toast.success("Đã tìm thấy phòng");
-                    setMathRoomToken(room);
+                    setTimeout(() => {
+                        setMathRoomToken(room);
+                    }, 0);
                 } else {
                     setMathRoomToken(null);
                 }
@@ -200,7 +203,7 @@ export default memo(function RowChat() {
                 <div className='d-flex align-items-center'>
                     <div className="input-group">
                     <span className="input-group-text"><BiSearchAlt /></span>
-                    <input type="text" className="form-control" placeholder="Tìm kiếm" onChange={handleTextSearch} />
+                    <input type="text" className="form-control" placeholder="Tìm kiếm" onChange={handleTextSearch} value={textSearch} />
                     </div>
                     <HiUserAdd className='h3 m-2 needCursor' data-bs-toggle="modal" data-bs-target="#AddFriendModal" />
                     <HiOutlineUserGroup className='h3 m-1 needCursor' data-bs-toggle="modal" data-bs-target="#CreateRoomModal" />
@@ -272,7 +275,7 @@ export default memo(function RowChat() {
             </div>
 
 
-            <TokenJoinRoomModal room={matchRoomToken} />
+            <TokenJoinRoomModal room={matchRoomToken} setMathRoomToken={setMathRoomToken} />
         </div>
   );
 });

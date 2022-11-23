@@ -294,7 +294,7 @@ useEffect(() => {
                                     objectMessage.msg.includes("https://firebasestorage.googleapis.com/") ?
                                     <img src={objectMessage.msg} alt='messageIsImage' className='rounded' style={{ width:'100%' }} />
                                     :
-                                    <span className='fw-bold'>{objectMessage.msg}</span>
+                                    <span className={theme === "dark" ? 'fw-bold text-dark' : 'fw-bold'}>{objectMessage.msg}</span>
                                   }
                                   <br />
                                   <span className='text-muted small'>{objectMessage.time}</span>

@@ -152,11 +152,6 @@ export default function RoomInviteFriendModal() {
                                         </div>
                             })
                         }
-                        {/* <div className="p-2 d-flex align-items-center lead border-bottom" id='OneItem'>
-                            <input type="checkbox" name="" id="" value="selectedChoose" className='rounded-circle' />&ensp;
-                            <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" className='rounded-circle' width='45' height='45' />&ensp;
-                            <span>Phan Tấn Tài</span>
-                        </div> */}
                     </div>
                 </div>
                 <div className="modal-footer">
