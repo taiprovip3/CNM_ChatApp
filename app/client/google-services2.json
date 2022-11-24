@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "779888193931",
+    "project_id": "chatapp-5c28e",
+    "storage_bucket": "chatapp-5c28e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779888193931:android:e97f69849656f4a30bff8e",
+        "android_client_info": {
+          "package_name": "com.transportili.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "779888193931-m63tuhi4946fspbjdvrlrb01fpl57so4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCLAxADbeGNUrxCo365Q8rhSmPhe6La0Lg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "779888193931-m63tuhi4946fspbjdvrlrb01fpl57so4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

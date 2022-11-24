@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "349979181533",
+    "project_id": "ultimatechat-4f632",
+    "storage_bucket": "ultimatechat-4f632.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:349979181533:android:66344ad5cc2a17122a3634",
+        "android_client_info": {
+          "package_name": "com.transportili.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "349979181533-58dnf1hfr4efha0qkh8o121bembn57oe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCj0c8tiMqRX0Iv1pYc9E5BSjTckKhjy-0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "349979181533-58dnf1hfr4efha0qkh8o121bembn57oe.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
