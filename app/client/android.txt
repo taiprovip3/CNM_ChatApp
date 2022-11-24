@@ -1,0 +1,36 @@
+ECHO OFF
+setlocal
+cd C:\Users\Admin\AppData\Local\Android\Sdk\emulator
+emulator -avd Pixel_3a_XL_API_30
+
+exp://vx-76z.taiproduaxe.client.exp.direct:80
+User signed in:  Object {
+  "_redirectEventId": undefined,
+  "apiKey": "AIzaSyB-5EYam_GADZuEzA4O8P3QDNi0q1X4wYk",
+  "appName": "[DEFAULT]",
+  "createdAt": "1665190927815",
+  "displayName": undefined,
+  "email": "nva@gmail.com",
+  "emailVerified": false,
+  "isAnonymous": false,
+  "lastLoginAt": "1665323490414",
+  "phoneNumber": undefined,
+  "photoURL": undefined,
+  "providerData": Array [
+    Object {
+      "displayName": null,
+      "email": "nva@gmail.com",
+      "phoneNumber": null,
+      "photoURL": null,
+      "providerId": "password",
+      "uid": "nva@gmail.com",
+    },
+  ],
+  "stsTokenManager": Object {
+    "accessToken": "eyJhbGciOiJSUzI1NiIsImtpZCI6Ijk5NjJmMDRmZWVkOTU0NWNlMjEzNGFiNTRjZWVmNTgxYWYyNGJhZmYiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vY2hhdGFwcC01YzI4ZSIsImF1ZCI6ImNoYXRhcHAtNWMyOGUiLCJhdXRoX3RpbWUiOjE2NjUzMjM1MjYsInVzZXJfaWQiOiJJRXFzeDlkMVBlUFlhb2xjM2ZPRVE2bHlzRlAyIiwic3ViIjoiSUVxc3g5ZDFQZVBZYW9sYzNmT0VRNmx5c0ZQMiIsImlhdCI6MTY2NTMyMzUyNiwiZXhwIjoxNjY1MzI3MTI2LCJlbWFpbCI6Im52YUBnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImZpcmViYXNlIjp7ImlkZW50aXRpZXMiOnsiZW1haWwiOlsibnZhQGdtYWlsLmNvbSJdfSwic2lnbl9pbl9wcm92aWRlciI6InBhc3N3b3JkIn19.p8kclf7ihVZBs4aGynlnoP8R-YeKxxR6d1ig4j_syH9Jyb3tzxYwP_LaO2Yn_2mv4gpnSP38nYpvd3KQphzFHp_LE0E38Z8886AlKfYCleHaGOpMsA8vQsQZ2JdM8HxFrvbMKLpSYWN1qfzIgSO_0b0sg-m_NbJstblg_rQZsEN1TfooyXLRWMEEWcSGF5o_Nq2LAKkwlWPgGVfl-BM6iu3Olc7C7h6fuAMEkYgmtajKwEeDHgqGtjKB0crDY-zgwCRwpmBrD1OT9hE4bYJyhXeiPwxBE8eIzC-YPSdTgCMMiUwURpsGRVnfolpgAzHXreBhcegBbsW_Mmo3GFDn4g",
+    "expirationTime": 1665327124505,
+    "refreshToken": "AOEOulYvw_oKgMhoJu0LkNSkawAlCIe-HMWCBPLrIvCuBB0zYINbxTDVC57ArrSnyXRMdLK4ZJwEQdiH8w3_G4XcA5G-0pHT-f8rFqbppp6ldHKSUO2EdbQcRncCbx8JaXSEIarWFxz72lQ7bGU_2CfmwhTVIYubyXWf3s5EDzqvO1SE5V9XeFB0eMcqPa8UEOvzCDnQMd_I",
+  },
+  "tenantId": undefined,
+  "uid": "IEqsx9d1PePYaolc3fOEQ6lysFP2",
+}
