@@ -71,6 +71,26 @@ export default function RoomInviteFriendModal() {
             listMember: arrayUnion(element)
         });
     }
+
+    //Tien hanh pubsub message to listMember
+    for (let index = 0; index < listIdFriendSelectedNotPrivate.length; index++) {
+        const element = listIdFriendSelectedNotPrivate[index];
+        try {
+            await updateDoc(doc(database, "LastUserSeenMessage", element), {
+                listRoom: arrayUnion({
+                    idRoom: selectedRoom.id,
+                    lastMessage: ""
+                })
+            });
+        } catch (error) {
+            console.log(error);
+            if(error.code === "not-found") {
+                await setDoc(doc(database, "LastUserSeenMessage", element), {
+                    listRoom: [{idRoom: selectedRoom.id, lastMessage: ""}]
+                }, {merge: true});
+            }
+        }
+    }
     //Đối với Private
     try {
         for(let i=0; i<listIdFriendSelectedAndPrivate.length; i++) {

@@ -64,6 +64,23 @@ export default memo(function ListFriend() {
                     listFriend: [id]
                 });
             }
+            //5. Su ly kiến tạo lastSeenMessageFriend
+            const list2Peo = [{myId: id, friendId: request.idRequester}, {myId: request.idRequester, friendId: id}];
+            for (let index = 0; index < list2Peo.length; index++) {
+                const element = list2Peo[index];
+                try {
+                    await updateDoc(doc(database, "LastUserSeenMessage", element.myId), {
+                        listFriend: arrayUnion({idFriend: element.friendId, lastMessage: ""})
+                    });
+                } catch (error) {
+                    console.log(error);
+                    if(error.code === "not-found") {
+                        await setDoc(doc(database, "LastUserSeenMessage", element.myId), {
+                            listFriend: [{idFriend: element.friendId, lastMessage: ""}]
+                        }, {merge: true});
+                    }
+                }
+            }
     },[id, listFromRequest]);
 
     const handleCancelRequest = useCallback(async (request) => {
