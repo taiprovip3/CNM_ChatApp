@@ -46,8 +46,6 @@ export default memo(function RowChat() {
                 const LastUserSeenMessage_docRef = doc(database, "LastUserSeenMessage", id);
                 const LastUserSeenMessage_docSnap = await getDoc(LastUserSeenMessage_docRef);
                 if(LastUserSeenMessage_docSnap.exists()) {
-
-
                     const listRoomUserLastMessage = LastUserSeenMessage_docSnap.data().listRoom;
                     for(let i=0; i<docsRoomMessages.length; i++) {
                         const list_object_message_one_room = docsRoomMessages[i].listObjectMessage;
@@ -66,8 +64,6 @@ export default memo(function RowChat() {
                             }
                         }
                     }
-
-                    
                 }
                 console.log('list_id_to_ping_note: ', list_id_room_to_ping_note);
                 setListIdRoomUserToPingNote(list_id_room_to_ping_note);
