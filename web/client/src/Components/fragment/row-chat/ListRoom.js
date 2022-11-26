@@ -1,6 +1,6 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
-import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import React, { memo, useCallback, useState } from 'react';
 import { database } from '../../../firebase';
 import { AuthContext } from '../../provider/AuthProvider';
@@ -76,9 +76,21 @@ export default memo(function ListRoom() {
                 idMessage: (Math.random() + 1).toString(36).substring(2)
             })
         });
+        //Tien hanh pubsub message to listMember
+        await updateDoc(doc(database, "LastUserSeenMessage", id), {
+            listRoom: arrayUnion({
+                idRoom: idRoom,
+                lastMessage: ""
+            })
+        });
         toast.success("Tham gia nhóm thành công ✔️");
         setCurrentRowShow("row-chat");
     } catch (error) {
+        if(error.code === "not-found") {
+            await setDoc(doc(database, "LastUserSeenMessage", id), {
+                listRoom: [{idRoom: idRoom, lastMessage: ""}]
+            }, {merge: true});
+        }
         toast.error(error)
     }
   },[fullName, id, photoURL, setCurrentRowShow]);

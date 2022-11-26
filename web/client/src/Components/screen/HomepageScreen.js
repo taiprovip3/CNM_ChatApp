@@ -221,7 +221,7 @@ if(textSearchStranger.length >= 9) {
     const onInputNameRoomChange = useCallback((e) => {
         setInputNameRoom(e.target.value);
     },[]);
-    const handleCreateRoom = useCallback(() => {
+    const handleCreateRoom = useCallback(async () => {
         if(inputNameRoom.length < 3 || inputNameRoom === ""){
             toast.error("Tên nhóm rỗng hoặc quá ngắn", {
                 position: toast.POSITION.TOP_CENTER
@@ -264,7 +264,25 @@ if(textSearchStranger.length >= 9) {
         setInputNameRoom('');
         setListFriendCopy(friends);
         setCounterCheckedUser(0);
-
+        //Tien hanh pubsub message to listMember
+        for (let index = 0; index < DATA_LIST_FRIEND_SELECTED.length; index++) {
+            const element = DATA_LIST_FRIEND_SELECTED[index];
+            try {
+                await updateDoc(doc(database, "LastUserSeenMessage", element), {
+                    listRoom: arrayUnion({
+                        idRoom: r,
+                        lastMessage: ""
+                    })
+                });
+            } catch (error) {
+                console.log(error);
+                if(error.code === "not-found") {
+                    await setDoc(doc(database, "LastUserSeenMessage", element), {
+                        listRoom: [{idRoom: r, lastMessage: ""}]
+                    }, {merge: true});
+                }
+            }
+        }
     },[counterCheckedUser, id, inputNameRoom, friends, listFriendCopy]);
     const awaitHandleUploadPhotoURL = async (idUser, fileUpload) => {
         let link;
