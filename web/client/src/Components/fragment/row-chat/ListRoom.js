@@ -1,6 +1,6 @@
 /* eslint-disable array-callback-return */
 /* eslint-disable no-unused-vars */
-import { arrayRemove, arrayUnion, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { arrayRemove, arrayUnion, doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import React, { memo, useCallback, useState } from 'react';
 import { database } from '../../../firebase';
 import { AuthContext } from '../../provider/AuthProvider';
@@ -76,9 +76,21 @@ export default memo(function ListRoom() {
                 idMessage: (Math.random() + 1).toString(36).substring(2)
             })
         });
+        //Tien hanh pubsub message to listMember
+        await updateDoc(doc(database, "LastUserSeenMessage", id), {
+            listRoom: arrayUnion({
+                idRoom: idRoom,
+                lastMessage: ""
+            })
+        });
         toast.success("Tham gia nhóm thành công ✔️");
         setCurrentRowShow("row-chat");
     } catch (error) {
+        if(error.code === "not-found") {
+            await setDoc(doc(database, "LastUserSeenMessage", id), {
+                listRoom: [{idRoom: idRoom, lastMessage: ""}]
+            }, {merge: true});
+        }
         toast.error(error)
     }
   },[fullName, id, photoURL, setCurrentRowShow]);
@@ -96,19 +108,20 @@ export default memo(function ListRoom() {
     <div className='container h-100 overflow-auto'>
         <ToastContainer theme='colored' />
         <div className="row">
-            {listRoomPendingInvite.map(room => {
-                    return <div className="col-lg-4 border p-1 text-center" style={{ position: 'relative' }}>
-                    <div style={{ position: 'absolute', top:0, left:0 }} key={Math.random()}>
+            {listRoomPendingInvite.length > 0 &&
+            listRoomPendingInvite.map(room => {
+                    return <div className="col-lg-4 border p-1 text-center" style={{ position: 'relative' }} key={Math.random()}>
+                    <div style={{ position: 'absolute', top:0, left:0 }}>
                         <span className='text-decoration-underline fw-bolder'>Lời mời vào nhóm</span>
                     </div>
                     <br />
                     <img src="https://res.cloudinary.com/dopzctbyo/image/upload/v1649587847/sample.jpg" alt="photoURL" width='45' height='45' className='rounded-circle' />
                     <br />
-                    <span>{room.name}</span>
+                    <span>{room && room.name}</span>
                     <br />
-                    <span className='text-muted small'>{room.description}</span>
+                    <span className='text-muted small'>{room && room.description}</span>
                     <br />
-                    <span>{room.listMember.length} Thành viên</span>
+                    <span>{room && room.listMember.length} Thành viên</span>
                     <div className="d-flex">
                         <button className="btn btn-link w-100" onClick={() => handleJoinRoom(room.id)}>Tham gia</button>
                         <button className="btn btn-link w-100" onClick={() => handleEjectInvite(room.id)}>Từ chối</button>

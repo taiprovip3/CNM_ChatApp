@@ -16,11 +16,9 @@ import FirebaseGetRooms from '../service/FirebaseGetRooms';
 import FirebaseGetFriends from '../service/FirebaseGetFriends';
 
 export default function HomepageScreen({ navigation }) {
-//Khởi tạo biến
-  // Sử lý khi bấm signout hàm chống rerender lỗi
-  const { currentUser, socket } = useContext(AuthContext);
-  const objectCurrentUser = { id: 'maFe32o2v4edQ9ubEf98f6AjEJF2', address: 'Admin Adress', age:999, email: 'taito1doraemon@gmail.com', fullName: 'Phan Tấn Tài', joinDate: Timestamp.now(), photoURL: 'https://res.cloudinary.com/dopzctbyo/image/upload/v1665818815/seo-off-page_imucfs.png', roles: ['MEMBER', 'ADMIN'], sex: false };
-  if(!currentUser || currentUser == null || currentUser.length <= 0){
+
+  const { currentUser, setCurrentUser } = useContext(AuthContext);
+  if(!currentUser){
     console.log('Phát hiện null currentUser -> stop render');
     setTimeout(() => {
       navigation.navigate('AuthScreen');
@@ -35,32 +33,25 @@ export default function HomepageScreen({ navigation }) {
     </View>
     </>
     );
-  } else{
-    Object.assign(objectCurrentUser,currentUser);
   }
-  // Lấy list rooms mà user có tham gia
+
   const [listRoom, setListRoom] = useState([]);
-  const id = objectCurrentUser.id;
-  const memoIdUser = useMemo(() => {
-    return id;
-  },[id]);
-  const rooms = FirebaseGetRooms(memoIdUser);
-  useEffect(() => { //biến room do trên firebase thay đổi => chạy service => gắn lại docRooms trên FB zo rooms => dẫn đến biến rooms thay đổi => chạy useEffect này => set lại data listRoom + rerender
-    rooms.sort(function(x, y){
-      return x.createAt - y.createAt;
-    });
-    console.log('ROOM LIST :: ', rooms);
-    setListRoom(rooms);
-  }, [rooms]);
-  // Lấy list friends mà user kết bạn
   const [listFriend, setListFriend] = useState([]);
-  const friends = FirebaseGetFriends(memoIdUser);
-  useEffect(() => { //biến room do trên firebase thay đổi => chạy service => gắn lại docRooms trên FB zo rooms => dẫn đến biến rooms thay đổi => chạy useEffect này => set lại data listRoom + rerender
-    console.log('SetListFiend actived :: ', friends);
-    setTimeout(() => {
+
+  const rooms = FirebaseGetRooms();
+  const friends = FirebaseGetFriends();
+  useEffect(() => {
+    if(rooms.length > 0) {
+      rooms.sort(function(x, y){
+        return x.createAt - y.createAt;
+      });
+      setListRoom(rooms);
+    }
+  }, [rooms]);
+  useEffect(() => {
+    if(friends.length > 0) {
       setListFriend(friends);
-      console.log('SetListFiend actived after 3000 :: ', friends);
-    }, 500);
+    }
   }, [friends]);
 
 //Khởi tạo hàm cần thiết
@@ -111,7 +102,6 @@ export default function HomepageScreen({ navigation }) {
     <OneBoxFriend item={item} />
   );
   function moveToScreenChat(item){
-    socket.emit("join_room", item.id);
     setTimeout(() => {
       navigation.navigate('ChatRoomScreen', {roomObj: item});
     }, 0);
@@ -149,64 +139,64 @@ export default function HomepageScreen({ navigation }) {
 
   //4. Render html
   return (
-    <NativeBaseProvider>
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', overflow:'hidden'}}>
-        {/* Box0 */}
-        <View style={{zIndex:1}}>
-          <Toast />
+      <NativeBaseProvider>
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center', overflow:'hidden'}}>
+          {/* Box0 */}
+          <View style={{zIndex:1}}>
+            <Toast />
+          </View>
+          {/* Box1 */}
+          <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:10, width:'100%', flex:1, zIndex:1}}>
+            <IconEvillcon name='search' size={24} color='white' style={{paddingTop:4}} />
+            <TextInput placeholder='Tìm kiếm' style={{flex:1,marginHorizontal:8}} placeholderTextColor='white' />
+            <IconAntDesign name='qrcode' size={24} color='white' style={{marginHorizontal:8}} />
+            <Menu shadow={2} trigger={triggerProps => {
+          return <Pressable accessibilityLabel="More options menu" {...triggerProps}>
+                  <AntDesign name="plus" size={24} color="white" />
+                </Pressable>;
+            }}>
+              <Menu.Item onPress={changeToCreateGroupScreen}>
+                <IconAntDesign name='addusergroup' size={24} />
+                <Text>Tạo nhóm</Text>
+              </Menu.Item>
+              <Menu.Item onPress={changeToAddFriendScreen}>
+                <IconAntDesign name='adduser' size={24} />
+                <Text>Thêm bạn</Text>
+              </Menu.Item>
+            </Menu>
+          </View>
+          {/* Box2 */}
+          <View style={{flex:20, width:'100%'}}>
+              <FlatList
+                data={listRoom}
+                renderItem={renderListRoom}
+                keyExtractor={(item) => item.id}
+              />
+              <FlatList
+                data={listFriend}
+                renderItem={renderListFriend}
+                keyExtractor={(item) => item.id}
+              />
+          </View>
+          {/* Box3 */}
+          <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:15, width:'100%', flex:1}}>
+            <View style={{flex:1, alignItems:'center'}}>
+              <IconAntDesign name='message1' size={27} color='black' style={{backgroundColor:'white', borderRadius:100/2}} />
+            </View>
+            <View style={{flex:1, alignItems:'center'}}>
+              <IconAntDesign name='contacts' size={27} color='white' onPress={() => alert('Change to Contacts')} />
+            </View>
+            <View style={{flex:1, alignItems:'center'}}>
+              <IconAntDesign name='appstore-o' size={27} color='white' />
+            </View>
+            <View style={{flex:1, alignItems:'center'}}>
+              <IconFeather name='clock' size={27} color='white' onPress={() => alert('Change to nhật ký')} />
+            </View>
+            <View style={{flex:1, alignItems:'center'}}>
+              <IconFontAwesome name='user-circle' size={27} color='white' onPress={() => setCurrentUser(null)} />
+            </View>
+          </View>
         </View>
-        {/* Box1 */}
-        <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:10, width:'100%', flex:1, zIndex:1}}>
-          <IconEvillcon name='search' size={24} color='white' style={{paddingTop:4}} />
-          <TextInput placeholder='Tìm kiếm' style={{flex:1,marginHorizontal:8}} placeholderTextColor='white' />
-          <IconAntDesign name='qrcode' size={24} color='white' style={{marginHorizontal:8}} />
-          <Menu shadow={2} trigger={triggerProps => {
-        return <Pressable accessibilityLabel="More options menu" {...triggerProps}>
-                <AntDesign name="plus" size={24} color="white" />
-              </Pressable>;
-          }}>
-            <Menu.Item onPress={changeToCreateGroupScreen}>
-              <IconAntDesign name='addusergroup' size={24} />
-              <Text>Tạo nhóm</Text>
-            </Menu.Item>
-            <Menu.Item onPress={changeToAddFriendScreen}>
-              <IconAntDesign name='adduser' size={24} />
-              <Text>Thêm bạn</Text>
-            </Menu.Item>
-          </Menu>
-        </View>
-        {/* Box2 */}
-        <View style={{flex:20, width:'100%'}}>
-            <FlatList
-              data={listRoom}
-              renderItem={renderListRoom}
-              keyExtractor={(item) => item.id}
-            />
-            <FlatList
-              data={listFriend}
-              renderItem={renderListFriend}
-              keyExtractor={(item) => item.id}
-            />
-        </View>
-        {/* Box3 */}
-        <View style={{flexDirection:'row', backgroundColor:'#2190ff', padding:15, width:'100%', flex:1}}>
-          <View style={{flex:1, alignItems:'center'}}>
-            <IconAntDesign name='message1' size={27} color='black' style={{backgroundColor:'white', borderRadius:100/2}} />
-          </View>
-          <View style={{flex:1, alignItems:'center'}}>
-            <IconAntDesign name='contacts' size={27} color='white' onPress={() => alert('Change to Contacts')} />
-          </View>
-          <View style={{flex:1, alignItems:'center'}}>
-            <IconAntDesign name='appstore-o' size={27} color='white' />
-          </View>
-          <View style={{flex:1, alignItems:'center'}}>
-            <IconFeather name='clock' size={27} color='white' onPress={() => alert('Change to nhật ký')} />
-          </View>
-          <View style={{flex:1, alignItems:'center'}}>
-            <IconFontAwesome name='user-circle' size={27} color='white' onPress={() => signOut(auth)} />
-          </View>
-        </View>
-      </View>
-    </NativeBaseProvider>
+      </NativeBaseProvider>
   )
 };

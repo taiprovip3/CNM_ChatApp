@@ -112,7 +112,7 @@ export default function LoginBoxComponent() {
 
                         <div className="form-check text-start">
                             <input type="radio" className="form-check-input" id="byEmail" name="selectLoginType" value="byEmail" defaultChecked />
-                            <label className="form-check-label" htmlFor="byEmail">Đăng nhập bằng tài khoản Email có sẵn</label>
+                            <label className="form-check-label" htmlFor="byEmail">Đăng nhập bằng tài khoản Email / số điện thoại</label>
                         </div>
                         <div className="form-check text-start">
                             <input type="radio" className="form-check-input" id="byOTP" name="selectLoginType" value="byOTP" onChange={() => dispatch("SHOW_LOGIN_OTP_BOX_COMPONENT")} style={{cursor: 'pointer'}} />

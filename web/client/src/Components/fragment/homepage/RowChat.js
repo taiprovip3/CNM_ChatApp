@@ -5,9 +5,11 @@ import '../../css/RowChat.css';
 import { BsFillChatTextFill } from 'react-icons/bs'
 import { RiSettings5Line, RiFolderUserFill, RiEmotionLaughFill } from 'react-icons/ri';
 import { BiSearchAlt } from 'react-icons/bi';
-import { HiUserAdd, HiOutlineUserGroup } from 'react-icons/hi';
+import { HiUserAdd, HiOutlineUserGroup, HiLightBulb, HiOutlineLightningBolt, } from 'react-icons/hi';
+import { GoPrimitiveDot } from 'react-icons/go';
+import { GiChatBubble } from 'react-icons/gi';
 import { AuthContext } from '../../provider/AuthProvider';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { arrayUnion, collection, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from 'firebase/firestore';
 import { database } from '../../../firebase';
 import introduction1 from '../../assets/introduction1.png';
 import introduction2 from '../../assets/introduction2.png';
@@ -35,7 +37,83 @@ export default memo(function RowChat() {
     const [roomsAndfriends, setRoomsAndFriends] = React.useState([]);
     const [textSearch, setTextSearch] = React.useState("");
     const [matchRoomToken, setMathRoomToken] = React.useState(null);
+    const [listIdRoomUserToPingNote, setListIdRoomUserToPingNote] = React.useState([]);
+    const [listIdFriendUserToPingNote, setListIdFriendUserToPingNote] = React.useState([]);
 
+    React.useEffect(() => {//useEff lắng nge lastSeenMsgRoom
+        const accessLastSeenMessage = async () => {
+            if(docsRoomMessages.length > 0) {
+                const list_id_room_to_ping_note = [];
+                const LastUserSeenMessage_docRef = doc(database, "LastUserSeenMessage", id);
+                const LastUserSeenMessage_docSnap = await getDoc(LastUserSeenMessage_docRef);
+                if(LastUserSeenMessage_docSnap.exists()) {
+                    const listRoomUserLastMessage = LastUserSeenMessage_docSnap.data().listRoom;
+                    for(let i=0; i<docsRoomMessages.length; i++) {
+                        if(docsRoomMessages[i].listObjectMessage.length > 0) {
+                            const last_message_one_room = docsRoomMessages[i].listObjectMessage[docsRoomMessages[i].listObjectMessage.length - 1].msg;// lấy ra lastmessage của mỗi doc
+                            for(let j=0; j<listRoomUserLastMessage.length; j++) {
+                                if(listRoomUserLastMessage[j].idRoom === docsRoomMessages[i].idRoom) {
+                                    const last_message_ago = listRoomUserLastMessage[j].lastMessage;
+                                    if(last_message_one_room !== last_message_ago) {
+                                        console.log('founded one room need to ping!');
+                                        list_id_room_to_ping_note.push(listRoomUserLastMessage[j].idRoom);
+                                    } else {
+                                        console.log('skipped one room check');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                console.log('list_idRoom_to_ping_note: ', list_id_room_to_ping_note);
+                setListIdRoomUserToPingNote(list_id_room_to_ping_note);
+            }
+        }
+        accessLastSeenMessage();
+    },[docsRoomMessages, id]);
+    React.useEffect(() => {//useEff lắng nge lastSeenMsgFriend
+        const accessLastSeenMessage = async () => {
+            if(docsFriendMessages.length > 0) {
+                const list_id_friend_to_ping_note = [];
+                const LastUserSeenMessage_docRef = doc(database, "LastUserSeenMessage", id);
+                const LastUserSeenMessage_docSnap = await getDoc(LastUserSeenMessage_docRef);
+                if(LastUserSeenMessage_docSnap.exists()) {
+                    const listFriendUserLastMessage = LastUserSeenMessage_docSnap.data().listFriend;
+                    for (let i = 0; i < docsFriendMessages.length; i++) {
+                        const element1 = docsFriendMessages[i];
+                        if(element1.listObjectMessage.length > 0) {
+                            const last_message_one_friend = element1.listObjectMessage[element1.listObjectMessage.length - 1].msg//lấy dc lastMsg của 1 document friend
+                            for (let j = 0; j < listFriendUserLastMessage.length; j++) {
+                                const element2 = listFriendUserLastMessage[j];
+                                if(element1.partners[0] === element2.idFriend) {
+                                    const last_message_ago = element2.lastMessage;
+                                    if(last_message_one_friend !== last_message_ago) {
+                                        console.log('founded one friend need to ping!');
+                                        list_id_friend_to_ping_note.push(element2.idFriend);
+                                    } else {
+                                        console.log('skipped one friend check');
+                                    }
+                                } else {
+                                    if(element1.partners[1] === element2.idFriend) {
+                                        const last_message_ago = element2.lastMessage;
+                                        if(last_message_one_friend !== last_message_ago) {
+                                            console.log('founded one friend need to ping!');
+                                            list_id_friend_to_ping_note.push(element2.idFriend);
+                                        } else {
+                                            console.log('skipped one friend check');
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                console.log('list_idFriend_to_ping_note: ', list_id_friend_to_ping_note);
+                setListIdFriendUserToPingNote(list_id_friend_to_ping_note);
+            }
+        }
+        accessLastSeenMessage();
+    },[docsFriendMessages, id]);
     React.useEffect(() => {
         if(textSearch !== "" && rooms) {
             for (let index = 0; index < rooms.length; index++) {
@@ -133,10 +211,38 @@ export default memo(function RowChat() {
         }
         return room;
     }
-    const onClickOneRoom = useCallback((obj) => {
-        socket.emit("join_room", obj.id);
-        setSelectedObject(obj);
-    }, [socket]);
+    const onClickOneRoom = useCallback(async (objectRoom) => {
+        socket.emit("join_room", objectRoom.id);
+        setSelectedObject(objectRoom);
+        //Cập nhật lại pingnote nếu currentUser trong room này trễ
+        if(listIdRoomUserToPingNote.includes(objectRoom.id)) {
+            console.log('processing update lastseenmsg');
+            let roomMessages = [];
+            for(let i=0; i<docsRoomMessages.length; i++) {
+                const element = docsRoomMessages[i];
+                if(element.idRoom === objectRoom.id) {
+                    roomMessages = element.listObjectMessage;
+                    break;
+                }
+            }
+            const lastObjectMessage = roomMessages[roomMessages.length - 1];
+            const LastUserSeenMessage_docRef = doc(database, "LastUserSeenMessage", id);
+            const LastUserSeenMessage_docSnap = await getDoc(LastUserSeenMessage_docRef);
+            const dataDocListRoom = LastUserSeenMessage_docSnap.data().listRoom;
+            const newListRoom = dataDocListRoom.map(m => (
+                m.idRoom === objectRoom.id ? {...m, lastMessage: lastObjectMessage.msg} : m
+            ));
+
+            await updateDoc(doc(database, "LastUserSeenMessage", id), {
+                listRoom: newListRoom
+            });
+
+            setListIdRoomUserToPingNote(prev => prev.filter(val => {
+                if(val !== objectRoom.id)
+                    return val;
+            }));
+        }
+    }, [docsRoomMessages, id, listIdRoomUserToPingNote, socket]);
     const onClickOneFriend = useCallback(async (obj) => {
         const q = query(collection(database, "FriendMessages"), where("listeners", "in", [obj.id + "__" + id, id + "__" + obj.id]));
         const querySnapShot = await getDocs(q);
@@ -144,7 +250,36 @@ export default memo(function RowChat() {
         socket.emit("join_room", idRoom);
         setSelectedObject(obj);
         setIdRoomIfClickChatToOneFriend(idRoom);
-    }, [id, socket]);
+
+
+        //Cập nhật lại pingnote nếu currentUser trong room này trễ
+        if(listIdFriendUserToPingNote.includes(obj.id)) {
+            console.log('processing update lastseenmsg');
+            let friendMessages = [];
+            for(let i=0; i<docsFriendMessages.length; i++) {
+                const element = docsFriendMessages[i];
+                if(element.partners.includes(obj.id)) {
+                    friendMessages = element.listObjectMessage;
+                    break;
+                }
+            }
+            console.log(friendMessages);
+            const lastObjectMessage = friendMessages[friendMessages.length - 1];
+            const LastUserSeenMessage_docRef = doc(database, "LastUserSeenMessage", id);
+            const LastUserSeenMessage_docSnap = await getDoc(LastUserSeenMessage_docRef);
+            const dataDocListFriend = LastUserSeenMessage_docSnap.data().listFriend;
+            const newListFriend = dataDocListFriend.map(m => (
+                m.idFriend === obj.id ? {...m, lastMessage: lastObjectMessage.msg} : m
+            ));
+            await updateDoc(doc(database, "LastUserSeenMessage", id), {
+                listFriend: newListFriend
+            });
+            setListIdFriendUserToPingNote(prev => prev.filter(val => {
+                if(val !== obj.id)
+                    return val;
+            }));
+        }
+    }, [docsFriendMessages, id, listIdFriendUserToPingNote, socket]);
     const getPartnerLastMessage = useCallback((objectFriend) => {
         let roomMessages = [];
         for(let i=0; i<docsFriendMessages.length; i++) { //Mỗi 1 doc
@@ -179,6 +314,18 @@ export default memo(function RowChat() {
         const msg = lastObjectMessage.msg.includes("https://firebasestorage.googleapis.com/") ? "🎥 Hình ảnh" : lastObjectMessage.msg;
         return lastObjectMessage.idSender === id ? "Bạn: " + msg : nameSender + ": " + msg;
     },[docsRoomMessages, id]);
+    const isObjectLateForPing = (typeToObject, idRoomOrFriend) => {
+        if(typeToObject === "room") {
+            if(listIdRoomUserToPingNote.includes(idRoomOrFriend)) {
+                return true;
+            }
+        } else {
+            if(listIdFriendUserToPingNote.includes(idRoomOrFriend)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     return (
         <div className="row"id="row-chat">
@@ -210,14 +357,6 @@ export default memo(function RowChat() {
                     <HiOutlineUserGroup className='h3 m-1 needCursor' data-bs-toggle="modal" data-bs-target="#CreateRoomModal" />
                 </div>
 
-                {/* <div className="dropup p-1" id='categoryDiv'>
-                    <span className="dropdown-toggle" data-bs-toggle="dropdown">Phân loại</span>
-                    <ul className="dropdown-menu">
-                        <li className={selectedCategory === "ALL" ? "dropdown-item active" : "dropdown-item"} onClick={() => setSelectedCategory("ALL")}>Tất cả</li>
-                        <li className={selectedCategory === "ROOM" ? "dropdown-item active" : "dropdown-item"} onClick={() => setSelectedCategory("ROOM")}>Nhóm chat</li>
-                        <li className={selectedCategory === "FRIEND" ? "dropdown-item active" : "dropdown-item"} onClick={() => setSelectedCategory("FRIEND")}>Bạn bè</li>
-                    </ul>
-                </div> */}
                 <Dropdown>
                     <Dropdown.Toggle variant="outline" id="dropdown-basic">
                         <span className='text-primary text-decoration-underline'>Phân loại</span>
@@ -245,7 +384,7 @@ export default memo(function RowChat() {
                     {
                         roomAndFriendToDisplay.map(obj => {
                             if(obj.type) {
-                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center needCursor border-bottom' : 'container d-flex align-items-center needCursor border-bottom'} key={Math.random()} onClick={() => onClickOneRoom(obj)}>
+                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center needCursor border-bottom position-relative' : 'container d-flex align-items-center needCursor border-bottom position-relative'} key={Math.random()} onClick={() => onClickOneRoom(obj)}>
                                 <div className='col-lg-2'>
                                 <img src={obj.urlImage} alt="photoURL" className='rounded-circle' width='45' height='45' />
                                 </div>
@@ -254,9 +393,15 @@ export default memo(function RowChat() {
                                 <br />
                                 <small className='text-secondary'>{getRoomLastMessage(obj)}</small>
                                 </div>
+                                {
+                                    isObjectLateForPing("room", obj.id) &&
+                                    <div id="redDot" className='position-absolute top-0 end-0'>
+                                        <GiChatBubble className='text-primary' />
+                                    </div>
+                                }
                             </div>
                             } else {
-                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center needCursor border-bottom' : 'container d-flex align-items-center needCursor border-bottom'} key={Math.random()} onClick={() => onClickOneFriend(obj)}>
+                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center needCursor border-bottom position-relative' : 'container d-flex align-items-center needCursor border-bottom position-relative'} key={Math.random()} onClick={() => onClickOneFriend(obj)}>
                                 <div className='col-lg-2'>
                                     <img src={obj.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />
                                 </div>
@@ -265,6 +410,12 @@ export default memo(function RowChat() {
                                     <br />
                                     <small className='text-secondary'>{getPartnerLastMessage(obj)}</small>
                                 </div>
+                                {
+                                    isObjectLateForPing("friend", obj.id) &&
+                                    <div id="redDot" className='position-absolute top-0 end-0'>
+                                        <GiChatBubble className='text-primary' />
+                                    </div>
+                                }
                             </div>
                             }
                         })

@@ -64,6 +64,23 @@ export default memo(function ListFriend() {
                     listFriend: [id]
                 });
             }
+            //5. Su ly kiến tạo lastSeenMessageFriend
+            const list2Peo = [{myId: id, friendId: request.idRequester}, {myId: request.idRequester, friendId: id}];
+            for (let index = 0; index < list2Peo.length; index++) {
+                const element = list2Peo[index];
+                try {
+                    await updateDoc(doc(database, "LastUserSeenMessage", element.myId), {
+                        listFriend: arrayUnion({idFriend: element.friendId, lastMessage: ""})
+                    });
+                } catch (error) {
+                    console.log(error);
+                    if(error.code === "not-found") {
+                        await setDoc(doc(database, "LastUserSeenMessage", element.myId), {
+                            listFriend: [{idFriend: element.friendId, lastMessage: ""}]
+                        }, {merge: true});
+                    }
+                }
+            }
     },[id, listFromRequest]);
 
     const handleCancelRequest = useCallback(async (request) => {
@@ -120,7 +137,7 @@ export default memo(function ListFriend() {
             <div className="d-flex flex-wrap">
                 {
                     listFromRequest.map(request => {
-                        return <div className='text-center rounded' id="OneBoxRequest" key={request.idRequester}>
+                        return <div className='text-center rounded text-dark' id="OneBoxRequest" key={request.idRequester}>
                             <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
                             <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
                                 <span>{request.description}</span>

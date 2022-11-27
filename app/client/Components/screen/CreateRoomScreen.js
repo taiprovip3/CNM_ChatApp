@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState, useMemo, useContext } from 're
 import { Box, Center, Checkbox, HStack, Icon, Image, Input, NativeBaseProvider, ScrollView, Pressable, FlatList, Modal, Button } from 'native-base';
 import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { AuthContext } from '../provider/AuthProvider';
-import { collection, addDoc, query, getDocs, onSnapshot, doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, query, getDocs, onSnapshot, doc, getDoc, setDoc, Timestamp, updateDoc, arrayUnion } from 'firebase/firestore';
 import { database } from '../../firebase';
 import Toast from 'react-native-toast-message';
 import ListFriendSelected from '../component/ListFriendSelected';
@@ -20,16 +20,13 @@ export default function CreateRoomScreen({ navigation }) {
   const [listCheckboxSelected,setListCheckboxSelected] = useState(0);
   const [isShowDanhBa, setIsShowDanhBa] = useState(false);
   const DATALISTUSERFRIENDS = [];
-  //Giải thuật toán:
-  //B1: App chạy khai báo biến trước -> render -> function javascript
-  //  + div4 & div5 -> có dùng listOfYourFriend nhưng == null nền sử dụng isNullListFriend để kiểm
-  //  + Render xong gọi useEffect1
+
   useEffect(() => {
-      getDoc(doc(database, 'UserFriends', id))
+      getDoc(doc(database, 'Friends', id))
         .then(documentSnapShot => {
           const DATALISTIDFRIEND = documentSnapShot.data().listFriend;
           DATALISTIDFRIEND.map((obj) => {
-            getDoc(doc(database, "Users", obj.idFriend))
+            getDoc(doc(database, "Users", obj))
             .then(docSnap => {
               const objectData = {...docSnap.data(),isSelected:false};
               DATALISTUSERFRIENDS.push(objectData);
@@ -69,7 +66,7 @@ export default function CreateRoomScreen({ navigation }) {
   },[listOfYourFriend]);
 
 //1. Tạo hàm cần thiết
-  const handleCreateRoom = () => {
+  const handleCreateRoom = async () => {
     if(roomName == '') {
       Toast.show({
         type: 'error',
@@ -114,6 +111,24 @@ export default function CreateRoomScreen({ navigation }) {
         text1: 'Tạo nhóm thành công',
         text2: 'Vui lòng chờ chút'
       });
+      for (let index = 0; index < DATA_LIST_FRIEND_SELECTED.length; index++) {
+        const element = DATA_LIST_FRIEND_SELECTED[index];
+        try {
+            await updateDoc(doc(database, "LastUserSeenMessage", element), {
+                listRoom: arrayUnion({
+                    idRoom: r,
+                    lastMessage: ""
+                })
+            });
+        } catch (error) {
+            console.log(error);
+            if(error.code === "not-found") {
+                await setDoc(doc(database, "LastUserSeenMessage", element), {
+                    listRoom: [{idRoom: r, lastMessage: ""}]
+                }, {merge: true});
+            }
+        }
+    }
       setTimeout(() => {
         navigation.navigate('HomepageScreen');
       }, 2000);
