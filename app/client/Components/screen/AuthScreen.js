@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TextInput, Button, Pressable, SafeAreaView, LogBox } from 'react-native';
-import { NativeBaseProvider, Input, Icon, Box, HStack, Select, CheckIcon } from 'native-base';
+import { NativeBaseProvider, Input, Icon, Box, HStack, Select, CheckIcon, ScrollView } from 'native-base';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import IconFontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import IconFontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -209,6 +209,7 @@ export default function AuthScreen({ navigation }){
         <Toast position='bottom' bottomOffset={20} />
         <View style={{flex: 1, justifyContent: 'center', alignContent: 'center'}}>
             {/* View Header */}
+            <ScrollView>
             <View style={{alignItems: 'center'}}>
                 <Text style={{fontSize: 40, color: 'blue', fontWeight: 'bold'}}>Ultimate Chat</Text>
                 <Text>Vui lòng đăng nhập tài khoản UChat</Text>
@@ -428,6 +429,7 @@ export default function AuthScreen({ navigation }){
                 <Text>Copyright <IconFontAwesome5 name='copyright' color="black" solid/> 2022 Nhóm 9 UltimtateChat Application</Text>
                 <Text>Terms of Use | Privacy Policy</Text>
             </View>
+            </ScrollView>
         </View>
     </NativeBaseProvider>
     )
