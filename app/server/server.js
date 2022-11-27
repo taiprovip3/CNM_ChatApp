@@ -1,5 +1,10 @@
 const express = require('express');
+const cors = require("cors");
 const app = express();
+app.use(express.json({
+    type: "*/*"
+}));
+app.use(cors());
 const socket = require('socket.io');
 const server = app.listen(4000, () => {
     console.log('Server is running in 4000...');
@@ -28,4 +33,21 @@ io.on("connection", (socket) => {
     io.on("disconnect", () => {
         console.log('User Disconnected: ', socket.id);
     });
+});
+//Phần Twilio
+const accountSid = "AC187d966f20179bb71157e293dcca8cf5";
+const authToken = "320174b19c02094c6676af72e0fc954a";
+const client = require("twilio")(accountSid, authToken);
+app.post("/SendPasswordToOTP", (req, res) => {
+    //to: '+840338188506',
+    const { phonenumber, password } = req.body;
+    console.log('phoneNumberForTwilio: ', phonenumber);
+    client.messages
+        .create({
+            body: 'UltimateChat, you registered an account in UChat.Com. Your password is: ' + password,
+            to: phonenumber,
+            from: '+19704708385',
+        })
+        .then((message) => console.log('message Sid = ', message.sid));
+    return res.sendStatus(200);
 });

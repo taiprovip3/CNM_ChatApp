@@ -81,17 +81,27 @@ export default memo(function RowChat() {
                     const listFriendUserLastMessage = LastUserSeenMessage_docSnap.data().listFriend;
                     for (let i = 0; i < docsFriendMessages.length; i++) {
                         const element1 = docsFriendMessages[i];
-                        if(element1.listObjectMessage.length > 0 && element1) {
+                        if(element1.listObjectMessage.length > 0) {
                             const last_message_one_friend = element1.listObjectMessage[element1.listObjectMessage.length - 1].msg//lấy dc lastMsg của 1 document friend
                             for (let j = 0; j < listFriendUserLastMessage.length; j++) {
                                 const element2 = listFriendUserLastMessage[j];
-                                if(element1.partners[1] === element2.idFriend) {
+                                if(element1.partners[0] === element2.idFriend) {
                                     const last_message_ago = element2.lastMessage;
                                     if(last_message_one_friend !== last_message_ago) {
                                         console.log('founded one friend need to ping!');
                                         list_id_friend_to_ping_note.push(element2.idFriend);
                                     } else {
                                         console.log('skipped one friend check');
+                                    }
+                                } else {
+                                    if(element1.partners[1] === element2.idFriend) {
+                                        const last_message_ago = element2.lastMessage;
+                                        if(last_message_one_friend !== last_message_ago) {
+                                            console.log('founded one friend need to ping!');
+                                            list_id_friend_to_ping_note.push(element2.idFriend);
+                                        } else {
+                                            console.log('skipped one friend check');
+                                        }
                                     }
                                 }
                             }
@@ -216,7 +226,6 @@ export default memo(function RowChat() {
                 }
             }
             const lastObjectMessage = roomMessages[roomMessages.length - 1];
-
             const LastUserSeenMessage_docRef = doc(database, "LastUserSeenMessage", id);
             const LastUserSeenMessage_docSnap = await getDoc(LastUserSeenMessage_docRef);
             const dataDocListRoom = LastUserSeenMessage_docSnap.data().listRoom;
@@ -241,7 +250,36 @@ export default memo(function RowChat() {
         socket.emit("join_room", idRoom);
         setSelectedObject(obj);
         setIdRoomIfClickChatToOneFriend(idRoom);
-    }, [id, socket]);
+
+
+        //Cập nhật lại pingnote nếu currentUser trong room này trễ
+        if(listIdFriendUserToPingNote.includes(obj.id)) {
+            console.log('processing update lastseenmsg');
+            let friendMessages = [];
+            for(let i=0; i<docsFriendMessages.length; i++) {
+                const element = docsFriendMessages[i];
+                if(element.partners.includes(obj.id)) {
+                    friendMessages = element.listObjectMessage;
+                    break;
+                }
+            }
+            console.log(friendMessages);
+            const lastObjectMessage = friendMessages[friendMessages.length - 1];
+            const LastUserSeenMessage_docRef = doc(database, "LastUserSeenMessage", id);
+            const LastUserSeenMessage_docSnap = await getDoc(LastUserSeenMessage_docRef);
+            const dataDocListFriend = LastUserSeenMessage_docSnap.data().listFriend;
+            const newListFriend = dataDocListFriend.map(m => (
+                m.idFriend === obj.id ? {...m, lastMessage: lastObjectMessage.msg} : m
+            ));
+            await updateDoc(doc(database, "LastUserSeenMessage", id), {
+                listFriend: newListFriend
+            });
+            setListIdFriendUserToPingNote(prev => prev.filter(val => {
+                if(val !== obj.id)
+                    return val;
+            }));
+        }
+    }, [docsFriendMessages, id, listIdFriendUserToPingNote, socket]);
     const getPartnerLastMessage = useCallback((objectFriend) => {
         let roomMessages = [];
         for(let i=0; i<docsFriendMessages.length; i++) { //Mỗi 1 doc
@@ -363,7 +401,7 @@ export default memo(function RowChat() {
                                 }
                             </div>
                             } else {
-                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center needCursor border-bottom' : 'container d-flex align-items-center needCursor border-bottom'} key={Math.random()} onClick={() => onClickOneFriend(obj)}>
+                                return <div className={selectedObject !== obj ? 'container d-flex align-items-center needCursor border-bottom position-relative' : 'container d-flex align-items-center needCursor border-bottom position-relative'} key={Math.random()} onClick={() => onClickOneFriend(obj)}>
                                 <div className='col-lg-2'>
                                     <img src={obj.photoURL} alt="photoURL" className='rounded-circle' width='45' height='45' />
                                 </div>

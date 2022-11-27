@@ -137,7 +137,7 @@ export default memo(function ListFriend() {
             <div className="d-flex flex-wrap">
                 {
                     listFromRequest.map(request => {
-                        return <div className='text-center rounded' id="OneBoxRequest" key={request.idRequester}>
+                        return <div className='text-center rounded text-dark' id="OneBoxRequest" key={request.idRequester}>
                             <img src={request.photoURL} alt="photoURL" width='90' height='90' className='rounded-circle' />
                             <div style={{borderTopLeftRadius:20,borderTopRightRadius:20}} className='bg-white border p-1 small'>
                                 <span>{request.description}</span>

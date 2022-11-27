@@ -85,6 +85,7 @@ export default memo(function Info({ setShowGroupModalComponent }) {
             const idRoom = tempObjectGroupModal.id;
             await deleteDoc(doc(database, "Rooms", idRoom));
             await deleteDoc(doc(database, "RoomMessages", idRoom));
+            await deleteDoc(doc(database, "RoomRequests", idRoom));
             toast.success("Xoá nhóm chat thành công");
         }
     },[tempObjectGroupModal]);
